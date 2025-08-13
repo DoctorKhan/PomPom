@@ -7,7 +7,7 @@ A productivity timer for remote teams with fluffy cloud spirit!
 ### 🎉 Complete Rebrand from SyncFocus to PomPom
 - **New Name**: PomPom (inspired by Cloud Pomeranian dogs and pom poms)
 - **Mascot**: Fluffy Cloud Pomeranian ☁️🐕☁️
-- **Theme**: Cloud pom pom decorations throughout the app ☁️🎀
+- **Theme**: Kawaii cloud decorations throughout the app ☁️✨💖
 - **Color Scheme**: Soft cloud blues with white accents - peaceful yet energetic
 - **Spirit**: Cheerful, fluffy, cloud-like productivity with pom-pom energy
 
@@ -20,10 +20,11 @@ A productivity timer for remote teams with fluffy cloud spirit!
 
 ### 🎨 Visual Improvements
 - **Cloud Color Scheme**: Soft gradient from light sky blue to deeper sky blue
-- **Animated Decorations**: Bouncing cloud and pom pom decorations with custom CSS animations
+- **Kawaii Decorations**: Floating sparkles ✨, hearts 💖, stars 💫, and clouds ☁️ with custom animations
 - **Fluffy Cloud Mascot**: Cloud Pomeranian ☁️🐕☁️ throughout the interface
-- **Consistent Theming**: Fluffy cloud spirit in every screen
-- **Enhanced UX**: Peaceful yet energetic design with delightful cloud interactions
+- **Kawaii Elements**: Cute emoticons (◕‿◕), sparkles, and floating decorations
+- **Consistent Theming**: Fluffy cloud kawaii spirit in every screen
+- **Enhanced UX**: Peaceful yet energetic design with delightful kawaii interactions
 
 ## How to Use
 
