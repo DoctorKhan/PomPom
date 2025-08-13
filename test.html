@@ -23,11 +23,15 @@
         <h1 class="text-4xl font-bold">☁️ PomPom Cloud App Test ☁️</h1>
         <a href="/" class="bg-white text-sky-600 px-4 py-2 rounded-lg font-semibold hover:bg-sky-50 transition-colors">← Back to PomPom ✨</a>
     </div>
-    
+
     <div class="mb-8">
-        <h2 class="text-2xl font-semibold mb-4">Test Landing Page</h2>
-        <button id="test-landing" class="kawaii-button text-sky-600 px-4 py-2 rounded mr-4">Test Landing ✨</button>
-        <button id="test-session" class="kawaii-button text-sky-600 px-4 py-2 rounded">Test Session Flow ☁️</button>
+        <h2 class="text-2xl font-semibold mb-4">Tests</h2>
+        <div class="flex flex-wrap gap-2">
+            <button id="test-landing" class="kawaii-button text-sky-600 px-4 py-2 rounded">Landing ✨</button>
+            <button id="test-session" class="kawaii-button text-sky-600 px-4 py-2 rounded">Session Flow ☁️</button>
+            <button id="test-todo-inline-enter" class="kawaii-button text-sky-600 px-4 py-2 rounded">Todo Inline Save (Enter)</button>
+            <button id="test-todo-inline-button" class="kawaii-button text-sky-600 px-4 py-2 rounded">Todo Inline Save (Button)</button>
+        </div>
     </div>
 
     <div id="test-results" class="bg-white/10 p-4 rounded-lg">
@@ -48,20 +52,20 @@
         document.getElementById('test-landing').addEventListener('click', () => {
             clearLog();
             log('Testing landing page...');
-            
+
             // Test if we can open the main app
             const iframe = document.createElement('iframe');
             iframe.src = './index.html';
             iframe.style.display = 'none';
             document.body.appendChild(iframe);
-            
+
             iframe.onload = () => {
                 log('✅ Main app loaded successfully');
                 log('✅ Landing page should show PomPom branding');
                 log('✅ Should see Pomeranian mascot with pom poms');
                 document.body.removeChild(iframe);
             };
-            
+
             iframe.onerror = () => {
                 log('❌ Failed to load main app');
                 document.body.removeChild(iframe);
@@ -113,6 +117,95 @@
             };
 
             iframe.onerror = () => {
+        function runInApp(url, fn) {
+            return new Promise((resolve) => {
+                const iframe = document.createElement('iframe');
+                iframe.src = url;
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+                iframe.onload = async () => {
+                    try {
+                        const w = iframe.contentWindow;
+                        const d = w.document;
+                        const result = await fn(w, d);
+                        resolve(result);
+                    } catch (e) {
+                        log('❌ Test failed: ' + e.message);
+                        resolve(false);
+                    } finally {
+                        document.body.removeChild(iframe);
+                    }
+                };
+            });
+        }
+
+        async function seedOfflineTodo(w, d, text = 'Demo task') {
+            // Force offline mode via URL param
+            if (!w.location.search.includes('offline=1')) {
+                w.location.search = '?offline=1';
+                await new Promise(r => setTimeout(r, 500));
+            }
+            // Ensure local list exists
+            w.localStorage.setItem('pompom_username', 'Tester');
+            // Create a todo via UI
+            const idea = d.getElementById('todo-idea-input');
+            const add = d.getElementById('todo-add-btn');
+            idea.value = text;
+            add.click();
+            await new Promise(r => setTimeout(r, 200));
+        }
+
+        document.getElementById('test-todo-inline-enter').addEventListener('click', async () => {
+            clearLog();
+            log('Testing todo inline edit (Enter to save)...');
+            await runInApp('./index.html?offline=1', async (w, d) => {
+                // Go to planner view where todos are
+                d.getElementById('planner-view-btn').click();
+                await new Promise(r => setTimeout(r, 100));
+                await seedOfflineTodo(w, d, 'Write report tomorrow 5pm #work');
+                const list = d.getElementById('todo-list');
+                const first = list.querySelector('div[draggable] .flex-1');
+                if (!first) throw new Error('No todo rendered');
+                const dueSpan = first.querySelector('.todo-due') || first;
+                dueSpan.click();
+                await new Promise(r => setTimeout(r, 50));
+                const inputDue = first.querySelector('input[placeholder^="Due"]');
+                if (!inputDue) throw new Error('Due input not found');
+                inputDue.value = 'in 2 days 4pm';
+                const ev = new w.KeyboardEvent('keydown', { key: 'Enter' });
+                inputDue.dispatchEvent(ev);
+                await new Promise(r => setTimeout(r, 150));
+                // Expect rerendered row with updated due
+                const afterText = first.querySelector('.todo-due')?.textContent || '';
+                if (!afterText || !/4:00/i.test(afterText)) throw new Error('Due not updated');
+                log('✅ Enter-to-save updated due');
+                return true;
+            });
+        });
+
+        document.getElementById('test-todo-inline-button').addEventListener('click', async () => {
+            clearLog();
+            log('Testing todo inline edit (Save button)...');
+            await runInApp('./index.html?offline=1', async (w, d) => {
+                d.getElementById('planner-view-btn').click();
+                await new Promise(r => setTimeout(r, 100));
+                await seedOfflineTodo(w, d, 'Draft email #comms');
+                const list = d.getElementById('todo-list');
+                const first = list.querySelector('div[draggable] .flex-1');
+                if (!first) throw new Error('No todo rendered');
+                first.click();
+                await new Promise(r => setTimeout(r, 50));
+                const inputText = first.querySelector('input[placeholder="Task description"]');
+                const saveBtn = first.querySelector('button');
+                if (!inputText || !saveBtn) throw new Error('Editor inputs not found');
+                inputText.value = 'Draft email to team';
+                saveBtn.click();
+                await new Promise(r => setTimeout(r, 150));
+                if (!/Draft email to team/i.test(first.textContent)) throw new Error('Text not saved');
+                log('✅ Save button updated text');
+                return true;
+            });
+        });
                 log('❌ Failed to load session test');
                 document.body.removeChild(iframe);
             };

@@ -342,7 +342,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc, serverTimestamp, updateDoc, setLogLevel, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc, serverTimestamp, updateDoc, deleteDoc, setLogLevel, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- DOM ELEMENTS ---
         const landingPage = document.getElementById('landing-page');
@@ -408,7 +408,9 @@
     const firebaseConfig = (typeof window !== 'undefined' && window.__firebase_config) ? JSON.parse(window.__firebase_config) : {};
     const appId = (typeof window !== 'undefined' && window.__app_id) ? window.__app_id : 'pompom-default';
     const hasFirebaseConfig = firebaseConfig && typeof firebaseConfig.apiKey === 'string' && firebaseConfig.apiKey.length > 0;
-    let OFFLINE_MODE = !hasFirebaseConfig;
+    // Allow forcing offline mode via URL param for tests: ?offline=1
+    const urlParams = new URLSearchParams(location.search);
+    let OFFLINE_MODE = urlParams.get('offline') === '1' ? true : !hasFirebaseConfig;
 
         let app, auth, db;
         let userId, userName;
@@ -424,6 +426,10 @@
     // Map of participant name -> IANA time zone
     let participantsTZByName = {};
     let nextTodoOrder = 0;
+    // Prevent list re-render while editing a todo inline
+    let isEditingTodo = false;
+    // Subtask drag state
+    let draggingSubtask = null; // { parentId, sid }
 
         // Local-only state when offline (no Firebase configured)
         let localSessionState = {
@@ -473,6 +479,8 @@
             validateStartCta();
             // If landing directly on session page in offline mode, ensure timer UI renders once
             if (OFFLINE_MODE) renderTimerFromLocalState();
+            // Enable drag-to-promote subtasks
+            try { enableSubtaskPromoteViaDrag(); } catch {}
         }
         
         async function handleAuthentication() {
@@ -493,7 +501,7 @@
             });
         }
         
-        function handleRouting() {
+    function handleRouting() {
             // Support both path-based (/team) and hash-based (/#/team) routing for static hosting
             let potentialSessionId = '';
             const hash = window.location.hash || '';
@@ -506,11 +514,19 @@
             }
             if (potentialSessionId) {
                 sessionId = potentialSessionId;
-                // Show name input page first, then session page after names are set
-                showNameInputPage();
-                populateRandomNames();
+        // Show name input page first, prefilling from storage when available
+        showNameInputPage();
+        const storedTeam = getTeamNameFromStorage();
+        const storedUser = localStorage.getItem('pompom_username');
+        teamNameInput.value = storedTeam || sessionId;
+        userNameSetupInput.value = storedUser || generateRandomUserName();
+        updateTeamLinkPreview();
+        validateStartCta();
             } else {
                 showLandingPage();
+        // Prefill landing input with stored team name if available
+        const storedTeam = getTeamNameFromStorage();
+        if (storedTeam) sessionNameInput.value = storedTeam;
             }
         }
 
@@ -567,6 +583,7 @@
                 if (!name) {
                     name = generateRandomTeamName();
                 }
+                try { localStorage.setItem('pompom_team_name', toSlug(name)); } catch {}
                 // Update both path and hash for static hosting
                 try {
                     window.history.pushState({}, name, `/${name}`);
@@ -596,6 +613,7 @@
                 // Store the user name
                 userName = userNameValue;
                 localStorage.setItem('pompom_username', userName);
+                try { localStorage.setItem('pompom_team_name', toSlug(teamName)); } catch {}
 
                 // Initialize and show session page
                 updateUserNameUI();
@@ -625,8 +643,15 @@
                     startSessionBtn.click();
                 }
             });
-            teamNameInput.addEventListener('input', () => { updateTeamLinkPreview(); validateStartCta(); });
-            userNameSetupInput.addEventListener('input', validateStartCta);
+            teamNameInput.addEventListener('input', () => {
+                updateTeamLinkPreview();
+                validateStartCta();
+                try { localStorage.setItem('pompom_team_name', toSlug(teamNameInput.value || '')); } catch {}
+            });
+            userNameSetupInput.addEventListener('input', () => {
+                validateStartCta();
+                try { localStorage.setItem('pompom_username', userNameSetupInput.value || ''); } catch {}
+            });
             // Shuffle buttons
             shuffleTeamNameBtn.addEventListener('click', () => { teamNameInput.value = generateRandomTeamName().replace('-', ' '); updateTeamLinkPreview(); validateStartCta(); teamNameInput.focus(); });
             shuffleUserNameBtn.addEventListener('click', () => { userNameSetupInput.value = generateRandomUserName(); userNameSetupInput.focus(); });
@@ -669,9 +694,17 @@
                         clearInterval(alarmCheckInterval);
 
                         // Remove user from session if online
+                        // remove subtask from local
+                        const tIdx = localTodos.findIndex(x => (x.id || String(x.createdAt)) === parentId);
+                        if (tIdx >= 0) {
+                            localTodos[tIdx].subtasks = (localTodos[tIdx].subtasks || []).filter(st => (st.id || '') !== s.id);
+                        }
                         if (!OFFLINE_MODE && userId) {
                             const userRef = getUserRef(userId);
                             await deleteDoc(userRef);
+                        if (s.id) {
+                            await deleteDoc(doc(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos', parentId, 'subtasks', s.id));
+                        }
                         }
 
                         // Clear local storage
@@ -679,10 +712,87 @@
                         localStorage.removeItem('userId');
 
                         // Return to landing page
+                // DnD events for subtasks
+                row.addEventListener('dragstart', (e) => {
+                    draggingSubtask = { parentId, sid: row.dataset.sid };
+                    row.classList.add('opacity-70');
+                });
+                row.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+                row.addEventListener('drop', async (e) => {
+                    e.preventDefault();
+                    if (!draggingSubtask || draggingSubtask.parentId !== parentId) return;
+                    const rows = Array.from(container.children);
+                    const fromIdx = rows.findIndex(r => r.dataset.sid === draggingSubtask.sid);
+                    const toIdx = rows.findIndex(r => r === row);
+                    if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return;
+                    const arr = rows.slice();
+                    const [moved] = arr.splice(fromIdx, 1);
+                    arr.splice(toIdx, 0, moved);
+                    // Reassign order based on new DOM order
+                    for (let i = 0; i < arr.length; i++) {
+                        const sid = arr[i].dataset.sid;
+                        if (OFFLINE_MODE) {
+                            const tIdx = localTodos.findIndex(x => (x.id || String(x.createdAt)) === parentId);
+                            if (tIdx >= 0) {
+                                const subs = localTodos[tIdx].subtasks || [];
+                                const sub = subs.find(st => (st.id || `${parentId}::`) === sid || (st.id ? st.id : `${parentId}::${subs.indexOf(st)}`) === sid);
+                                if (sub) sub.order = i;
+                            }
+                        } else {
+                            // Persist to Firestore if we have real IDs
+                            const real = items.find(x => (x.id || `${parentId}::`) === sid);
+                            if (real && real.id) {
+                                await updateDoc(doc(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos', parentId, 'subtasks', real.id), { order: i });
+                            }
+                        }
+                    }
+                    // Rerender
+                    if (OFFLINE_MODE) renderTodosLocal();
+                });
+                row.addEventListener('dragend', () => { row.classList.remove('opacity-70'); draggingSubtask = null; });
                         window.location.href = '/';
                     } catch (error) {
                         console.error('Error leaving session:', error);
                         // Still navigate away even if cleanup fails
+
+        // Allow promoting by dragging a subtask to the main list container
+        function enableSubtaskPromoteViaDrag() {
+            if (!todoList) return;
+            todoList.addEventListener('dragover', (e) => {
+                if (draggingSubtask) e.preventDefault();
+            });
+            todoList.addEventListener('drop', async (e) => {
+                if (!draggingSubtask) return;
+                e.preventDefault();
+                const { parentId, sid } = draggingSubtask;
+                draggingSubtask = null;
+                // Find subtask data
+                if (OFFLINE_MODE) {
+                    const tIdx = localTodos.findIndex(x => (x.id || String(x.createdAt)) === parentId);
+                    if (tIdx >= 0) {
+                        const subs = localTodos[tIdx].subtasks || [];
+                        const sub = subs.find(st => (st.id || `${parentId}::${subs.indexOf(st)}`) === sid);
+                        if (sub) {
+                            const newTodo = { text: sub.text || '', ownerName: userName || getUserNameFromStorage(), due: '', tags: [], createdBy: userName || getUserNameFromStorage(), createdAt: new Date().toISOString(), order: nextTodoOrder++ };
+                            newTodo.id = `${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+                            localTodos.push(newTodo);
+                            localTodos[tIdx].subtasks = subs.filter(st => (st.id || `${parentId}::${subs.indexOf(st)}`) !== sid);
+                            renderTodosLocal();
+                        }
+                    }
+                } else {
+                    // Online: need the real subtask doc
+                    const subRef = getSubtasksRef(parentId);
+                    // We cannot fetch here without network; assume sid is Firestore id when online
+                    const newTodo = { text: '', ownerName: userName || getUserNameFromStorage(), due: '', tags: [], createdBy: userName || getUserNameFromStorage(), createdAt: new Date().toISOString(), order: nextTodoOrder++ };
+                    try {
+                        // Create placeholder; we'll try to delete the subtask if sid exists
+                        await addDoc(getTodosRef(), newTodo);
+                        try { await deleteDoc(doc(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos', parentId, 'subtasks', sid)); } catch {}
+                    } catch (err) { console.error('Promote via drag failed', err); }
+                }
+            });
+        }
                         window.location.href = '/';
                     }
                 }
@@ -734,6 +844,7 @@
         const getChatRef = () => collection(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'chat');
     const getPlannerRef = () => collection(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'schedule');
     const getTodosRef = () => collection(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos');
+    const getSubtasksRef = (todoId) => collection(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos', todoId, 'subtasks');
 
         // --- SESSION & USER LOGIC ---
     async function joinSession() {
@@ -776,6 +887,10 @@
                 localStorage.setItem('pompom_username', name);
             }
             return name;
+        }
+
+        function getTeamNameFromStorage() {
+            return localStorage.getItem('pompom_team_name') || '';
         }
 
         function generateRandomUserName() {
@@ -956,7 +1071,7 @@
             // Refresh owner dropdown
             refreshOwnerSelect(snapshot.docs.map(d => d.data().name));
             // Rerender todos to reflect any updated time zones in due display
-            try { if (Array.isArray(currentTodos) && currentTodos.length) renderTodos(currentTodos); } catch {}
+            try { if (!isEditingTodo && Array.isArray(currentTodos) && currentTodos.length) renderTodos(currentTodos); } catch {}
         }
 
         function updateParticipantsOffline() {
@@ -970,7 +1085,7 @@
             participantsList.appendChild(p);
             refreshOwnerSelect([name]);
             // Rerender todos to reflect local time zone
-            try { if (Array.isArray(currentTodos) && currentTodos.length) renderTodos(currentTodos); } catch {}
+            try { if (!isEditingTodo && Array.isArray(currentTodos) && currentTodos.length) renderTodos(currentTodos); } catch {}
         }
 
         function updateChatUI(snapshot) {
@@ -1301,6 +1416,7 @@
         }
 
         function updateTodosUI(snapshot) {
+            if (isEditingTodo) return; // avoid clobbering inline editor during edit
             const todos = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             // Normalize order for any missing items
             const withOrder = todos.map((t, i) => ({ ...t, order: typeof t.order === 'number' ? t.order : i }));
@@ -1311,6 +1427,7 @@
         }
 
         function renderTodosLocal() {
+            if (isEditingTodo) return;
             // Ensure order
             localTodos = localTodos.map((t, i) => ({ ...t, order: typeof t.order === 'number' ? t.order : i }));
             const sorted = localTodos.slice().sort((a,b) => a.order - b.order);
@@ -1341,19 +1458,49 @@
                 dragHandle.innerHTML = '⋮⋮';
 
                 const content = document.createElement('div');
-                content.className = 'flex-1';
+                content.className = 'flex-1 cursor-pointer';
+                content.title = 'Click to edit';
+                content.setAttribute('role', 'button');
+                content.setAttribute('tabindex', '0');
                 const dueText = formatDateTimeForOwner(t.due, t.ownerName || '');
         const tagsHtml = (t.tags && t.tags.length) ? `<div class=\"mt-1 flex flex-wrap gap-1\">${t.tags.map(tag => `<span class=\"text-xs px-2 py-0.5 rounded-full bg-sky-200/70 text-sky-800\">#${escapeHtml(tag)}</span>`).join('')}</div>` : '';
-        content.innerHTML = `<div class=\"font-semibold text-sky-900 todo-text\">${escapeHtml(t.text || '')}</div><div class=\"text-sm text-sky-700\">Owner: ${escapeHtml(t.ownerName || '')} • Due: ${escapeHtml(dueText)}</div>${tagsHtml}`;
+        content.innerHTML = `<div class=\"font-semibold text-sky-900 todo-text\">${escapeHtml(t.text || '')}</div><div class=\"text-sm text-sky-700\">Owner: <span class=\"todo-owner\">${escapeHtml(t.ownerName || '')}</span> • Due: <span class=\"todo-due\">${escapeHtml(dueText)}</span></div>${tagsHtml}<div class=\"text-xs text-sky-600 mt-1 opacity-60\">Click to edit</div>`;
 
                 const editBtn = document.createElement('button');
                 editBtn.className = 'btn btn-secondary px-3 py-1 text-sm';
                 editBtn.textContent = 'Edit';
-                editBtn.addEventListener('click', () => startInlineEdit(div, t));
+                editBtn.addEventListener('click', (e) => { e.stopPropagation(); isEditingTodo = true; startInlineEdit(div, t); });
+
+                const breakdownBtn = document.createElement('button');
+                breakdownBtn.className = 'btn btn-secondary px-3 py-1 text-sm';
+                breakdownBtn.textContent = 'Break down';
+                breakdownBtn.title = 'Use AI to break this task down into subtasks';
+                breakdownBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    await startBreakdownFlow(t, div);
+                });
+                // Enable click-to-edit on the main content area
+                content.addEventListener('click', (e) => {
+                    if (div.dataset.editing === 'true') return; // ignore clicks while already editing
+                    const target = e.target;
+                    let focusField = 'text';
+                    if (target && (target.classList?.contains('todo-due') || target.closest?.('.todo-due'))) focusField = 'due';
+                    else if (target && (target.classList?.contains('todo-owner') || target.closest?.('.todo-owner'))) focusField = 'owner';
+                    startInlineEdit(div, t, { focus: focusField });
+                });
+                // Keyboard accessibility: Enter or Space triggers edit
+                content.addEventListener('keydown', (e) => {
+                    if (div.dataset.editing === 'true') return;
+                    if (e.key === 'Enter' || e.code === 'Space') {
+                        e.preventDefault();
+                        startInlineEdit(div, t);
+                    }
+                });
 
                 div.appendChild(dragHandle);
                 div.appendChild(content);
                 div.appendChild(editBtn);
+                div.appendChild(breakdownBtn);
 
                 // Drag and drop events
                 div.addEventListener('dragstart', handleDragStart);
@@ -1361,20 +1508,132 @@
                 div.addEventListener('drop', handleDrop);
                 div.addEventListener('dragend', handleDragEnd);
 
+                // Subtasks container
+                const subtasksContainer = document.createElement('div');
+                subtasksContainer.className = 'ml-8 mt-2 space-y-1';
+                subtasksContainer.dataset.parentId = div.dataset.id;
+                div.appendChild(subtasksContainer);
                 todoList.appendChild(div);
+                // Load subtasks (online only; offline stored in-memory)
+                if (!OFFLINE_MODE && t.id) {
+                    const parentId = t.id;
+                    const subRef = getSubtasksRef(parentId);
+                    onSnapshot(query(subRef, orderBy('order')), (snap) => renderSubtasks(subtasksContainer, parentId, snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+                } else {
+                    renderSubtasks(subtasksContainer, t.id || div.dataset.id, (t.subtasks || []).slice().sort((a,b)=> (a.order||0)-(b.order||0)));
+                }
+            });
+        }
+
+        async function startBreakdownFlow(todo, container) {
+            try { if (todoStatus) todoStatus.textContent = 'Asking AI to break it down…'; } catch {}
+            const prompt = `Break the following task into 3-7 clear, actionable subtasks that can be completed in under an hour each. Keep each subtask concise. Respond ONLY as JSON array of objects: [{"text":"..."}].\nTask: ${todo.text}`;
+            const res = await callGroqAPI(prompt);
+            const data = extractJSON(res);
+            const subtasks = Array.isArray(data) ? data.map((s, i) => ({ text: String(s.text||'').trim(), done: false, order: i })) : [];
+            const parentId = todo.id || container.dataset.id;
+            if (OFFLINE_MODE) {
+                // Attach in-memory
+                const idx = localTodos.findIndex(x => (x.id || String(x.createdAt)) === parentId);
+                if (idx >= 0) {
+                    localTodos[idx].subtasks = subtasks;
+                    renderTodosLocal();
+                }
+            } else {
+                // Store under todos/{id}/subtasks
+                for (let i = 0; i < subtasks.length; i++) {
+                    await addDoc(getSubtasksRef(parentId), { text: subtasks[i].text, done: false, order: i, createdAt: serverTimestamp() });
+                }
+            }
+            try { if (todoStatus) todoStatus.textContent = ''; } catch {}
+        }
+
+        function renderSubtasks(container, parentId, items) {
+            container.innerHTML = '';
+            if (!items || !items.length) return;
+            items.forEach((s, idx) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-2 bg-white/5 rounded px-2 py-1';
+                row.setAttribute('draggable', 'true');
+                row.dataset.sid = s.id || `${parentId}::${idx}`;
+                row.dataset.order = String(s.order ?? idx);
+
+                const drag = document.createElement('div');
+                drag.className = 'cursor-move text-sky-700 select-none';
+                drag.innerHTML = '⋮';
+
+                const chk = document.createElement('input');
+                chk.type = 'checkbox';
+                chk.checked = !!s.done;
+                chk.addEventListener('change', async () => {
+                    if (OFFLINE_MODE) { s.done = chk.checked; return; }
+                    if (!parentId || !s.id) return;
+                    await updateDoc(doc(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos', parentId, 'subtasks', s.id), { done: !!chk.checked });
+                });
+
+                const txt = document.createElement('input');
+                txt.type = 'text';
+                txt.className = 'flex-1 bg-transparent border-b border-white/30 focus:outline-none text-sky-900';
+                txt.value = s.text || '';
+                txt.addEventListener('change', async () => {
+                    if (OFFLINE_MODE) { s.text = txt.value; return; }
+                    if (!parentId || !s.id) return;
+                    await updateDoc(doc(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos', parentId, 'subtasks', s.id), { text: txt.value });
+                });
+
+                const promote = document.createElement('button');
+                promote.className = 'btn btn-secondary px-2 py-0.5 text-xs';
+                promote.textContent = 'Promote';
+                promote.title = 'Promote to main task';
+                promote.addEventListener('click', async () => {
+                    const newTodo = {
+                        text: txt.value.trim() || s.text || '',
+                        ownerName: (s.ownerName || '') || (userName || getUserNameFromStorage()),
+                        due: '', tags: [], createdBy: userName || getUserNameFromStorage(), createdAt: new Date().toISOString(), order: nextTodoOrder++
+                    };
+                    if (OFFLINE_MODE) {
+                        newTodo.id = `${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+                        localTodos.push(newTodo);
+                        renderTodosLocal();
+                    } else {
+                        await addDoc(getTodosRef(), newTodo);
+                    }
+                });
+
+                row.appendChild(drag);
+                row.appendChild(chk);
+                row.appendChild(txt);
+                row.appendChild(promote);
+                container.appendChild(row);
             });
         }
 
         // Inline edit for todo: text, owner, due (natural language), tags.
-        function startInlineEdit(container, todo) {
+        function startInlineEdit(container, todo, opts = {}) {
             const content = container.querySelector('.flex-1');
             if (!content) return;
             const members = getTeamMembersForAI();
             ensureOwnerDatalist(members);
             container.setAttribute('draggable', 'false');
+            isEditingTodo = true;
+            container.dataset.editing = 'true';
 
             const original = { text: todo.text || '', ownerName: todo.ownerName || (userName || getUserNameFromStorage()), due: todo.due || '', tags: Array.isArray(todo.tags) ? todo.tags : [] };
-            const dueDisplay = original.due ? formatDateTimeForOwner(original.due, original.ownerName) : '';
+            const dueDisplay = original.due ? formatDateTimeForOwner(original.due, original.ownerName) : ''; // human readable
+            // Prefer a stable, editable local ISO without seconds for selection UX
+            const toLocalNoSeconds = (iso) => {
+                try {
+                    const d = new Date(iso);
+                    if (isNaN(d.getTime())) return '';
+                    const yyyy = d.getFullYear();
+                    const mm = String(d.getMonth()+1).padStart(2,'0');
+                    const dd = String(d.getDate()).padStart(2,'0');
+                    const hh = String(d.getHours()).padStart(2,'0');
+                    const min = String(d.getMinutes()).padStart(2,'0');
+                    return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+                } catch { return ''; }
+            };
+            const dueISOForInput = original.due ? toLocalNoSeconds(original.due) : '';
 
             const wrapper = document.createElement('div');
             wrapper.className = 'w-full grid grid-cols-1 md:grid-cols-4 gap-2 items-start';
@@ -1394,7 +1653,8 @@
 
             const dueInput = document.createElement('input');
             dueInput.type = 'text';
-            dueInput.value = dueDisplay || '';
+            // Prefer a raw local string if available to improve editability
+            dueInput.value = dueISOForInput || dueDisplay || '';
             dueInput.placeholder = 'Due (e.g., "tomorrow 5pm", "in 2 days", "Fri 3pm")';
             dueInput.className = 'w-full bg-white text-sky-800 px-2 py-2 rounded-md focus:outline-none';
 
@@ -1405,19 +1665,23 @@
             tagsInput.className = 'w-full bg-white text-sky-800 px-2 py-2 rounded-md focus:outline-none';
 
             const actions = document.createElement('div');
-            actions.className = 'col-span-1 md:col-span-4 flex gap-2 mt-1';
+            actions.className = 'col-span-1 md:col-span-4 flex gap-2 mt-1 items-center';
             const saveBtn = document.createElement('button');
             saveBtn.className = 'btn btn-secondary px-4';
             saveBtn.textContent = 'Save';
             const cancelBtn = document.createElement('button');
             cancelBtn.className = 'btn btn-primary px-4';
             cancelBtn.textContent = 'Cancel';
+            const statusSpan = document.createElement('span');
+            statusSpan.className = 'text-sm text-sky-700 opacity-80 ml-2';
+            statusSpan.textContent = '';
             actions.appendChild(saveBtn);
             actions.appendChild(cancelBtn);
+            actions.appendChild(statusSpan);
 
             // Replace content
             content.innerHTML = '';
-            const label1 = document.createElement('div'); label1.className = 'text-xs text-sky-700 md:col-span-4'; label1.textContent = 'Edit and press Enter to save, or click Save. Natural dates and #tags are OK.';
+            const label1 = document.createElement('div'); label1.className = 'text-xs text-sky-700 md:col-span-4'; label1.textContent = 'Edit and press Enter to save, or click Save. First click selects all; second click places the caret. Natural dates and #tags are OK.';
             wrapper.appendChild(textInput);
             wrapper.appendChild(ownerInput);
             wrapper.appendChild(dueInput);
@@ -1426,16 +1690,41 @@
             content.appendChild(wrapper);
             content.appendChild(actions);
 
-            const doCancel = () => { renderTodos(currentTodos); };
+            const doCancel = () => { isEditingTodo = false; container.dataset.editing = 'false'; renderTodos(currentTodos); };
             cancelBtn.addEventListener('click', doCancel);
 
+            // First focus selects all; second click switches to caret insertion
+            const selectAll = (el) => { try { el.focus(); el.select(); } catch {} };
+            let firstFocusDone = false;
+            let dirty = false;
+            [textInput, ownerInput, dueInput, tagsInput].forEach(el => {
+                el.addEventListener('focus', () => { if (!firstFocusDone) { selectAll(el); firstFocusDone = true; } });
+                el.addEventListener('mousedown', (e) => {
+                    if (!firstFocusDone) { e.preventDefault(); selectAll(el); firstFocusDone = true; }
+                });
+                el.addEventListener('input', () => { dirty = true; });
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); doSave(); }
+                    if (e.key === 'Escape') { e.preventDefault(); doCancel(); }
+                });
+                // No auto-save on blur; commit via Enter or Save button only
+            });
+            // Focus requested field and select all on first open
+            const f = (opts && opts.focus) || 'text';
+            if (f === 'owner') { ownerInput.focus(); ownerInput.select(); }
+            else if (f === 'due') { dueInput.focus(); dueInput.select(); }
+            else { textInput.focus(); textInput.select(); }
+
             const doSave = async () => {
+                try { statusSpan.textContent = 'Saving…'; } catch {}
+                saveBtn.disabled = true; cancelBtn.disabled = true;
                 const input = {
                     text: (textInput.value || '').trim(),
                     owner: (ownerInput.value || '').trim(),
                     due: (dueInput.value || '').trim(),
                     tags: (tagsInput.value || '').trim()
                 };
+                // Normalize via AI when key available; else fallback parser
                 const normalized = await normalizeTodoFields(input, members);
                 // Merge tags from text (hashtags) and tags input
                 const tagSet = new Set([...(normalized.tags || []), ...parseTagsFromString(input.tags), ...extractTagsFromText(normalized.text).tags, ...extractTagsFromText(input.text).tags]);
@@ -1450,18 +1739,33 @@
                     if (OFFLINE_MODE) {
                         const idx = localTodos.findIndex(x => x.id === todo.id);
                         if (idx >= 0) Object.assign(localTodos[idx], updates);
-                        renderTodosLocal();
+                        // Defer render until after flags reset
                     } else {
                         const ref = doc(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos', todo.id);
                         await updateDoc(ref, updates);
                     }
-                } catch (e) { console.error('Edit failed', e); }
+                } catch (e) { console.error('Edit failed', e); try { statusSpan.textContent = 'Error saving'; } catch {}
+                finally {
+                    isEditingTodo = false;
+                    container.dataset.editing = 'false';
+                    if (OFFLINE_MODE) {
+                        renderTodosLocal();
+                    } else {
+                        // Optimistic UI update so the user immediately sees the change
+                        try {
+                            const idx = currentTodos.findIndex(x => x.id === todo.id);
+                            if (idx >= 0) {
+                                currentTodos[idx] = { ...currentTodos[idx], ...updates };
+                                renderTodos(currentTodos);
+                            }
+                        } catch {}
+                    }
+                }
             };
 
             saveBtn.addEventListener('click', doSave);
             [textInput, ownerInput, dueInput, tagsInput].forEach(el => {
-                el.addEventListener('keypress', (e) => { if (e.key === 'Enter') doSave(); });
-                el.addEventListener('keydown', (e) => { if (e.key === 'Escape') doCancel(); });
+                el.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.preventDefault(); doCancel(); } });
             });
         }
 
@@ -1661,6 +1965,8 @@
             this.classList.remove('opacity-70');
             draggedId = null;
         }
+
+    // Note: Subtasks reorder persistence is handled by promoting/demoting or future enhancement.
 
     // --- START THE APP ---
     init();
