@@ -17,25 +17,39 @@
             overflow-x: hidden;
         }
         body::before {
-            content: '✨ ☁️ 💫 ☁️ ✨ 💖 ☁️ ✨ 💫 ☁️ ✨';
+            content: '';
             position: fixed;
             top: 0;
             left: 0;
-            width: 200%;
+            width: 100%;
             height: 100%;
-            font-size: 2rem;
-            opacity: 0.1;
+            background-image:
+                url('https://i.imgur.com/kawaii-cloud-1.png'),
+                url('https://i.imgur.com/kawaii-cloud-2.png'),
+                url('https://i.imgur.com/kawaii-sparkle.png');
+            background-size: 80px 60px, 60px 45px, 40px 40px;
+            background-position: 10% 20%, 80% 70%, 90% 30%;
+            background-repeat: no-repeat;
+            opacity: 0.15;
             pointer-events: none;
             z-index: -1;
-            animation: kawaii-float 20s linear infinite;
-            white-space: pre;
-            line-height: 4;
+            animation: kawaii-float 30s ease-in-out infinite;
         }
         .glassmorphism {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(56, 189, 248, 0.1);
+        }
+        .studio-ghibli-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(240, 249, 255, 0.3) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            box-shadow:
+                0 8px 32px rgba(56, 189, 248, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
         }
         .btn {
             @apply py-2 px-4 rounded-lg font-semibold transition-colors duration-200;
@@ -77,10 +91,29 @@
             animation: kawaii-float 3s ease-in-out infinite;
         }
         @keyframes kawaii-float {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            33% { transform: translateY(-8px) scale(1.1); }
-            66% { transform: translateY(-4px) scale(0.95); }
+            0%, 100% { transform: translateY(0px) scale(1) rotate(0deg); }
+            33% { transform: translateY(-8px) scale(1.1) rotate(2deg); }
+            66% { transform: translateY(-4px) scale(0.95) rotate(-1deg); }
         }
+        .ghibli-glow {
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3), 0 0 40px rgba(56, 189, 248, 0.1);
+            animation: ghibli-glow 4s ease-in-out infinite alternate;
+        }
+        @keyframes ghibli-glow {
+            0% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.3), 0 0 40px rgba(56, 189, 248, 0.1); }
+            100% { box-shadow: 0 0 30px rgba(56, 189, 248, 0.4), 0 0 60px rgba(56, 189, 248, 0.2); }
+        }
+        .kawaii-button {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            border: 2px solid rgba(56, 189, 248, 0.3);
+            transition: all 0.3s ease;
+        }
+        .kawaii-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(56, 189, 248, 0.3);
+            border-color: rgba(56, 189, 248, 0.5);
+        }
+    .cta-glow { box-shadow: 0 12px 28px rgba(14,165,233,0.45), 0 0 0 8px rgba(255,255,255,0.18); }
     </style>
 </head>
 <body class="text-sky-900">
@@ -88,19 +121,22 @@
     <!-- App container -->
     <div id="app" class="h-screen w-screen flex items-center justify-center p-4 relative">
         <!-- Floating kawaii decorations -->
-        <div class="fixed top-10 left-10 text-2xl kawaii-float opacity-30">✨</div>
-        <div class="fixed top-20 right-20 text-2xl kawaii-float opacity-30" style="animation-delay: 1s">💫</div>
-        <div class="fixed bottom-20 left-20 text-2xl kawaii-float opacity-30" style="animation-delay: 2s">💖</div>
-        <div class="fixed bottom-10 right-10 text-2xl kawaii-float opacity-30" style="animation-delay: 3s">☁️</div>
+        <img src="https://i.imgur.com/totoro-small.png" alt="Totoro" class="fixed top-10 left-10 w-16 h-16 kawaii-float opacity-40" style="animation-delay: 0s" onerror="this.style.display='none';">
+        <img src="https://i.imgur.com/soot-sprite.png" alt="Soot Sprite" class="fixed top-20 right-20 w-12 h-12 kawaii-float opacity-40" style="animation-delay: 1s" onerror="this.style.display='none';">
+        <img src="https://i.imgur.com/kawaii-cloud.png" alt="Kawaii Cloud" class="fixed bottom-20 left-20 w-20 h-16 kawaii-float opacity-40" style="animation-delay: 2s" onerror="this.style.display='none';">
+        <img src="https://i.imgur.com/calcifer.png" alt="Calcifer" class="fixed bottom-10 right-10 w-14 h-14 kawaii-float opacity-40" style="animation-delay: 3s" onerror="this.style.display='none';">
 
         <!-- Landing Page -->
         <div id="landing-page" class="text-center">
-            <!-- Cloud Pomeranian mascot with pom poms -->
+            <!-- Cloud Pomeranian mascot with kawaii elements -->
             <div class="mb-6">
-                <div class="text-8xl mb-2">☁️🐕☁️</div>
+                <div class="relative">
+                    <img src="https://picsum.photos/128/128?random=1" alt="Fluffy Cloud Pomeranian" class="w-32 h-32 mx-auto mb-4 kawaii-float rounded-full border-4 border-white/50 shadow-lg" style="filter: hue-rotate(200deg) saturate(0.8) brightness(1.1);" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="text-8xl mb-2 hidden">☁️🐕☁️</div>
+                </div>
                 <div class="flex justify-center gap-4 mb-4">
-                    <div class="text-4xl pom-pom-bounce">✨</div>
-                    <div class="text-4xl pom-pom-bounce" style="animation-delay: 0.5s">💫</div>
+                    <div class="w-8 h-8 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-full pom-pom-bounce shadow-lg flex items-center justify-center">✨</div>
+                    <div class="w-8 h-8 bg-gradient-to-br from-pink-200 to-pink-400 rounded-full pom-pom-bounce shadow-lg flex items-center justify-center" style="animation-delay: 0.5s">💫</div>
                 </div>
             </div>
             <h1 class="text-5xl md:text-7xl font-bold mb-2">Welcome to PomPom ✨</h1>
@@ -118,28 +154,44 @@
         <!-- Name Input Page -->
         <div id="name-input-page" class="hidden text-center">
             <!-- Cloud Pomeranian mascot with pom poms -->
-            <div class="mb-6">
-                <div class="text-6xl mb-2">☁️🐕☁️</div>
-                <div class="flex justify-center gap-2 mb-4">
-                    <div class="text-2xl pom-pom-bounce">💖</div>
-                    <div class="text-2xl pom-pom-bounce" style="animation-delay: 0.3s">✨</div>
+            <div class="max-w-2xl mx-auto glassmorphism rounded-2xl shadow-2xl p-6 md:p-10">
+                <div class="mb-6">
+                    <div class="relative">
+                        <img src="https://picsum.photos/96/96?random=2" alt="Small Cloud Pomeranian" class="w-24 h-24 mx-auto mb-4 kawaii-float rounded-full border-4 border-white/50 shadow-lg" style="filter: hue-rotate(200deg) saturate(0.8) brightness(1.1);" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div class="text-6xl mb-2 hidden">☁️🐕☁️</div>
+                    </div>
+                    <div class="flex justify-center gap-2 mb-4">
+                        <div class="w-6 h-6 bg-gradient-to-br from-red-200 to-pink-400 rounded-full pom-pom-bounce shadow-md flex items-center justify-center text-xs">💖</div>
+                        <div class="w-6 h-6 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-full pom-pom-bounce shadow-md flex items-center justify-center text-xs" style="animation-delay: 0.3s">✨</div>
+                    </div>
+                </div>
+                <h1 class="text-4xl md:text-6xl font-extrabold mb-6">Let's get you set up! (◕‿◕)</h1>
+                <p class="text-lg text-sky-800 mb-3">First, what should we call your fluffy cloud team?</p>
+
+                <div class="max-w-xl mx-auto mb-2">
+                    <div class="flex items-stretch gap-2">
+                        <input id="team-name-input" type="text" class="flex-1 bg-white text-sky-800 px-6 py-4 rounded-xl text-xl text-center font-semibold focus:outline-none focus:ring-4 focus:ring-white/50 placeholder-sky-500" placeholder="Puffy Clouds" aria-label="Team name (press Enter to continue)">
+                        <button id="shuffle-team-name-btn" class="bg-sky-500 hover:bg-sky-600 text-white px-4 rounded-xl shadow" title="Shuffle a team name" aria-label="Shuffle team name">🎲</button>
+                    </div>
+                    <div class="text-sm text-sky-900 mt-2">
+                        Team link will be: <span class="bg-white px-2 py-1 rounded">pompom.io/<span id="team-link-slug">your-team</span></span>
+                    </div>
+                </div>
+
+                <p class="text-lg text-sky-800 mb-3 mt-6">And what's your name?</p>
+                <div class="max-w-xl mx-auto mb-6">
+                    <div class="flex items-stretch gap-2">
+                        <input id="user-name-setup-input" type="text" class="flex-1 bg-white text-sky-800 px-6 py-4 rounded-xl text-xl text-center font-semibold focus:outline-none focus:ring-4 focus:ring-white/50 placeholder-sky-500" placeholder="Soft Angel" aria-label="Your name (press Enter to continue)">
+                        <button id="shuffle-user-name-btn" class="bg-sky-500 hover:bg-sky-600 text-white px-4 rounded-xl shadow" title="Shuffle a name" aria-label="Shuffle your name">🎲</button>
+                    </div>
+                    <p class="text-sm text-sky-900 mt-2">Looks good? You can edit or shuffle.</p>
+                </div>
+
+                <div class="max-w-xl mx-auto">
+                    <button id="start-session-btn" class="w-full text-2xl px-8 py-5 rounded-2xl font-extrabold kawaii-button ghibli-glow text-sky-700 transition transform hover:-translate-y-1" aria-label="Start session">Start Session! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧</button>
+                    <p id="enter-hint" class="text-sm text-sky-900 mt-3">Press Enter to start</p>
                 </div>
             </div>
-            <h1 class="text-4xl md:text-6xl font-bold mb-4">Let's get you set up! (◕‿◕)</h1>
-            <p class="text-lg text-sky-700 mb-8">First, what should we call your fluffy cloud team?</p>
-
-            <div class="max-w-md mx-auto mb-6">
-                <input id="team-name-input" type="text" class="w-full bg-white/30 text-sky-800 px-6 py-4 rounded-lg text-xl text-center font-semibold focus:outline-none focus:bg-white/40 placeholder-sky-600" placeholder="Fluffy Clouds">
-                <p class="text-sm text-sky-700 mt-2">Click to change or keep the suggested name</p>
-            </div>
-
-            <p class="text-lg text-sky-700 mb-4">And what's your name?</p>
-            <div class="max-w-md mx-auto mb-8">
-                <input id="user-name-setup-input" type="text" class="w-full bg-white/30 text-sky-800 px-6 py-4 rounded-lg text-xl text-center font-semibold focus:outline-none focus:bg-white/40 placeholder-sky-600" placeholder="Fluffy Cloud">
-                <p class="text-sm text-sky-700 mt-2">Click to change or keep the suggested name</p>
-            </div>
-
-            <button id="start-session-btn" class="btn btn-primary text-xl px-8 py-4">Start Session! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧</button>
         </div>
 
         <!-- Session Page -->
@@ -149,9 +201,9 @@
                 <div class="text-center">
                     <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center font-bold text-2xl mb-2 mx-auto relative text-sky-600" id="user-avatar">
                         <!-- Cloud Pomeranian decorations -->
-                        <div class="absolute -top-1 -right-1 text-xs kawaii-float">☁️</div>
-                        <div class="absolute -bottom-1 -left-1 text-xs kawaii-float" style="animation-delay: 0.7s">💖</div>
-                        <div class="absolute -top-1 -left-1 text-xs kawaii-float" style="animation-delay: 1.2s">✨</div>
+                        <div class="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-blue-200 to-blue-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs">☁️</div>
+                        <div class="absolute -bottom-1 -left-1 w-4 h-4 bg-gradient-to-br from-pink-200 to-pink-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs" style="animation-delay: 0.7s">💖</div>
+                        <div class="absolute -top-1 -left-1 w-4 h-4 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs" style="animation-delay: 1.2s">✨</div>
                     </div>
                     <input type="text" id="user-name-input" class="name-input w-full text-sm text-sky-800" readonly>
                 </div>
@@ -176,7 +228,10 @@
                     <div id="sound-toggle-btn" class="icon-btn" title="Toggle Sound">
                         <!-- Speaker icon will be injected here -->
                     </div>
-                    <div id="leave-btn" class="icon-btn" title="Leave Session">
+                    <div id="test-alarm-btn" class="icon-btn" title="Test Alarm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16"><path d="M8 16a2 2 0 0 0 1.985-1.75H6.015A2 2 0 0 0 8 16m.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 6h14c-1.5 0-2-4.902-2-6a5.002 5.002 0 0 0-4.005-4.901"/></svg>
+                    </div>
+                    <div id="leave-btn" class="icon-btn" title="Leave Fluffy Cloud Team ☁️💔">
                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z"/><path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/></svg>
                     </div>
                 </div>
@@ -187,17 +242,21 @@
                 <!-- All views here -->
                 <div id="timer-view" class="flex-1 flex flex-col items-center justify-center">
                     <div class="relative">
-                        <div id="timer-display" class="text-7xl md:text-9xl font-bold mb-4">25:00</div>
-                        <div class="absolute -top-4 -right-4 text-2xl kawaii-float">☁️</div>
-                        <div class="absolute -top-4 -left-4 text-2xl kawaii-float" style="animation-delay: 0.5s">💫</div>
-                        <div class="absolute -bottom-4 -right-4 text-xl kawaii-float" style="animation-delay: 1s">✨</div>
-                        <div class="absolute -bottom-4 -left-4 text-xl kawaii-float" style="animation-delay: 1.5s">💖</div>
+                        <div id="timer-display" class="text-7xl md:text-9xl font-bold mb-4 relative z-10">25:00</div>
+                        <!-- Studio Ghibli inspired floating elements -->
+                        <div class="absolute -top-6 -right-6 w-12 h-12 bg-gradient-to-br from-blue-200 to-blue-400 rounded-full kawaii-float shadow-lg flex items-center justify-center">☁️</div>
+                        <div class="absolute -top-6 -left-6 w-10 h-10 bg-gradient-to-br from-purple-200 to-purple-400 rounded-full kawaii-float shadow-lg flex items-center justify-center" style="animation-delay: 0.5s">💫</div>
+                        <div class="absolute -bottom-6 -right-6 w-8 h-8 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-full kawaii-float shadow-lg flex items-center justify-center" style="animation-delay: 1s">✨</div>
+                        <div class="absolute -bottom-6 -left-6 w-10 h-10 bg-gradient-to-br from-pink-200 to-pink-400 rounded-full kawaii-float shadow-lg flex items-center justify-center" style="animation-delay: 1.5s">💖</div>
+                        <!-- Subtle background glow -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-sky-100/20 to-sky-200/20 rounded-3xl -z-10"></div>
                     </div>
                     <div id="timer-mode-display" class="text-xl text-sky-700 mb-8">Focus Time (25m) ☁️🐕☁️ ✨</div>
                     <div class="flex items-center gap-4">
-                        <button id="start-pause-btn" class="btn btn-primary text-xl px-8 py-3">Start ✨</button>
-                        <button id="reset-btn" class="btn btn-secondary">Reset 🔄</button>
+                        <button id="start-pause-btn" class="kawaii-button text-xl px-8 py-3 rounded-lg font-semibold text-sky-600">Start ✨</button>
+                        <button id="reset-btn" class="kawaii-button text-xl px-6 py-3 rounded-lg font-semibold text-sky-600">Reset 🔄</button>
                     </div>
+                    <p class="text-sm text-sky-700 mt-3 opacity-75">Press spacebar to start/pause ⌨️✨</p>
                      <div id="mode-controls" class="mt-8">
                         <div class="mb-2"><span class="text-sm uppercase font-semibold text-sky-700">Focus ☁️</span></div>
                         <div class="flex items-center gap-2 mb-4">
@@ -226,25 +285,15 @@
                     <div class="mb-6 p-4 glassmorphism rounded-lg">
                         <h3 class="font-semibold mb-3">Team Todos (AI assisted)</h3>
                         <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end mb-3">
-                            <div class="md:col-span-2">
+                            <div class="md:col-span-4">
                                 <label for="todo-idea-input" class="text-sm">Task idea</label>
-                                <input id="todo-idea-input" type="text" placeholder="e.g., Draft weekly update" class="w-full bg-white/20 p-2 rounded-md focus:outline-none placeholder-white/50">
+                                <input id="todo-idea-input" type="text" placeholder="e.g., Draft weekly update" class="w-full bg-white/20 p-2 rounded-md focus:outline-none placeholder-white/50" aria-label="Task idea (press Enter to add)">
                             </div>
-                            <div>
-                                <label for="todo-owner-select" class="text-sm">Owner</label>
-                                <select id="todo-owner-select" class="w-full bg-white/20 p-2 rounded-md focus:outline-none">
-                                    <option value="__auto__">Auto (AI)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="todo-due-input" class="text-sm">Due</label>
-                                <input id="todo-due-input" type="datetime-local" class="w-full bg-white/20 p-2 rounded-md focus:outline-none">
-                            </div>
-                            <div class="flex gap-2">
-                                <button id="todo-ai-suggest-btn" class="btn btn-secondary w-full">AI Suggest</button>
-                                <button id="todo-add-btn" class="btn btn-primary w-full">Add</button>
+                            <div class="flex gap-2 md:col-span-1">
+                                <button id="todo-add-btn" class="btn btn-primary w-full" title="Add (AI will set owner & due)">Add</button>
                             </div>
                         </div>
+                        <div class="text-xs text-sky-700 mb-2">Owner and due date are picked automatically by AI. You can reorder and edit the task text later.</div>
                         <div id="todo-status" class="text-sm text-sky-800"></div>
                     </div>
                     <div id="todo-list" class="flex-1 overflow-y-auto space-y-2 pr-2"></div>
@@ -303,7 +352,11 @@
         const createSessionBtn = document.getElementById('create-session-btn');
         const teamNameInput = document.getElementById('team-name-input');
         const userNameSetupInput = document.getElementById('user-name-setup-input');
+    const shuffleTeamNameBtn = document.getElementById('shuffle-team-name-btn');
+    const shuffleUserNameBtn = document.getElementById('shuffle-user-name-btn');
+    const teamLinkSlug = document.getElementById('team-link-slug');
         const startSessionBtn = document.getElementById('start-session-btn');
+        const enterHint = document.getElementById('enter-hint');
         const userNameInput = document.getElementById('user-name-input');
         const userAvatar = document.getElementById('user-avatar');
         const timerDisplay = document.getElementById('timer-display');
@@ -322,6 +375,7 @@
         const viewChatBtn = document.getElementById('chat-view-btn');
         const leaveBtn = document.getElementById('leave-btn');
         const soundToggleBtn = document.getElementById('sound-toggle-btn');
+    const testAlarmBtn = document.getElementById('test-alarm-btn');
         const timerView = document.getElementById('timer-view');
         const plannerView = document.getElementById('planner-view');
         const participantsView = document.getElementById('participants-view');
@@ -346,9 +400,6 @@
     const openGroqConsoleBtn = document.getElementById('open-groq-console-btn');
     // Todos UI
     const todoIdeaInput = document.getElementById('todo-idea-input');
-    const todoOwnerSelect = document.getElementById('todo-owner-select');
-    const todoDueInput = document.getElementById('todo-due-input');
-    const todoAISuggestBtn = document.getElementById('todo-ai-suggest-btn');
     const todoAddBtn = document.getElementById('todo-add-btn');
     const todoList = document.getElementById('todo-list');
     const todoStatus = document.getElementById('todo-status');
@@ -367,8 +418,12 @@
         let audioCtx;
         let scheduledEvents = [];
         let lastCheckedMinute = -1;
-        let isSoundEnabled = localStorage.getItem('pompom_sound_enabled') === 'true';
+    let isSoundEnabled = localStorage.getItem('pompom_sound_enabled') === 'true';
     let localTodos = [];
+    let currentTodos = [];
+    // Map of participant name -> IANA time zone
+    let participantsTZByName = {};
+    let nextTodoOrder = 0;
 
         // Local-only state when offline (no Firebase configured)
         let localSessionState = {
@@ -404,10 +459,18 @@
                 console.error("Firebase initialization failed.", e);
                 OFFLINE_MODE = true;
             }
+            // Default sound ON for first-time users
+            if (localStorage.getItem('pompom_sound_enabled') === null) {
+                isSoundEnabled = true;
+                localStorage.setItem('pompom_sound_enabled', 'true');
+            }
             updateSoundUI();
+            // Initialize settings status once so the modal shows accurate info
+            try { updateSettingsStatusUI(); } catch {}
             if (!OFFLINE_MODE) handleAuthentication();
             handleRouting();
             setupEventListeners();
+            validateStartCta();
             // If landing directly on session page in offline mode, ensure timer UI renders once
             if (OFFLINE_MODE) renderTimerFromLocalState();
         }
@@ -511,7 +574,12 @@
                 window.location.hash = `#/${name}`;
                 handleRouting();
             });
-            sessionNameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') createSessionBtn.click(); });
+            sessionNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    createSessionBtn.click();
+                }
+            });
 
             startSessionBtn.addEventListener('click', () => {
                 // Get the team name and user name from the inputs
@@ -520,7 +588,7 @@
 
                 // Update the session ID if team name was changed
                 if (teamName !== sessionId) {
-                    sessionId = teamName.replace(/[^a-zA-Z0-9-]/g, '');
+                    sessionId = toSlug(teamName);
                     try { window.history.pushState({}, sessionId, `/${sessionId}`); } catch {}
                     window.location.hash = `#/${sessionId}`;
                 }
@@ -543,6 +611,26 @@
                     joinSession();
                 }
             });
+
+            // Allow pressing Enter to start
+            teamNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    startSessionBtn.click();
+                }
+            });
+            userNameSetupInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    startSessionBtn.click();
+                }
+            });
+            teamNameInput.addEventListener('input', () => { updateTeamLinkPreview(); validateStartCta(); });
+            userNameSetupInput.addEventListener('input', validateStartCta);
+            // Shuffle buttons
+            shuffleTeamNameBtn.addEventListener('click', () => { teamNameInput.value = generateRandomTeamName().replace('-', ' '); updateTeamLinkPreview(); validateStartCta(); teamNameInput.focus(); });
+            shuffleUserNameBtn.addEventListener('click', () => { userNameSetupInput.value = generateRandomUserName(); userNameSetupInput.focus(); });
+            // Live link preview handled above with validation
             
             userNameInput.addEventListener('click', () => { userNameInput.readOnly = false; userNameInput.focus(); });
             userNameInput.addEventListener('blur', updateName);
@@ -564,15 +652,40 @@
             viewChatBtn.addEventListener('click', () => switchView('chat'));
 
             scheduleAddBtn.addEventListener('click', scheduleNewPomodoro);
+            scheduleDescInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') scheduleNewPomodoro(); });
             sendChatBtn.addEventListener('click', sendChatMessage);
             chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
             
             soundToggleBtn.addEventListener('click', toggleSound);
+            testAlarmBtn.addEventListener('click', () => { initAudioAndNotifications(); playAlarm(); showNotification({ description: 'Test alarm' }); });
             endSessionDismissBtn.addEventListener('click', () => endSessionModal.classList.add('hidden'));
             
-            leaveBtn.addEventListener('click', () => {
-                clearInterval(alarmCheckInterval);
-                window.location.href = '/';
+            leaveBtn.addEventListener('click', async () => {
+                // Confirm before leaving
+                if (confirm('Are you sure you want to leave this fluffy cloud team? ☁️💔')) {
+                    try {
+                        // Clean up timers and listeners
+                        clearInterval(timerInterval);
+                        clearInterval(alarmCheckInterval);
+
+                        // Remove user from session if online
+                        if (!OFFLINE_MODE && userId) {
+                            const userRef = getUserRef(userId);
+                            await deleteDoc(userRef);
+                        }
+
+                        // Clear local storage
+                        localStorage.removeItem('sessionId');
+                        localStorage.removeItem('userId');
+
+                        // Return to landing page
+                        window.location.href = '/';
+                    } catch (error) {
+                        console.error('Error leaving session:', error);
+                        // Still navigate away even if cleanup fails
+                        window.location.href = '/';
+                    }
+                }
             });
 
             // Settings modal
@@ -583,8 +696,35 @@
             openGroqConsoleBtn.addEventListener('click', () => { window.open('https://console.groq.com/', '_blank'); });
 
             // Todos
-            todoAISuggestBtn.addEventListener('click', async () => { await suggestAndFillTodo(); });
             todoAddBtn.addEventListener('click', async () => { await addTodo(); });
+            todoIdeaInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTodo(); });
+
+            // Global Enter key handler for name input page
+            document.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    // Check which page is visible and handle accordingly
+                    if (!nameInputPage.classList.contains('hidden')) {
+                        e.preventDefault();
+                        startSessionBtn.click();
+                    } else if (!landingPage.classList.contains('hidden')) {
+                        e.preventDefault();
+                        createSessionBtn.click();
+                    }
+                }
+            });
+
+            // Global spacebar handler for timer control
+            document.addEventListener('keydown', (e) => {
+                // Only handle spacebar on session page and when not typing in inputs
+                if (e.code === 'Space' && !sessionPage.classList.contains('hidden')) {
+                    // Don't trigger if user is typing in an input field
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                        return;
+                    }
+                    e.preventDefault();
+                    startPauseBtn.click();
+                }
+            });
         }
 
         // --- FIRESTORE PATHS ---
@@ -596,7 +736,7 @@
     const getTodosRef = () => collection(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos');
 
         // --- SESSION & USER LOGIC ---
-        async function joinSession() {
+    async function joinSession() {
             if (OFFLINE_MODE) return;
             try {
                 const sessionRef = getSessionRef();
@@ -604,7 +744,7 @@
                 if (!sessionSnap.exists()) {
                     await setDoc(sessionRef, { mode: 'pomodoro25', lastFocusMode: 'pomodoro25', duration: TIMER_MODES.pomodoro25.duration, isRunning: false, startTime: null, createdAt: serverTimestamp() });
                 }
-                await setDoc(getUserRef(userId), { name: userName, joinedAt: serverTimestamp() });
+        await setDoc(getUserRef(userId), { name: userName, joinedAt: serverTimestamp(), timeZone: getLocalTimeZone() }, { merge: true });
                 startListening();
             } catch (error) { console.error("Error joining session:", error); }
         }
@@ -624,7 +764,7 @@
             if (plannerUnsubscribe) plannerUnsubscribe();
             plannerUnsubscribe = onSnapshot(query(getPlannerRef(), orderBy("time")), updatePlannerUI);
             if (todosUnsubscribe) todosUnsubscribe();
-            todosUnsubscribe = onSnapshot(getTodosRef(), updateTodosUI);
+            todosUnsubscribe = onSnapshot(query(getTodosRef(), orderBy('order')), updateTodosUI);
             if (alarmCheckInterval) clearInterval(alarmCheckInterval);
             alarmCheckInterval = setInterval(checkAlarms, 1000);
         }
@@ -653,6 +793,8 @@
         function populateRandomNames() {
             teamNameInput.value = generateRandomTeamName().replace('-', ' ');
             userNameSetupInput.value = generateRandomUserName();
+            updateTeamLinkPreview();
+            validateStartCta();
         }
 
         function updateUserNameUI() {
@@ -660,7 +802,7 @@
             userAvatar.textContent = userName.split(' ').map(n => n[0]).join('').toUpperCase();
         }
 
-        async function updateName() {
+    async function updateName() {
             userNameInput.readOnly = true;
             const newName = userNameInput.value.trim();
             if (newName && newName !== userName) {
@@ -668,7 +810,7 @@
                 localStorage.setItem('pompom_username', userName);
                 updateUserNameUI();
                 if (!OFFLINE_MODE) {
-                    await setDoc(getUserRef(userId), { name: userName }, { merge: true });
+            await setDoc(getUserRef(userId), { name: userName, timeZone: getLocalTimeZone() }, { merge: true });
                 } else {
                     updateParticipantsOffline();
                 }
@@ -800,15 +942,21 @@
         function updateParticipantsUI(snapshot) {
             participantsList.innerHTML = '';
             participantCount.textContent = snapshot.size;
+            participantsTZByName = {};
             snapshot.docs.forEach(doc => {
                 const user = doc.data();
+                if (user?.name) {
+                    participantsTZByName[user.name] = user.timeZone || participantsTZByName[user.name] || null;
+                }
                 const p = document.createElement('div');
                 p.className = 'p-3 bg-white/10 rounded-lg flex items-center gap-3';
-                p.innerHTML = `<div class="w-8 h-8 rounded-full bg-white flex items-center justify-center font-bold text-sm relative text-sky-600"><div class="absolute -top-1 -right-1 text-xs kawaii-float">☁️</div><div class="absolute -bottom-1 -left-1 text-xs kawaii-float" style="animation-delay: 0.5s">✨</div>${user.name.split(' ').map(n=>n[0]).join('').toUpperCase()}</div><span class="font-semibold text-sky-800">${user.name}</span>`;
+                p.innerHTML = `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-white to-sky-100 flex items-center justify-center font-bold text-sm relative text-sky-600 shadow-lg border-2 border-white/50"><div class="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-br from-blue-200 to-blue-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs">☁️</div><div class="absolute -bottom-1 -left-1 w-3 h-3 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs" style="animation-delay: 0.5s">✨</div>${user.name.split(' ').map(n=>n[0]).join('').toUpperCase()}</div><span class="font-semibold text-sky-800">${user.name}</span>`;
                 participantsList.appendChild(p);
             });
             // Refresh owner dropdown
             refreshOwnerSelect(snapshot.docs.map(d => d.data().name));
+            // Rerender todos to reflect any updated time zones in due display
+            try { if (Array.isArray(currentTodos) && currentTodos.length) renderTodos(currentTodos); } catch {}
         }
 
         function updateParticipantsOffline() {
@@ -816,10 +964,13 @@
             participantCount.textContent = 1;
             const p = document.createElement('div');
             const name = userName || getUserNameFromStorage();
+            participantsTZByName = { [name]: getLocalTimeZone() };
             p.className = 'p-3 bg-white/10 rounded-lg flex items-center gap-3';
-            p.innerHTML = `<div class="w-8 h-8 rounded-full bg-white flex items-center justify-center font-bold text-sm relative text-sky-600"><div class="absolute -top-1 -right-1 text-xs kawaii-float">☁️</div><div class="absolute -bottom-1 -left-1 text-xs kawaii-float" style="animation-delay: 0.5s">✨</div>${name.split(' ').map(n=>n[0]).join('').toUpperCase()}</div><span class="font-semibold text-sky-800">${name}</span>`;
+            p.innerHTML = `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-white to-sky-100 flex items-center justify-center font-bold text-sm relative text-sky-600 shadow-lg border-2 border-white/50"><div class="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-br from-blue-200 to-blue-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs">☁️</div><div class="absolute -bottom-1 -left-1 w-3 h-3 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs" style="animation-delay: 0.5s">✨</div>${name.split(' ').map(n=>n[0]).join('').toUpperCase()}</div><span class="font-semibold text-sky-800">${name}</span>`;
             participantsList.appendChild(p);
             refreshOwnerSelect([name]);
+            // Rerender todos to reflect local time zone
+            try { if (Array.isArray(currentTodos) && currentTodos.length) renderTodos(currentTodos); } catch {}
         }
 
         function updateChatUI(snapshot) {
@@ -867,18 +1018,36 @@
 
         function playAlarm() {
             if (!isSoundEnabled || !audioCtx) return;
-            const playNote = (freq, startTime, duration) => {
+            // Gentle chime: short arpeggio with envelope and low-pass filter
+            const sequence = [
+                { freq: 784 },    // G5
+                { freq: 880 },    // A5
+                { freq: 987.77 }, // B5
+                { freq: 1174.66 } // D6
+            ];
+            const start = audioCtx.currentTime;
+            const baseGain = 0.15;
+            const noteDur = 0.18;
+            const gap = 0.06;
+            sequence.forEach((n, i) => {
+                const t0 = start + i * (noteDur + gap);
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                osc.connect(gain);
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 4000;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(n.freq, t0);
+                osc.connect(filter);
+                filter.connect(gain);
                 gain.connect(audioCtx.destination);
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                osc.start(startTime);
-                osc.stop(startTime + duration);
-            };
-            playNote(880, audioCtx.currentTime, 0.1);
-            playNote(1046.50, audioCtx.currentTime + 0.15, 0.1);
+                // Envelope: quick attack, short decay
+                gain.gain.setValueAtTime(0.0001, t0);
+                gain.gain.exponentialRampToValueAtTime(baseGain, t0 + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t0 + noteDur);
+                osc.start(t0);
+                osc.stop(t0 + noteDur + 0.02);
+            });
         }
 
         function showNotification(event) {
@@ -947,6 +1116,30 @@
                     plannerList.appendChild(item);
                 });
         }
+        function toSlug(s) {
+            return (s || '')
+                .toString()
+                .trim()
+                .toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^a-z0-9-]/g, '')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+        }
+        function updateTeamLinkPreview() {
+            try { teamLinkSlug.textContent = toSlug(teamNameInput.value) || 'your-team'; } catch {}
+        }
+        function validateStartCta() {
+            const hasTeam = !!(teamNameInput?.value || '').trim();
+            const hasUser = !!(userNameSetupInput?.value || '').trim();
+            const ready = hasTeam && hasUser;
+            if (startSessionBtn) {
+                startSessionBtn.disabled = !ready;
+                startSessionBtn.classList.toggle('opacity-60', !ready);
+                startSessionBtn.classList.toggle('cursor-not-allowed', !ready);
+            }
+            if (enterHint) enterHint.classList.toggle('hidden', !ready);
+        }
         
         function toggleSound() {
             isSoundEnabled = !isSoundEnabled;
@@ -999,15 +1192,8 @@
         }
 
         function refreshOwnerSelect(names) {
-            if (!todoOwnerSelect) return;
-            const current = new Set();
-            Array.from(todoOwnerSelect.options).forEach(o => current.add(o.value));
-            names.forEach(n => {
-                if (!current.has(n)) {
-                    const opt = document.createElement('option');
-                    opt.value = n; opt.textContent = n; todoOwnerSelect.appendChild(opt);
-                }
-            });
+            // Owner selection is automatic; keep for backward compatibility (no-op)
+            return;
         }
 
         function getTeamMembersForAI() {
@@ -1030,51 +1216,83 @@
             return null;
         }
 
+        function getLocalTimeZone() {
+            try { return Intl.DateTimeFormat().resolvedOptions().timeZone || null; } catch { return null; }
+        }
+
+        function formatDateTimeForOwner(dueISO, ownerName) {
+            if (!dueISO) return '—';
+            const ownerTZ = participantsTZByName[ownerName] || null;
+            try {
+                const dt = new Date(dueISO);
+                if (isNaN(dt.getTime())) return '—';
+                const opts = { dateStyle: 'medium', timeStyle: 'short', hour12: true, timeZone: ownerTZ || undefined };
+                return new Intl.DateTimeFormat(undefined, opts).format(dt) + (ownerTZ ? ` (${ownerTZ.split('/').pop().replace('_',' ')})` : '');
+            } catch {
+                try { return new Date(dueISO).toLocaleString(); } catch { return '—'; }
+            }
+        }
+
         function toISOFromAny(suggested) {
             if (!suggested) return '';
-            if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(suggested)) return suggested.slice(0,16);
+            // If it's a local-like string (no timezone), interpret as local then convert to UTC ISO
+            if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(suggested)) {
+                const d = new Date(suggested);
+                if (!isNaN(d.getTime())) return d.toISOString();
+            }
             const d = new Date(suggested);
-            if (!isNaN(d.getTime())) {
+            if (!isNaN(d.getTime())) return d.toISOString();
+            return '';
+        }
+
+        async function suggestTodo(idea) {
+            const members = getTeamMembersForAI();
+            const nowISO = new Date().toISOString();
+            const prompt = `You are an assistant helping a remote team manage todos. Improve the task text, pick an owner from this list: ${JSON.stringify(members)} (must be exactly one of these names), and suggest a due datetime within the next 7 days. Respond ONLY as compact JSON with keys: improvedText, owner, due. due should be ISO like 2025-08-13T17:00.\nTask: ${idea}\nCurrent time: ${nowISO}`;
+            const res = await callGroqAPI(prompt);
+            const obj = extractJSON(res) || {};
+            // Fallback due: next day at 17:00 local
+            const fallbackDue = (() => {
+                const d = new Date();
+                d.setDate(d.getDate() + 1);
+                d.setHours(17, 0, 0, 0);
                 const yyyy = d.getFullYear();
                 const mm = String(d.getMonth()+1).padStart(2,'0');
                 const dd = String(d.getDate()).padStart(2,'0');
                 const hh = String(d.getHours()).padStart(2,'0');
                 const min = String(d.getMinutes()).padStart(2,'0');
                 return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
-            }
-            return '';
-        }
-
-        async function suggestAndFillTodo() {
-            if (!todoIdeaInput) return;
-            const idea = (todoIdeaInput.value || '').trim();
-            if (!idea) { if (todoStatus) todoStatus.textContent = 'Enter a task idea first.'; return; }
-            if (todoStatus) todoStatus.textContent = 'Asking AI...';
-            const members = getTeamMembersForAI();
-            const nowISO = new Date().toISOString();
-            const prompt = `You are an assistant helping a remote team manage todos. Improve the task text, pick an owner from this list: ${JSON.stringify(members)} (must be exactly one of these names), and suggest a due datetime within the next 7 days. Respond ONLY as compact JSON with keys: improvedText, owner, due. due should be ISO like 2025-08-13T17:00.\nTask: ${idea}\nCurrent time: ${nowISO}`;
-            const res = await callGroqAPI(prompt);
-            const obj = extractJSON(res) || {};
-            if (obj.improvedText) todoIdeaInput.value = obj.improvedText;
-            if (obj.owner) { refreshOwnerSelect([obj.owner]); if (todoOwnerSelect) todoOwnerSelect.value = obj.owner; }
-            if (obj.due && todoDueInput) { const iso = toISOFromAny(obj.due); if (iso) todoDueInput.value = iso; }
-            if (todoStatus) todoStatus.textContent = (obj.improvedText || obj.owner || obj.due) ? 'AI suggestions applied.' : (res || 'AI had no suggestion.');
+            })();
+            return {
+                text: obj.improvedText || idea,
+                ownerName: obj.owner || (userName || getUserNameFromStorage()),
+                due: obj.due ? toISOFromAny(obj.due) : fallbackDue
+            };
         }
 
         async function addTodo() {
             if (!todoIdeaInput) return;
-            let text = (todoIdeaInput.value || '').trim();
-            let owner = todoOwnerSelect ? todoOwnerSelect.value : '__auto__';
-            let due = todoDueInput ? todoDueInput.value : '';
-            if (!text) { if (todoStatus) todoStatus.textContent = 'Task text required.'; return; }
-            if (owner === '__auto__' || !due) { await suggestAndFillTodo(); owner = todoOwnerSelect?.value || owner; due = todoDueInput?.value || due; }
-            const todo = { text, ownerName: owner === '__auto__' ? (userName || getUserNameFromStorage()) : owner, due: due || '', createdBy: userName || getUserNameFromStorage(), createdAt: new Date().toISOString() };
+            const idea = (todoIdeaInput.value || '').trim();
+            if (!idea) { if (todoStatus) todoStatus.textContent = 'Task text required.'; return; }
+            if (todoStatus) todoStatus.textContent = 'Asking AI...';
+            const suggestion = await suggestTodo(idea);
+            // Prefer a due parsed from the user's idea text if present (e.g., "today", "in 2 days")
+            const dueFromText = parseDueOrNull(idea) || parseDueOrNull(suggestion.text);
+            // Extract tags from the suggested text (supports #tags)
+            const { cleanText, tags } = extractTagsFromText(suggestion.text);
+            const todo = {
+                text: cleanText,
+                ownerName: suggestion.ownerName,
+                due: toISOFromAny(dueFromText || suggestion.due || '') || '',
+                tags: tags,
+                createdBy: userName || getUserNameFromStorage(),
+                createdAt: new Date().toISOString(),
+                order: nextTodoOrder++
+            };
             try {
                 if (OFFLINE_MODE) { todo.id = `${Date.now()}`; localTodos.push(todo); renderTodosLocal(); }
                 else { await addDoc(getTodosRef(), todo); }
                 if (todoIdeaInput) todoIdeaInput.value = '';
-                if (todoOwnerSelect) todoOwnerSelect.value = '__auto__';
-                if (todoDueInput) todoDueInput.value = '';
                 if (todoStatus) todoStatus.textContent = 'Added.';
             } catch (e) {
                 console.error('Add todo failed', e);
@@ -1084,11 +1302,23 @@
 
         function updateTodosUI(snapshot) {
             const todos = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-            renderTodos(todos);
+            // Normalize order for any missing items
+            const withOrder = todos.map((t, i) => ({ ...t, order: typeof t.order === 'number' ? t.order : i }));
+            const sorted = withOrder.slice().sort((a,b) => a.order - b.order);
+            currentTodos = sorted;
+            nextTodoOrder = sorted.length ? Math.max(...sorted.map(t => t.order)) + 1 : 0;
+            renderTodos(sorted);
         }
 
-        function renderTodosLocal() { renderTodos(localTodos); }
-        function renderTodos(items) {
+        function renderTodosLocal() {
+            // Ensure order
+            localTodos = localTodos.map((t, i) => ({ ...t, order: typeof t.order === 'number' ? t.order : i }));
+            const sorted = localTodos.slice().sort((a,b) => a.order - b.order);
+            currentTodos = sorted;
+            nextTodoOrder = sorted.length ? Math.max(...sorted.map(t => t.order)) + 1 : 0;
+            renderTodos(sorted);
+        }
+    function renderTodos(items) {
             if (!todoList) return;
             todoList.innerHTML = '';
             if (!items || items.length === 0) {
@@ -1098,14 +1328,338 @@
                 todoList.appendChild(empty);
                 return;
             }
-            const sorted = items.slice().sort((a,b) => (a.due||'zzz').localeCompare(b.due||'zzz'));
-            sorted.forEach(t => {
+            items.forEach((t, idx) => {
                 const div = document.createElement('div');
-                div.className = 'p-3 bg-white/10 rounded-lg flex items-center gap-4';
-                const dueText = t.due ? new Date(t.due).toLocaleString() : '—';
-                div.innerHTML = `<div class="flex-1"><div class="font-semibold text-sky-900">${t.text}</div><div class="text-sm text-sky-700">Owner: ${t.ownerName} • Due: ${dueText}</div></div>`;
+                div.className = 'p-3 bg-white/10 rounded-lg flex items-center gap-3';
+                div.setAttribute('draggable', 'true');
+                div.dataset.id = t.id || String(t.createdAt || idx);
+                div.dataset.order = String(t.order ?? idx);
+
+                const dragHandle = document.createElement('div');
+                dragHandle.className = 'cursor-move text-sky-700 select-none';
+                dragHandle.title = 'Drag to reorder';
+                dragHandle.innerHTML = '⋮⋮';
+
+                const content = document.createElement('div');
+                content.className = 'flex-1';
+                const dueText = formatDateTimeForOwner(t.due, t.ownerName || '');
+        const tagsHtml = (t.tags && t.tags.length) ? `<div class=\"mt-1 flex flex-wrap gap-1\">${t.tags.map(tag => `<span class=\"text-xs px-2 py-0.5 rounded-full bg-sky-200/70 text-sky-800\">#${escapeHtml(tag)}</span>`).join('')}</div>` : '';
+        content.innerHTML = `<div class=\"font-semibold text-sky-900 todo-text\">${escapeHtml(t.text || '')}</div><div class=\"text-sm text-sky-700\">Owner: ${escapeHtml(t.ownerName || '')} • Due: ${escapeHtml(dueText)}</div>${tagsHtml}`;
+
+                const editBtn = document.createElement('button');
+                editBtn.className = 'btn btn-secondary px-3 py-1 text-sm';
+                editBtn.textContent = 'Edit';
+                editBtn.addEventListener('click', () => startInlineEdit(div, t));
+
+                div.appendChild(dragHandle);
+                div.appendChild(content);
+                div.appendChild(editBtn);
+
+                // Drag and drop events
+                div.addEventListener('dragstart', handleDragStart);
+                div.addEventListener('dragover', handleDragOver);
+                div.addEventListener('drop', handleDrop);
+                div.addEventListener('dragend', handleDragEnd);
+
                 todoList.appendChild(div);
             });
+        }
+
+        // Inline edit for todo: text, owner, due (natural language), tags.
+        function startInlineEdit(container, todo) {
+            const content = container.querySelector('.flex-1');
+            if (!content) return;
+            const members = getTeamMembersForAI();
+            ensureOwnerDatalist(members);
+            container.setAttribute('draggable', 'false');
+
+            const original = { text: todo.text || '', ownerName: todo.ownerName || (userName || getUserNameFromStorage()), due: todo.due || '', tags: Array.isArray(todo.tags) ? todo.tags : [] };
+            const dueDisplay = original.due ? formatDateTimeForOwner(original.due, original.ownerName) : '';
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'w-full grid grid-cols-1 md:grid-cols-4 gap-2 items-start';
+
+            const textInput = document.createElement('input');
+            textInput.type = 'text';
+            textInput.value = original.text;
+            textInput.placeholder = 'Task description';
+            textInput.className = 'w-full bg-white text-sky-800 px-2 py-2 rounded-md focus:outline-none';
+
+            const ownerInput = document.createElement('input');
+            ownerInput.type = 'text';
+            ownerInput.value = original.ownerName;
+            ownerInput.setAttribute('list', 'owner-datalist');
+            ownerInput.placeholder = 'Owner (name)';
+            ownerInput.className = 'w-full bg-white text-sky-800 px-2 py-2 rounded-md focus:outline-none';
+
+            const dueInput = document.createElement('input');
+            dueInput.type = 'text';
+            dueInput.value = dueDisplay || '';
+            dueInput.placeholder = 'Due (e.g., "tomorrow 5pm", "in 2 days", "Fri 3pm")';
+            dueInput.className = 'w-full bg-white text-sky-800 px-2 py-2 rounded-md focus:outline-none';
+
+            const tagsInput = document.createElement('input');
+            tagsInput.type = 'text';
+            tagsInput.value = original.tags.map(t => `#${t}`).join(' ');
+            tagsInput.placeholder = 'Tags (e.g., #bug urgent)';
+            tagsInput.className = 'w-full bg-white text-sky-800 px-2 py-2 rounded-md focus:outline-none';
+
+            const actions = document.createElement('div');
+            actions.className = 'col-span-1 md:col-span-4 flex gap-2 mt-1';
+            const saveBtn = document.createElement('button');
+            saveBtn.className = 'btn btn-secondary px-4';
+            saveBtn.textContent = 'Save';
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'btn btn-primary px-4';
+            cancelBtn.textContent = 'Cancel';
+            actions.appendChild(saveBtn);
+            actions.appendChild(cancelBtn);
+
+            // Replace content
+            content.innerHTML = '';
+            const label1 = document.createElement('div'); label1.className = 'text-xs text-sky-700 md:col-span-4'; label1.textContent = 'Edit and press Enter to save, or click Save. Natural dates and #tags are OK.';
+            wrapper.appendChild(textInput);
+            wrapper.appendChild(ownerInput);
+            wrapper.appendChild(dueInput);
+            wrapper.appendChild(tagsInput);
+            content.appendChild(label1);
+            content.appendChild(wrapper);
+            content.appendChild(actions);
+
+            const doCancel = () => { renderTodos(currentTodos); };
+            cancelBtn.addEventListener('click', doCancel);
+
+            const doSave = async () => {
+                const input = {
+                    text: (textInput.value || '').trim(),
+                    owner: (ownerInput.value || '').trim(),
+                    due: (dueInput.value || '').trim(),
+                    tags: (tagsInput.value || '').trim()
+                };
+                const normalized = await normalizeTodoFields(input, members);
+                // Merge tags from text (hashtags) and tags input
+                const tagSet = new Set([...(normalized.tags || []), ...parseTagsFromString(input.tags), ...extractTagsFromText(normalized.text).tags, ...extractTagsFromText(input.text).tags]);
+                const cleanText = extractTagsFromText(normalized.text).cleanText;
+                const updates = {
+                    text: cleanText || original.text,
+                    ownerName: normalized.ownerName || original.ownerName,
+                    due: toISOFromAny(normalized.due || original.due) || '',
+                    tags: Array.from(tagSet)
+                };
+                try {
+                    if (OFFLINE_MODE) {
+                        const idx = localTodos.findIndex(x => x.id === todo.id);
+                        if (idx >= 0) Object.assign(localTodos[idx], updates);
+                        renderTodosLocal();
+                    } else {
+                        const ref = doc(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos', todo.id);
+                        await updateDoc(ref, updates);
+                    }
+                } catch (e) { console.error('Edit failed', e); }
+            };
+
+            saveBtn.addEventListener('click', doSave);
+            [textInput, ownerInput, dueInput, tagsInput].forEach(el => {
+                el.addEventListener('keypress', (e) => { if (e.key === 'Enter') doSave(); });
+                el.addEventListener('keydown', (e) => { if (e.key === 'Escape') doCancel(); });
+            });
+        }
+
+        function ensureOwnerDatalist(members) {
+            let dl = document.getElementById('owner-datalist');
+            if (!dl) {
+                dl = document.createElement('datalist');
+                dl.id = 'owner-datalist';
+                document.body.appendChild(dl);
+            }
+            dl.innerHTML = '';
+            members.forEach(n => { const opt = document.createElement('option'); opt.value = n; dl.appendChild(opt); });
+        }
+
+        async function normalizeTodoFields(input, members) {
+            const fallback = {};
+            // Local owner match
+            const owner = bestMatchOwner(input.owner, members) || (userName || getUserNameFromStorage());
+            // Local due parse
+            const dueLocal = normalizeDueLocal(input.due);
+            fallback.ownerName = owner;
+            fallback.due = dueLocal;
+            fallback.text = input.text || '';
+            fallback.tags = parseTagsFromString(input.tags);
+
+            const key = getGroqAPIKey();
+            if (!key) return fallback;
+            try {
+                const nowISO = new Date().toISOString();
+                const prompt = `Normalize this todo for a team. Team members: ${JSON.stringify(members)}. Pick owner as the best match from that list. Extract tags from text or tags string (hashtags like #bug and plain terms) as an array of lower-case words without '#'. Convert the due string to an ISO local date-time (YYYY-MM-DDTHH:MM) within 7 days if it is relative (like 'today', 'tomorrow', 'in 2 days', 'fri 3pm'); if no due provided, set to tomorrow 17:00 local. Respond ONLY as JSON with keys: text, ownerName, due, tags.\nInput: ${JSON.stringify(input)}\nNow: ${nowISO}`;
+                const res = await callGroqAPI(prompt);
+                const obj = extractJSON(res) || {};
+                const dueISO = toISOFromAny(obj.due) || fallback.due;
+                const ownerName = (obj.ownerName || obj.owner || '').trim();
+                const ownerFixed = bestMatchOwner(ownerName, members) || fallback.ownerName;
+                const tags = Array.isArray(obj.tags) ? obj.tags.map(t => String(t).toLowerCase().replace(/^#/,'')).filter(Boolean) : fallback.tags;
+                return { text: obj.text || fallback.text, ownerName: ownerFixed, due: dueISO, tags };
+            } catch (e) {
+                console.warn('AI normalize failed, using fallback', e);
+                return fallback;
+            }
+        }
+
+        function bestMatchOwner(inputName, members) {
+            const me = (userName || getUserNameFromStorage());
+            if (!members || !members.length) return me;
+            const norm = (s) => (s||'').toLowerCase().trim();
+            const target = norm(inputName);
+            if (!target) return me;
+            // exact
+            const exact = members.find(m => norm(m) === target);
+            if (exact) return exact;
+            // startsWith any token
+            const tokens = target.split(/\s+/).filter(Boolean);
+            const sw = members.find(m => tokens.some(t => norm(m).startsWith(t)));
+            if (sw) return sw;
+            // includes
+            const inc = members.find(m => tokens.some(t => norm(m).includes(t)));
+            if (inc) return inc;
+            return me;
+        }
+
+        function normalizeDueLocal(text) {
+            const t = (text||'').trim().toLowerCase();
+            const d = new Date();
+            const setTime = (hh=17, mm=0) => { d.setHours(hh, mm, 0, 0); };
+            const fmt = (dt) => {
+                const yyyy = dt.getFullYear();
+                const mm = String(dt.getMonth()+1).padStart(2,'0');
+                const dd = String(dt.getDate()).padStart(2,'0');
+                const hh = String(dt.getHours()).padStart(2,'0');
+                const min = String(dt.getMinutes()).padStart(2,'0');
+                return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+            };
+            if (!t) { d.setDate(d.getDate()+1); setTime(); return fmt(d); }
+            const weekdayMap = { sunday:0, monday:1, tuesday:2, wednesday:3, thursday:4, friday:5, saturday:6, sun:0, mon:1, tue:2, tues:2, wed:3, thu:4, thur:4, thurs:4, fri:5, sat:6 };
+            const timeMatch = t.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/);
+            const setFromTime = () => {
+                if (!timeMatch) { setTime(); return; }
+                let hh = parseInt(timeMatch[1],10);
+                const mm = timeMatch[2] ? parseInt(timeMatch[2],10) : 0;
+                const ap = timeMatch[3];
+                if (ap) {
+                    if (ap === 'pm' && hh < 12) hh += 12;
+                    if (ap === 'am' && hh === 12) hh = 0;
+                }
+                setTime(hh, mm);
+            };
+            // today/tomorrow
+            if (/\btoday\b/.test(t)) {
+                if (!timeMatch) {
+                    const now = new Date();
+                    const cand = new Date(d);
+                    cand.setHours(now.getHours()+1, 0, 0, 0); // next round hour today
+                    return fmt(cand);
+                }
+                setFromTime();
+                return fmt(d);
+            }
+            if (/\btomorrow\b/.test(t)) { d.setDate(d.getDate()+1); setFromTime(); return fmt(d); }
+            // in X days/hours
+            const inDays = t.match(/in\s+(\d+)\s+days?/);
+            if (inDays) { d.setDate(d.getDate()+parseInt(inDays[1],10)); setFromTime(); return fmt(d); }
+            const inHours = t.match(/in\s+(\d+)\s+hours?/);
+            if (inHours) { d.setHours(d.getHours()+parseInt(inHours[1],10)); setFromTime(); return fmt(d); }
+            // weekday or next weekday
+            const wd = Object.keys(weekdayMap).find(w => new RegExp(`\\b${w}\\b`).test(t));
+            if (wd) {
+                const target = weekdayMap[wd];
+                const cur = d.getDay();
+                let diff = (target - cur + 7) % 7;
+                if (diff === 0) diff = 7; // next occurrence
+                d.setDate(d.getDate()+diff);
+                setFromTime();
+                return fmt(d);
+            }
+            // absolute date parse fallback
+            const parsed = new Date(text);
+            if (!isNaN(parsed.getTime())) return fmt(parsed);
+            // default fallback
+            d.setDate(d.getDate()+1); setTime(); return fmt(d);
+        }
+
+        // Detect if text contains recognizable relative/weekday tokens; return normalized ISO or null
+        function parseDueOrNull(text) {
+            const t = (text||'').toLowerCase();
+            const hasToken = /(\btoday\b|\btomorrow\b|in\s+\d+\s+(days?|hours?)\b|\b(sun|mon|tue|tues|wed|thu|thur|thurs|fri|sat|sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b)/i.test(t);
+            if (!hasToken) return null;
+            return normalizeDueLocal(text);
+        }
+
+        // --- Tags helpers ---
+        function parseTagsFromString(str) {
+            const s = (str || '').trim();
+            if (!s) return [];
+            const hash = (s.match(/#[a-z0-9_-]+/gi) || []).map(t => t.slice(1).toLowerCase());
+            const words = s
+                .split(/[\s,]+/)
+                .map(w => w.replace(/^#/, ''))
+                .map(w => w.trim().toLowerCase())
+                .filter(Boolean);
+            return Array.from(new Set([...hash, ...words]));
+        }
+        function extractTagsFromText(text) {
+            const tags = Array.from(new Set((text.match(/#[a-z0-9_-]+/gi) || []).map(t => t.slice(1).toLowerCase())));
+            const cleanText = text.replace(/#[a-z0-9_-]+/gi, '').replace(/\s{2,}/g, ' ').trim();
+            return { cleanText, tags };
+        }
+        function escapeHtml(s) {
+            return String(s || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Drag & drop reorder
+        let draggedId = null;
+        function handleDragStart(e) {
+            draggedId = this.dataset.id;
+            e.dataTransfer.effectAllowed = 'move';
+            this.classList.add('opacity-70');
+        }
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+        async function handleDrop(e) {
+            e.preventDefault();
+            const targetId = this.dataset.id;
+            if (!draggedId || draggedId === targetId) return;
+            const list = currentTodos.slice();
+            const from = list.findIndex(t => (t.id || String(t.createdAt)) === draggedId);
+            const to = list.findIndex(t => (t.id || String(t.createdAt)) === targetId);
+            if (from < 0 || to < 0) return;
+            const [moved] = list.splice(from, 1);
+            list.splice(to, 0, moved);
+            // Reassign order sequentially
+            list.forEach((t, i) => t.order = i);
+            currentTodos = list;
+            renderTodos(list);
+            // Persist
+            if (OFFLINE_MODE) {
+                localTodos = list.map(t => ({ ...t }));
+            } else {
+                try {
+                    // Batch update orders
+                    for (const t of list) {
+                        const ref = doc(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos', t.id);
+                        await updateDoc(ref, { order: t.order });
+                    }
+                } catch (e) { console.error('Reorder failed', e); }
+            }
+        }
+        function handleDragEnd() {
+            this.classList.remove('opacity-70');
+            draggedId = null;
         }
 
     // --- START THE APP ---

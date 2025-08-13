@@ -19,12 +19,14 @@ A productivity timer for remote teams with fluffy cloud spirit!
 - **Smooth Flow**: Click "Start Session! 🎉" to proceed to the timer
 
 ### 🎨 Visual Improvements
+- **Studio Ghibli Inspired**: Magical atmosphere with soft glowing effects
+- **Kawaii Aesthetic**: CSS gradient orbs, floating elements, and gentle animations
 - **Cloud Color Scheme**: Soft gradient from light sky blue to deeper sky blue
-- **Kawaii Decorations**: Floating sparkles ✨, hearts 💖, stars 💫, and clouds ☁️ with custom animations
-- **Fluffy Cloud Mascot**: Cloud Pomeranian ☁️🐕☁️ throughout the interface
-- **Kawaii Elements**: Cute emoticons (◕‿◕), sparkles, and floating decorations
-- **Consistent Theming**: Fluffy cloud kawaii spirit in every screen
-- **Enhanced UX**: Peaceful yet energetic design with delightful kawaii interactions
+- **Interactive Decorations**: Floating Totoro-style elements, soot sprites, and magical sparkles
+- **Fluffy Cloud Mascot**: Cloud Pomeranian with kawaii image placeholders and emoji fallbacks
+- **Enhanced Glassmorphism**: Studio Ghibli-inspired cards with enhanced blur and glow effects
+- **Kawaii Buttons**: Soft gradients with hover animations and magical glow
+- **Consistent Theming**: Fluffy cloud kawaii spirit meets Studio Ghibli magic
 
 ## How to Use
 

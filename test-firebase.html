@@ -6,15 +6,30 @@
     <title>PomPom Firebase Test</title>
     <script src="firebase-config.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .kawaii-button {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            border: 2px solid rgba(56, 189, 248, 0.3);
+            transition: all 0.3s ease;
+        }
+        .kawaii-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(56, 189, 248, 0.3);
+            border-color: rgba(56, 189, 248, 0.5);
+        }
+    </style>
 </head>
 <body class="bg-gradient-to-br from-sky-400 to-sky-600 text-white p-8">
-    <h1 class="text-4xl font-bold mb-4">☁️🐕☁️ PomPom Cloud Firebase Test</h1>
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-4xl font-bold">☁️🐕☁️ PomPom Cloud Firebase Test</h1>
+        <a href="/" class="bg-white text-sky-600 px-4 py-2 rounded-lg font-semibold hover:bg-sky-50 transition-colors">← Back to PomPom ✨</a>
+    </div>
     
     <div class="mb-8">
         <h2 class="text-2xl font-semibold mb-4">Firebase Connection Test</h2>
-        <button id="test-firebase" class="bg-white text-indigo-600 px-4 py-2 rounded mr-4">Test Firebase Connection</button>
-        <button id="test-auth" class="bg-white text-indigo-600 px-4 py-2 rounded mr-4">Test Authentication</button>
-        <button id="test-session" class="bg-white text-indigo-600 px-4 py-2 rounded">Test Session Creation</button>
+        <button id="test-firebase" class="kawaii-button text-sky-600 px-4 py-2 rounded mr-4">Test Firebase Connection 🔥</button>
+        <button id="test-auth" class="kawaii-button text-sky-600 px-4 py-2 rounded mr-4">Test Authentication 🔐</button>
+        <button id="test-session" class="kawaii-button text-sky-600 px-4 py-2 rounded">Test Session Creation ✨</button>
     </div>
 
     <div id="test-results" class="bg-white/10 p-4 rounded-lg">
