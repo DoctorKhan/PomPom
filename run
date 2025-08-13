@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# PomPom App Runner
+echo "🐕 Starting PomPom App..."
+
+if [ "$1" = "test" ]; then
+    echo "🧪 Running tests..."
+    if command -v python3 &> /dev/null; then
+        echo "📡 Starting local server on http://localhost:8000"
+        python3 -m http.server 8000 &
+        SERVER_PID=$!
+        sleep 2
+
+        if command -v open &> /dev/null; then
+            open "http://localhost:8000/test.html"
+        else
+            echo "Open http://localhost:8000/test.html in your browser"
+        fi
+
+        echo "Press Ctrl+C to stop the server"
+        trap "kill $SERVER_PID" EXIT
+        wait $SERVER_PID
+    else
+        echo "Python3 not found. Opening test file directly..."
+        if command -v open &> /dev/null; then
+            open "test.html"
+        else
+            echo "Please open test.html in your browser"
+        fi
+    fi
+elif [ "$1" = "firebase" ]; then
+    echo "🔥 Running Firebase tests..."
+    if command -v python3 &> /dev/null; then
+        echo "📡 Starting local server on http://localhost:8000"
+        python3 -m http.server 8000 &
+        SERVER_PID=$!
+        sleep 2
+
+        if command -v open &> /dev/null; then
+            open "http://localhost:8000/test-firebase.html"
+        else
+            echo "Open http://localhost:8000/test-firebase.html in your browser"
+        fi
+
+        echo "Press Ctrl+C to stop the server"
+        trap "kill $SERVER_PID" EXIT
+        wait $SERVER_PID
+    else
+        echo "Python3 not found. Opening test file directly..."
+        if command -v open &> /dev/null; then
+            open "test-firebase.html"
+        else
+            echo "Please open test-firebase.html in your browser"
+        fi
+    fi
+else
+    echo "🚀 Starting PomPom App..."
+    if command -v python3 &> /dev/null; then
+        echo "📡 Starting local server on http://localhost:8000"
+        python3 -m http.server 8000 &
+        SERVER_PID=$!
+        sleep 2
+        
+        if command -v open &> /dev/null; then
+            open "http://localhost:8000"
+        else
+            echo "Open http://localhost:8000 in your browser"
+        fi
+        
+        echo "Press Ctrl+C to stop the server"
+        trap "kill $SERVER_PID" EXIT
+        wait $SERVER_PID
+    else
+        echo "Python3 not found. Opening index.html directly..."
+        if command -v open &> /dev/null; then
+            open "index.html"
+        else
+            echo "Please open index.html in your browser"
+        fi
+    fi
+fi

@@ -1,0 +1,38 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // PomPom App Security Rules
+    
+    // Allow authenticated users to access artifacts for their app
+    match /artifacts/{appId}/public/data/pompom_sessions/{sessionId} {
+      // Session documents - allow read/write for authenticated users
+      allow read, write: if request.auth != null;
+      
+      // Participants subcollection
+      match /participants/{participantId} {
+        allow read, write: if request.auth != null;
+      }
+      
+      // Chat subcollection
+      match /chat/{messageId} {
+        allow read, write: if request.auth != null;
+      }
+      
+      // Schedule subcollection
+      match /schedule/{eventId} {
+        allow read, write: if request.auth != null;
+      }
+    }
+    
+    // Test documents for connection testing
+    match /test/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Fallback rule - deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

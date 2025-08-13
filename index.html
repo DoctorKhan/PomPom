@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PomPom - A productivity timer for remote teams</title>
+    <script src="firebase-config.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 25%, #7DD3FC 50%, #38BDF8 75%, #0EA5E9 100%); /* Soft cloud blue gradient */
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .btn {
+            @apply py-2 px-4 rounded-lg font-semibold transition-colors duration-200;
+        }
+        .btn-primary {
+            @apply bg-white text-sky-600 hover:bg-sky-50 shadow-lg border border-sky-200;
+        }
+        .btn-secondary {
+            @apply bg-sky-500 hover:bg-sky-600 text-white shadow-lg;
+        }
+        .icon-btn {
+            @apply w-12 h-12 flex items-center justify-center rounded-full cursor-pointer transition-colors duration-200;
+        }
+        .icon-btn.active {
+            @apply bg-white bg-opacity-20;
+        }
+        .icon-btn:hover {
+            @apply bg-white bg-opacity-10;
+        }
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+        .name-input {
+            @apply bg-transparent border-b-2 border-transparent focus:border-white focus:outline-none text-center font-semibold rounded-md focus:bg-black/20;
+        }
+        .mode-btn.active {
+            @apply bg-white text-sky-600 shadow-lg border border-sky-200;
+        }
+        .pom-pom-bounce {
+            animation: pompom-bounce 2s ease-in-out infinite;
+        }
+        @keyframes pompom-bounce {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-10px) rotate(-5deg); }
+            50% { transform: translateY(-5px) rotate(5deg); }
+            75% { transform: translateY(-15px) rotate(-3deg); }
+        }
+    </style>
+</head>
+<body class="text-sky-900">
+
+    <!-- App container -->
+    <div id="app" class="h-screen w-screen flex items-center justify-center p-4">
+
+        <!-- Landing Page -->
+        <div id="landing-page" class="text-center">
+            <!-- Cloud Pomeranian mascot with pom poms -->
+            <div class="mb-6">
+                <div class="text-8xl mb-2">☁️🐕☁️</div>
+                <div class="flex justify-center gap-4 mb-4">
+                    <div class="text-4xl pom-pom-bounce">🎀</div>
+                    <div class="text-4xl pom-pom-bounce" style="animation-delay: 0.5s">🎀</div>
+                </div>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold mb-2">Welcome to PomPom</h1>
+            <p class="text-xl md:text-2xl text-sky-700 mb-8">A productivity timer for remote teams with fluffy cloud spirit!</p>
+            <p class="text-lg text-sky-700 mb-2 uppercase tracking-widest">Create or join a session</p>
+            <div class="flex items-center justify-center max-w-md mx-auto">
+                <span class="text-lg bg-white/20 px-4 py-3 rounded-l-lg text-sky-800 font-semibold">pompom.io/</span>
+                <input id="session-name-input" type="text" placeholder="team-name (or leave blank)" class="w-full bg-white text-sky-800 px-4 py-3 focus:outline-none placeholder-sky-400">
+                <button id="create-session-btn" class="bg-white text-sky-600 px-4 py-3 rounded-r-lg font-bold hover:bg-sky-50 transition-colors shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Name Input Page -->
+        <div id="name-input-page" class="hidden text-center">
+            <!-- Cloud Pomeranian mascot with pom poms -->
+            <div class="mb-6">
+                <div class="text-6xl mb-2">☁️🐕☁️</div>
+                <div class="flex justify-center gap-2 mb-4">
+                    <div class="text-2xl pom-pom-bounce">🎀</div>
+                    <div class="text-2xl pom-pom-bounce" style="animation-delay: 0.3s">🎀</div>
+                </div>
+            </div>
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">Let's get you set up!</h1>
+            <p class="text-lg text-sky-700 mb-8">First, what should we call your fluffy cloud team?</p>
+
+            <div class="max-w-md mx-auto mb-6">
+                <input id="team-name-input" type="text" class="w-full bg-white/30 text-sky-800 px-6 py-4 rounded-lg text-xl text-center font-semibold focus:outline-none focus:bg-white/40 placeholder-sky-600" placeholder="Fluffy Clouds">
+                <p class="text-sm text-sky-700 mt-2">Click to change or keep the suggested name</p>
+            </div>
+
+            <p class="text-lg text-sky-700 mb-4">And what's your name?</p>
+            <div class="max-w-md mx-auto mb-8">
+                <input id="user-name-setup-input" type="text" class="w-full bg-white/30 text-sky-800 px-6 py-4 rounded-lg text-xl text-center font-semibold focus:outline-none focus:bg-white/40 placeholder-sky-600" placeholder="Fluffy Cloud">
+                <p class="text-sm text-sky-700 mt-2">Click to change or keep the suggested name</p>
+            </div>
+
+            <button id="start-session-btn" class="btn btn-primary text-xl px-8 py-4">Start Session! 🎉</button>
+        </div>
+
+        <!-- Session Page -->
+        <div id="session-page" class="hidden h-full w-full glassmorphism rounded-2xl shadow-lg flex">
+            <!-- Sidebar -->
+            <nav class="w-24 p-4 flex flex-col items-center justify-between border-r border-white/30 bg-white/10">
+                <div class="text-center">
+                    <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center font-bold text-2xl mb-2 mx-auto relative text-sky-600" id="user-avatar">
+                        <!-- Cloud Pomeranian decorations -->
+                        <div class="absolute -top-1 -right-1 text-xs">☁️</div>
+                        <div class="absolute -bottom-1 -left-1 text-xs">🎀</div>
+                    </div>
+                    <input type="text" id="user-name-input" class="name-input w-full text-sm text-sky-800" readonly>
+                </div>
+                <div class="space-y-4">
+                    <div id="timer-view-btn" class="icon-btn active" title="Timer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+                    </div>
+                    <div id="planner-view-btn" class="icon-btn" title="Planner">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>
+                    </div>
+                    <div id="participants-view-btn" class="icon-btn" title="Participants">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M15 14s1 0 1-1-1-4-6-4-6 3-6 4 1 1 1 1h10zm-9.995-.944v-.002.002zM3.022 13h9.956a.274.274 0 0 0 .014-.002l.008-.002c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664a1.05 1.05 0 0 0 .022.004zM8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>
+                    </div>
+                    <div id="chat-view-btn" class="icon-btn" title="Chat">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M2.678 11.894a1 1 0 0 1 .287.801 10.97 10.97 0 0 1-.398 2c1.395-.323 2.247-.697 2.634-.893a1 1 0 0 1 .71-.074A8.06 8.06 0 0 0 8 14c3.996 0 7-2.506 7-5.5S11.996 3 8 3 1 5.506 1 8.5c0 1.468.617 2.83 1.678 3.894zm-.493 3.905a21.682 21.682 0 0 1-.713.129c-.2.032-.352-.176-.273-.362a9.68 9.68 0 0 0 .244-.637l.003-.01c.248-.72.45-1.548.524-2.319C.743 11.37 0 9.76 0 8.5 0 4.654 3.582 1 8 1s8 3.654 8 7.5-3.582 7.5-8 7.5c-1.259 0-2.44-.277-3.524-.764-.543-.266-1.13-.52-1.734-.823z"/></svg>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div id="sound-toggle-btn" class="icon-btn" title="Toggle Sound">
+                        <!-- Speaker icon will be injected here -->
+                    </div>
+                    <div id="leave-btn" class="icon-btn" title="Leave Session">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z"/><path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/></svg>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="flex-1 flex flex-col p-4 md:p-8 overflow-hidden">
+                <!-- All views here -->
+                <div id="timer-view" class="flex-1 flex flex-col items-center justify-center">
+                    <div class="relative">
+                        <div id="timer-display" class="text-7xl md:text-9xl font-bold mb-4">25:00</div>
+                        <div class="absolute -top-4 -right-4 text-2xl pom-pom-bounce">☁️</div>
+                        <div class="absolute -top-4 -left-4 text-2xl pom-pom-bounce" style="animation-delay: 0.5s">🎀</div>
+                    </div>
+                    <div id="timer-mode-display" class="text-xl text-sky-700 mb-8">Focus Time (25m) ☁️🐕☁️</div>
+                    <div class="flex items-center gap-4">
+                        <button id="start-pause-btn" class="btn btn-primary text-xl px-8 py-3">Start</button>
+                        <button id="reset-btn" class="btn btn-secondary">Reset</button>
+                    </div>
+                     <div id="mode-controls" class="mt-8">
+                        <div class="mb-2"><span class="text-sm uppercase font-semibold text-sky-700">Focus ☁️</span></div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <button data-mode="pomodoro25" class="btn btn-sm bg-white/10 hover:bg-white/20 mode-btn">25m</button>
+                            <button data-mode="pomodoro30" class="btn btn-sm bg-white/10 hover:bg-white/20 mode-btn">30m</button>
+                            <button data-mode="pomodoro45" class="btn btn-sm bg-white/10 hover:bg-white/20 mode-btn">45m</button>
+                            <button data-mode="pomodoro60" class="btn btn-sm bg-white/10 hover:bg-white/20 mode-btn">60m</button>
+                        </div>
+                        <div class="mb-2"><span class="text-sm uppercase font-semibold text-sky-700">Break 🎀</span></div>
+                        <div class="flex items-center gap-2">
+                            <button data-mode="shortBreak" class="btn btn-sm bg-white/10 hover:bg-white/20 mode-btn">5m</button>
+                            <button data-mode="longBreak" class="btn btn-sm bg-white/10 hover:bg-white/20 mode-btn">15m</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="planner-view" class="hidden flex-1 flex flex-col">
+                    <h2 class="text-3xl font-bold mb-6">Day Planner</h2>
+                    <div class="mb-6 p-4 glassmorphism rounded-lg">
+                        <h3 class="font-semibold mb-2">Schedule New Pomodoro</h3>
+                        <div class="flex flex-wrap gap-4 items-end">
+                            <div class="flex-grow"><label for="schedule-time" class="text-sm">Time</label><input id="schedule-time" type="time" class="w-full bg-white/20 p-2 rounded-md focus:outline-none"></div>
+                            <div class="flex-grow-[3]"><label for="schedule-desc" class="text-sm">Description</label><input id="schedule-desc" type="text" placeholder="e.g., Team Sync" class="w-full bg-white/20 p-2 rounded-md focus:outline-none placeholder-white/50"></div>
+                            <button id="schedule-add-btn" class="btn btn-primary">Schedule</button>
+                        </div>
+                    </div>
+                    <div id="planner-list" class="flex-1 overflow-y-auto space-y-2 pr-2"></div>
+                </div>
+                <div id="participants-view" class="hidden flex-1 flex flex-col"><h2 class="text-3xl font-bold mb-6">Participants (<span id="participant-count">0</span>)</h2><div id="participants-list" class="flex-1 overflow-y-auto space-y-2"></div></div>
+                <div id="chat-view" class="hidden flex-1 flex flex-col h-full"><h2 class="text-3xl font-bold mb-4">Chat</h2><div id="chat-messages" class="flex-1 overflow-y-auto mb-4 p-4 bg-black/10 rounded-lg"></div><div class="flex gap-2"><input id="chat-input" type="text" placeholder="Type a message..." class="w-full bg-white text-gray-800 px-4 py-2 rounded-lg focus:outline-none placeholder-gray-400"><button id="send-chat-btn" class="btn btn-primary">Send</button></div></div>
+            </main>
+        </div>
+
+        <!-- End of Session Modal -->
+        <div id="end-session-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="glassmorphism p-8 rounded-2xl shadow-lg text-center max-w-sm w-full">
+                <h2 id="end-session-title" class="text-3xl font-bold mb-4">Focus Time Over!</h2>
+                <p id="end-session-message" class="text-lg mb-6">Time for a short break.</p>
+                <button id="end-session-dismiss-btn" class="btn btn-primary">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc, serverTimestamp, updateDoc, setLogLevel, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- DOM ELEMENTS ---
+        const landingPage = document.getElementById('landing-page');
+        const nameInputPage = document.getElementById('name-input-page');
+        const sessionPage = document.getElementById('session-page');
+        const sessionNameInput = document.getElementById('session-name-input');
+        const createSessionBtn = document.getElementById('create-session-btn');
+        const teamNameInput = document.getElementById('team-name-input');
+        const userNameSetupInput = document.getElementById('user-name-setup-input');
+        const startSessionBtn = document.getElementById('start-session-btn');
+        const userNameInput = document.getElementById('user-name-input');
+        const userAvatar = document.getElementById('user-avatar');
+        const timerDisplay = document.getElementById('timer-display');
+        const timerModeDisplay = document.getElementById('timer-mode-display');
+        const startPauseBtn = document.getElementById('start-pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const modeControls = document.getElementById('mode-controls');
+        const participantsList = document.getElementById('participants-list');
+        const participantCount = document.getElementById('participant-count');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendChatBtn = document.getElementById('send-chat-btn');
+        const viewTimerBtn = document.getElementById('timer-view-btn');
+        const viewPlannerBtn = document.getElementById('planner-view-btn');
+        const viewParticipantsBtn = document.getElementById('participants-view-btn');
+        const viewChatBtn = document.getElementById('chat-view-btn');
+        const leaveBtn = document.getElementById('leave-btn');
+        const soundToggleBtn = document.getElementById('sound-toggle-btn');
+        const timerView = document.getElementById('timer-view');
+        const plannerView = document.getElementById('planner-view');
+        const participantsView = document.getElementById('participants-view');
+        const chatView = document.getElementById('chat-view');
+        const scheduleTimeInput = document.getElementById('schedule-time');
+        const scheduleDescInput = document.getElementById('schedule-desc');
+        const scheduleAddBtn = document.getElementById('schedule-add-btn');
+        const plannerList = document.getElementById('planner-list');
+        const endSessionModal = document.getElementById('end-session-modal');
+        const endSessionTitle = document.getElementById('end-session-title');
+        const endSessionMessage = document.getElementById('end-session-message');
+        const endSessionDismissBtn = document.getElementById('end-session-dismiss-btn');
+
+        // --- FIREBASE & APP STATE ---
+    const firebaseConfig = (typeof window !== 'undefined' && window.__firebase_config) ? JSON.parse(window.__firebase_config) : {};
+    const appId = (typeof window !== 'undefined' && window.__app_id) ? window.__app_id : 'pompom-default';
+    const hasFirebaseConfig = firebaseConfig && typeof firebaseConfig.apiKey === 'string' && firebaseConfig.apiKey.length > 0;
+    let OFFLINE_MODE = !hasFirebaseConfig;
+
+        let app, auth, db;
+        let userId, userName;
+        let sessionId;
+        let sessionUnsubscribe, participantsUnsubscribe, chatUnsubscribe, plannerUnsubscribe;
+        let timerInterval, alarmCheckInterval;
+        let audioCtx;
+        let scheduledEvents = [];
+        let lastCheckedMinute = -1;
+        let isSoundEnabled = localStorage.getItem('pompom_sound_enabled') === 'true';
+
+        // Local-only state when offline (no Firebase configured)
+        let localSessionState = {
+            mode: 'pomodoro25',
+            lastFocusMode: 'pomodoro25',
+            duration: 25 * 60,
+            isRunning: false,
+            startTime: null // epoch ms
+        };
+        let localChat = [];
+
+        const TIMER_MODES = {
+            pomodoro25: { duration: 25 * 60, label: 'Focus Time (25m)', type: 'focus' },
+            pomodoro30: { duration: 30 * 60, label: 'Focus Time (30m)', type: 'focus' },
+            pomodoro45: { duration: 45 * 60, label: 'Focus Time (45m)', type: 'focus' },
+            pomodoro60: { duration: 60 * 60, label: 'Focus Time (60m)', type: 'focus' },
+            shortBreak: { duration: 5 * 60, label: 'Short Break (5m)', type: 'break' },
+            longBreak: { duration: 15 * 60, label: 'Long Break (15m)', type: 'break' },
+        };
+
+        // --- INITIALIZATION ---
+        function init() {
+            try {
+                if (!OFFLINE_MODE) {
+                    app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+                    setLogLevel('debug');
+                } else {
+                    console.warn('PomPom running in offline mode: No Firebase config provided. Features like sync, chat, and participants are disabled.');
+                }
+            } catch (e) {
+                console.error("Firebase initialization failed.", e);
+                OFFLINE_MODE = true;
+            }
+            updateSoundUI();
+            if (!OFFLINE_MODE) handleAuthentication();
+            handleRouting();
+            setupEventListeners();
+            // If landing directly on session page in offline mode, ensure timer UI renders once
+            if (OFFLINE_MODE) renderTimerFromLocalState();
+        }
+        
+        async function handleAuthentication() {
+            if (OFFLINE_MODE) return;
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    if (sessionId) await joinSession();
+                } else {
+                    try {
+                        if (typeof window !== 'undefined' && window.__initial_auth_token) {
+                            await signInWithCustomToken(auth, window.__initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (error) { console.error("Authentication failed:", error); }
+                }
+            });
+        }
+        
+        function handleRouting() {
+            // Support both path-based (/team) and hash-based (/#/team) routing for static hosting
+            let potentialSessionId = '';
+            const hash = window.location.hash || '';
+            if (hash.startsWith('#/')) {
+                const seg = hash.slice(2).split('/').filter(Boolean);
+                potentialSessionId = seg[seg.length - 1] || '';
+            } else {
+                const segments = window.location.pathname.split('/').filter(s => s);
+                potentialSessionId = segments.pop() || '';
+            }
+            if (potentialSessionId) {
+                sessionId = potentialSessionId;
+                // Show name input page first, then session page after names are set
+                showNameInputPage();
+                populateRandomNames();
+            } else {
+                showLandingPage();
+            }
+        }
+
+        // --- UI MANAGEMENT ---
+        function showLandingPage() {
+            landingPage.classList.remove('hidden');
+            nameInputPage.classList.add('hidden');
+            sessionPage.classList.add('hidden');
+        }
+        function showNameInputPage() {
+            landingPage.classList.add('hidden');
+            nameInputPage.classList.remove('hidden');
+            sessionPage.classList.add('hidden');
+        }
+        function showSessionPage() {
+            sessionPage.classList.remove('hidden');
+            sessionPage.classList.add('flex');
+            landingPage.classList.add('hidden');
+            nameInputPage.classList.add('hidden');
+        }
+        
+        function switchView(view) {
+            [timerView, plannerView, participantsView, chatView].forEach(v => v.classList.add('hidden'));
+            [viewTimerBtn, viewPlannerBtn, viewParticipantsBtn, viewChatBtn].forEach(b => b.classList.remove('active'));
+            const viewMap = { timer: { view: timerView, btn: viewTimerBtn }, planner: { view: plannerView, btn: viewPlannerBtn }, participants: { view: participantsView, btn: viewParticipantsBtn }, chat: { view: chatView, btn: viewChatBtn } };
+            if (viewMap[view]) { viewMap[view].view.classList.remove('hidden'); viewMap[view].btn.classList.add('active'); }
+        }
+
+        function showEndOfSessionModal(mode, lastFocusMode) {
+            const currentModeInfo = TIMER_MODES[mode];
+            const nextModeKey = currentModeInfo.type === 'focus' ? 'shortBreak' : lastFocusMode;
+            const nextModeInfo = TIMER_MODES[nextModeKey];
+            
+            endSessionTitle.textContent = `${currentModeInfo.label} Over!`;
+            endSessionMessage.textContent = `Time for a ${nextModeInfo.label.toLowerCase()}.`;
+            endSessionModal.classList.remove('hidden');
+            playAlarm();
+        }
+        
+        function updateActiveModeButton(activeMode) {
+            document.querySelectorAll('#mode-controls .mode-btn').forEach(btn => {
+                if (btn.dataset.mode === activeMode) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        // --- EVENT LISTENERS ---
+        function setupEventListeners() {
+            createSessionBtn.addEventListener('click', () => {
+                let name = sessionNameInput.value.trim().replace(/[^a-zA-Z0-9-]/g, '');
+                if (!name) {
+                    name = generateRandomTeamName();
+                }
+                // Update both path and hash for static hosting
+                try {
+                    window.history.pushState({}, name, `/${name}`);
+                } catch {}
+                window.location.hash = `#/${name}`;
+                handleRouting();
+            });
+            sessionNameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') createSessionBtn.click(); });
+
+            startSessionBtn.addEventListener('click', () => {
+                // Get the team name and user name from the inputs
+                const teamName = teamNameInput.value.trim() || generateRandomTeamName();
+                const userNameValue = userNameSetupInput.value.trim() || generateRandomUserName();
+
+                // Update the session ID if team name was changed
+                if (teamName !== sessionId) {
+                    sessionId = teamName.replace(/[^a-zA-Z0-9-]/g, '');
+                    try { window.history.pushState({}, sessionId, `/${sessionId}`); } catch {}
+                    window.location.hash = `#/${sessionId}`;
+                }
+
+                // Store the user name
+                userName = userNameValue;
+                localStorage.setItem('pompom_username', userName);
+
+                // Initialize and show session page
+                updateUserNameUI();
+                initAudioAndNotifications();
+                showSessionPage();
+                if (OFFLINE_MODE) {
+                    // Basic offline setup
+                    updateParticipantsOffline();
+                    renderTimerFromLocalState();
+                    if (alarmCheckInterval) clearInterval(alarmCheckInterval);
+                    alarmCheckInterval = setInterval(checkAlarms, 1000);
+                } else if (userId) {
+                    joinSession();
+                }
+            });
+            
+            userNameInput.addEventListener('click', () => { userNameInput.readOnly = false; userNameInput.focus(); });
+            userNameInput.addEventListener('blur', updateName);
+            userNameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') userNameInput.blur(); });
+
+            startPauseBtn.addEventListener('click', toggleTimer);
+            resetBtn.addEventListener('click', resetTimer);
+            
+            modeControls.addEventListener('click', (e) => {
+                if (e.target.matches('.mode-btn')) {
+                    const mode = e.target.dataset.mode;
+                    setMode(mode);
+                }
+            });
+
+            viewTimerBtn.addEventListener('click', () => switchView('timer'));
+            viewPlannerBtn.addEventListener('click', () => switchView('planner'));
+            viewParticipantsBtn.addEventListener('click', () => switchView('participants'));
+            viewChatBtn.addEventListener('click', () => switchView('chat'));
+
+            scheduleAddBtn.addEventListener('click', scheduleNewPomodoro);
+            sendChatBtn.addEventListener('click', sendChatMessage);
+            chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
+            
+            soundToggleBtn.addEventListener('click', toggleSound);
+            endSessionDismissBtn.addEventListener('click', () => endSessionModal.classList.add('hidden'));
+            
+            leaveBtn.addEventListener('click', () => {
+                clearInterval(alarmCheckInterval);
+                window.location.href = '/';
+            });
+        }
+
+        // --- FIRESTORE PATHS ---
+        const getSessionRef = () => doc(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId);
+        const getParticipantsRef = () => collection(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'participants');
+        const getUserRef = (uid) => doc(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'participants', uid);
+        const getChatRef = () => collection(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'chat');
+        const getPlannerRef = () => collection(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'schedule');
+
+        // --- SESSION & USER LOGIC ---
+        async function joinSession() {
+            if (OFFLINE_MODE) return;
+            try {
+                const sessionRef = getSessionRef();
+                const sessionSnap = await getDoc(sessionRef);
+                if (!sessionSnap.exists()) {
+                    await setDoc(sessionRef, { mode: 'pomodoro25', lastFocusMode: 'pomodoro25', duration: TIMER_MODES.pomodoro25.duration, isRunning: false, startTime: null, createdAt: serverTimestamp() });
+                }
+                await setDoc(getUserRef(userId), { name: userName, joinedAt: serverTimestamp() });
+                startListening();
+            } catch (error) { console.error("Error joining session:", error); }
+        }
+        
+        function startListening() {
+            if (OFFLINE_MODE) {
+                if (alarmCheckInterval) clearInterval(alarmCheckInterval);
+                alarmCheckInterval = setInterval(checkAlarms, 1000);
+                return;
+            }
+            if (sessionUnsubscribe) sessionUnsubscribe();
+            sessionUnsubscribe = onSnapshot(getSessionRef(), updateTimerUI);
+            if (participantsUnsubscribe) participantsUnsubscribe();
+            participantsUnsubscribe = onSnapshot(getParticipantsRef(), updateParticipantsUI);
+            if (chatUnsubscribe) chatUnsubscribe();
+            chatUnsubscribe = onSnapshot(query(getChatRef(), orderBy("createdAt")), updateChatUI);
+            if (plannerUnsubscribe) plannerUnsubscribe();
+            plannerUnsubscribe = onSnapshot(query(getPlannerRef(), orderBy("time")), updatePlannerUI);
+            if (alarmCheckInterval) clearInterval(alarmCheckInterval);
+            alarmCheckInterval = setInterval(checkAlarms, 1000);
+        }
+        
+        function getUserNameFromStorage() {
+            let name = localStorage.getItem('pompom_username');
+            if (!name) {
+                name = generateRandomUserName();
+                localStorage.setItem('pompom_username', name);
+            }
+            return name;
+        }
+
+        function generateRandomUserName() {
+            const adjectives = ["Fluffy", "Cloud", "Puffy", "Soft", "Bouncy", "Cheerful", "Sparkly", "Dreamy"];
+            const nouns = ["Cloud", "Pomeranian", "Puff", "Buddy", "Angel", "Star", "Fluff", "Cotton"];
+            return `${adjectives[Math.floor(Math.random() * adjectives.length)]} ${nouns[Math.floor(Math.random() * nouns.length)]}`;
+        }
+
+        function generateRandomTeamName() {
+            const adjectives = ["Fluffy", "Cloud", "Dreamy", "Soft", "Puffy", "Cotton", "Misty", "Snowy"];
+            const nouns = ["Clouds", "Pomeranians", "Squad", "Team", "Pack", "Fluffs", "Angels", "Cottons"];
+            return `${adjectives[Math.floor(Math.random() * adjectives.length)]}-${nouns[Math.floor(Math.random() * nouns.length)]}`;
+        }
+
+        function populateRandomNames() {
+            teamNameInput.value = generateRandomTeamName().replace('-', ' ');
+            userNameSetupInput.value = generateRandomUserName();
+        }
+
+        function updateUserNameUI() {
+            userNameInput.value = userName;
+            userAvatar.textContent = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+        }
+
+        async function updateName() {
+            userNameInput.readOnly = true;
+            const newName = userNameInput.value.trim();
+            if (newName && newName !== userName) {
+                userName = newName;
+                localStorage.setItem('pompom_username', userName);
+                updateUserNameUI();
+                if (!OFFLINE_MODE) {
+                    await setDoc(getUserRef(userId), { name: userName }, { merge: true });
+                } else {
+                    updateParticipantsOffline();
+                }
+            } else {
+                userNameInput.value = userName;
+            }
+        }
+
+        // --- TIMER LOGIC ---
+        function renderTimerFromLocalState() {
+            const data = { ...localSessionState };
+            const wasRunning = startPauseBtn.textContent === 'Pause';
+            clearInterval(timerInterval);
+            timerModeDisplay.textContent = TIMER_MODES[data.mode].label;
+            startPauseBtn.textContent = data.isRunning ? 'Pause' : 'Start';
+            updateActiveModeButton(data.mode);
+
+            const updateDisplay = () => {
+                const start = data.startTime || Date.now();
+                const elapsed = data.isRunning ? Date.now() - start : 0;
+                const remaining = Math.max(0, (data.duration * 1000) - elapsed);
+
+                if (wasRunning && remaining === 0) {
+                    clearInterval(timerInterval);
+                    if (data.isRunning) {
+                        showEndOfSessionModal(data.mode, data.lastFocusMode);
+                        data.isRunning = false;
+                    }
+                }
+
+                const minutes = Math.floor((remaining / 1000) / 60);
+                const seconds = Math.floor((remaining / 1000) % 60);
+                timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            };
+
+            updateDisplay();
+            if (data.isRunning) timerInterval = setInterval(updateDisplay, 250);
+        }
+
+        function updateTimerUI(docSnap) {
+            if (!docSnap.exists()) return;
+            const data = docSnap.data();
+            const wasRunning = startPauseBtn.textContent === 'Pause';
+            
+            clearInterval(timerInterval);
+            timerModeDisplay.textContent = TIMER_MODES[data.mode].label;
+            startPauseBtn.textContent = data.isRunning ? 'Pause' : 'Start';
+            updateActiveModeButton(data.mode);
+
+            const updateDisplay = () => {
+                const serverStartTime = data.startTime ? data.startTime.toDate().getTime() : Date.now();
+                const elapsed = data.isRunning ? Date.now() - serverStartTime : 0;
+                const remaining = Math.max(0, (data.duration * 1000) - elapsed);
+                
+                if (wasRunning && remaining === 0) {
+                    clearInterval(timerInterval);
+                    if (data.isRunning) {
+                       showEndOfSessionModal(data.mode, data.lastFocusMode);
+                       updateDoc(getSessionRef(), { isRunning: false });
+                    }
+                }
+                
+                const minutes = Math.floor((remaining / 1000) / 60);
+                const seconds = Math.floor((remaining / 1000) % 60);
+                timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            };
+
+            updateDisplay();
+            if (data.isRunning) {
+                timerInterval = setInterval(updateDisplay, 250);
+            }
+        }
+
+        async function toggleTimer() {
+            if (OFFLINE_MODE) {
+                const isRunning = localSessionState.isRunning;
+                localSessionState.isRunning = !isRunning;
+                localSessionState.startTime = Date.now();
+                renderTimerFromLocalState();
+                return;
+            }
+            const sessionRef = getSessionRef();
+            const sessionSnap = await getDoc(sessionRef);
+            if (!sessionSnap.exists()) return;
+            const isRunning = sessionSnap.data().isRunning;
+            await updateDoc(sessionRef, { isRunning: !isRunning, startTime: serverTimestamp() });
+        }
+
+        async function resetTimer() {
+            if (OFFLINE_MODE) {
+                const currentMode = localSessionState.mode;
+                localSessionState.isRunning = false;
+                localSessionState.duration = TIMER_MODES[currentMode].duration;
+                localSessionState.startTime = null;
+                renderTimerFromLocalState();
+                return;
+            }
+            const sessionRef = getSessionRef();
+            const sessionSnap = await getDoc(sessionRef);
+            if (!sessionSnap.exists()) return;
+            const currentMode = sessionSnap.data().mode;
+            await updateDoc(sessionRef, { isRunning: false, duration: TIMER_MODES[currentMode].duration, startTime: null });
+        }
+
+        async function setMode(mode) {
+            if (OFFLINE_MODE) {
+                localSessionState.mode = mode;
+                localSessionState.duration = TIMER_MODES[mode].duration;
+                localSessionState.isRunning = false;
+                localSessionState.startTime = null;
+                if (TIMER_MODES[mode].type === 'focus') localSessionState.lastFocusMode = mode;
+                renderTimerFromLocalState();
+                return;
+            }
+            const sessionRef = getSessionRef();
+            const updates = {
+                mode: mode,
+                duration: TIMER_MODES[mode].duration,
+                isRunning: false,
+                startTime: null
+            };
+            if (TIMER_MODES[mode].type === 'focus') {
+                updates.lastFocusMode = mode;
+            }
+            await updateDoc(sessionRef, updates);
+        }
+        
+        // --- PARTICIPANTS & CHAT UI ---
+        function updateParticipantsUI(snapshot) {
+            participantsList.innerHTML = '';
+            participantCount.textContent = snapshot.size;
+            snapshot.docs.forEach(doc => {
+                const user = doc.data();
+                const p = document.createElement('div');
+                p.className = 'p-3 bg-white/10 rounded-lg flex items-center gap-3';
+                p.innerHTML = `<div class="w-8 h-8 rounded-full bg-white flex items-center justify-center font-bold text-sm relative text-sky-600"><div class="absolute -top-1 -right-1 text-xs">☁️</div>${user.name.split(' ').map(n=>n[0]).join('').toUpperCase()}</div><span class="font-semibold text-sky-800">${user.name}</span>`;
+                participantsList.appendChild(p);
+            });
+        }
+
+        function updateParticipantsOffline() {
+            participantsList.innerHTML = '';
+            participantCount.textContent = 1;
+            const p = document.createElement('div');
+            const name = userName || getUserNameFromStorage();
+            p.className = 'p-3 bg-white/10 rounded-lg flex items-center gap-3';
+            p.innerHTML = `<div class="w-8 h-8 rounded-full bg-white flex items-center justify-center font-bold text-sm relative text-sky-600"><div class="absolute -top-1 -right-1 text-xs">☁️</div>${name.split(' ').map(n=>n[0]).join('').toUpperCase()}</div><span class="font-semibold text-sky-800">${name}</span>`;
+            participantsList.appendChild(p);
+        }
+
+        function updateChatUI(snapshot) {
+            chatMessages.innerHTML = '';
+            const messages = snapshot.docs.map(doc => doc.data());
+            messages.forEach(msg => {
+                 const m = document.createElement('div');
+                 m.className = 'mb-2';
+                 m.innerHTML = `<p><strong class="font-semibold">${msg.userName}</strong>: ${msg.text}</p>`;
+                 chatMessages.appendChild(m);
+            });
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function renderLocalChat() {
+            chatMessages.innerHTML = '';
+            localChat.forEach(msg => {
+                const m = document.createElement('div');
+                m.className = 'mb-2';
+                m.innerHTML = `<p><strong class="font-semibold">${msg.userName}</strong>: ${msg.text}</p>`;
+                chatMessages.appendChild(m);
+            });
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function sendChatMessage() {
+            const text = chatInput.value.trim();
+            if (text) {
+                if (OFFLINE_MODE) {
+                    localChat.push({ userId: 'local', userName: userName || getUserNameFromStorage(), text, createdAt: new Date() });
+                    renderLocalChat();
+                    chatInput.value = '';
+                } else {
+                    await addDoc(getChatRef(), { userId, userName, text, createdAt: serverTimestamp() });
+                    chatInput.value = '';
+                }
+            }
+        }
+
+        // --- PLANNER & ALARM LOGIC ---
+        function initAudioAndNotifications() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (Notification.permission !== "granted") Notification.requestPermission();
+        }
+
+        function playAlarm() {
+            if (!isSoundEnabled || !audioCtx) return;
+            const playNote = (freq, startTime, duration) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            };
+            playNote(880, audioCtx.currentTime, 0.1);
+            playNote(1046.50, audioCtx.currentTime + 0.15, 0.1);
+        }
+
+        function showNotification(event) {
+            if (Notification.permission === "granted") {
+                new Notification("Fluffy Cloud Alert! ☁️🐕☁️", { body: `Time for: ${event.description}`, icon: "https://placehold.co/64x64/0EA5E9/FFFFFF?text=☁️🐕" });
+            }
+        }
+
+        function checkAlarms() {
+            const now = new Date();
+            const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+            if (currentTotalMinutes !== lastCheckedMinute) {
+                lastCheckedMinute = currentTotalMinutes;
+                const currentTimeHHMM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                scheduledEvents.forEach(event => {
+                    if (event.time === currentTimeHHMM) {
+                        playAlarm();
+                        showNotification(event);
+                    }
+                });
+            }
+        }
+
+        async function scheduleNewPomodoro() {
+            const time = scheduleTimeInput.value;
+            const description = scheduleDescInput.value.trim();
+            if (time && description) {
+                try {
+                    if (OFFLINE_MODE) {
+                        const event = { id: `${Date.now()}`, time, description, scheduledBy: userName || getUserNameFromStorage(), createdAt: new Date() };
+                        scheduledEvents.push(event);
+                        renderPlannerLocal();
+                        scheduleTimeInput.value = '';
+                        scheduleDescInput.value = '';
+                    } else {
+                        await addDoc(getPlannerRef(), { time, description, scheduledBy: userName, createdAt: serverTimestamp() });
+                        scheduleTimeInput.value = '';
+                        scheduleDescInput.value = '';
+                    }
+                } catch (error) { console.error("Error scheduling Pomodoro:", error); }
+            }
+        }
+
+        function updatePlannerUI(snapshot) {
+            plannerList.innerHTML = '';
+            scheduledEvents = [];
+            snapshot.forEach(doc => {
+                const event = { id: doc.id, ...doc.data() };
+                scheduledEvents.push(event);
+                const item = document.createElement('div');
+                item.className = 'p-3 bg-white/10 rounded-lg flex items-center gap-4';
+                item.innerHTML = `<div class="text-xl font-bold text-sky-800">${event.time}</div><div class="flex-grow"><div class="font-semibold text-sky-800">${event.description}</div><div class="text-sm text-sky-600">Scheduled by ${event.scheduledBy}</div></div>`;
+                plannerList.appendChild(item);
+            });
+        }
+
+        function renderPlannerLocal() {
+            plannerList.innerHTML = '';
+            scheduledEvents
+                .slice()
+                .sort((a,b) => a.time.localeCompare(b.time))
+                .forEach(event => {
+                    const item = document.createElement('div');
+                    item.className = 'p-3 bg-white/10 rounded-lg flex items-center gap-4';
+                    item.innerHTML = `<div class="text-xl font-bold text-sky-800">${event.time}</div><div class="flex-grow"><div class="font-semibold text-sky-800">${event.description}</div><div class="text-sm text-sky-600">Scheduled by ${event.scheduledBy}</div></div>`;
+                    plannerList.appendChild(item);
+                });
+        }
+        
+        function toggleSound() {
+            isSoundEnabled = !isSoundEnabled;
+            localStorage.setItem('pompom_sound_enabled', isSoundEnabled);
+            updateSoundUI();
+        }
+
+        function updateSoundUI() {
+            const icon = isSoundEnabled ? 
+                `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-volume-up-fill" viewBox="0 0 16 16"><path d="M11.536 14.01A8.473 8.473 0 0 0 14.026 8a8.473 8.473 0 0 0-2.49-6.01l-.708.707A7.476 7.476 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303l.708.707z"/><path d="M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.483 5.483 0 0 1 11.025 8a5.483 5.483 0 0 1-1.61 3.89l.706.706z"/><path d="M8.707 11.182A4.486 4.486 0 0 0 10.025 8a4.486 4.486 0 0 0-1.318-3.182L8 5.525A3.489 3.489 0 0 1 9.025 8 3.49 3.49 0 0 1 8 10.475l.707.707zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06z"/></svg>` :
+                `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-volume-mute-fill" viewBox="0 0 16 16"><path d="M6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06zm7.137 2.096a.5.5 0 0 1 0 .708L12.207 8l1.647 1.646a.5.5 0 0 1-.708.708L11.5 8.707l-1.646 1.647a.5.5 0 0 1-.708-.708L10.793 8 9.146 6.354a.5.5 0 1 1 .708-.708L11.5 7.293l1.646-1.647a.5.5 0 0 1 .708 0z"/></svg>`;
+            soundToggleBtn.innerHTML = icon;
+        }
+
+    // --- START THE APP ---
+    init();
+    </script>
+</body>
+</html>

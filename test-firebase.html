@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PomPom Firebase Test</title>
+    <script src="firebase-config.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-sky-400 to-sky-600 text-white p-8">
+    <h1 class="text-4xl font-bold mb-4">☁️🐕☁️ PomPom Cloud Firebase Test</h1>
+    
+    <div class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Firebase Connection Test</h2>
+        <button id="test-firebase" class="bg-white text-indigo-600 px-4 py-2 rounded mr-4">Test Firebase Connection</button>
+        <button id="test-auth" class="bg-white text-indigo-600 px-4 py-2 rounded mr-4">Test Authentication</button>
+        <button id="test-session" class="bg-white text-indigo-600 px-4 py-2 rounded">Test Session Creation</button>
+    </div>
+
+    <div id="test-results" class="bg-white/10 p-4 rounded-lg">
+        <h3 class="text-xl font-semibold mb-2">Test Results:</h3>
+        <div id="results-content">Click a test button to run Firebase tests</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        function log(message) {
+            const content = document.getElementById('results-content');
+            content.innerHTML += '<div class="mb-1">' + message + '</div>';
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('results-content').innerHTML = '';
+        }
+
+        let app, auth, db;
+
+        document.getElementById('test-firebase').addEventListener('click', async () => {
+            clearLog();
+            log('🔥 Testing Firebase initialization...');
+            
+            try {
+                const firebaseConfig = JSON.parse(window.__firebase_config);
+                log('✅ Firebase config loaded: ' + firebaseConfig.projectId);
+                
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                log('✅ Firebase app initialized successfully');
+                log('✅ Auth service initialized');
+                log('✅ Firestore database initialized');
+                
+                // Test connection with a simple read
+                const testDoc = doc(db, 'test', 'connection');
+                await getDoc(testDoc);
+                log('✅ Firestore connection test successful');
+                
+            } catch (error) {
+                log('❌ Firebase initialization failed: ' + error.message);
+            }
+        });
+
+        document.getElementById('test-auth').addEventListener('click', async () => {
+            clearLog();
+            log('🔐 Testing Firebase Authentication...');
+            
+            if (!auth) {
+                log('❌ Firebase not initialized. Run Firebase test first.');
+                return;
+            }
+            
+            try {
+                log('🔄 Attempting anonymous sign-in...');
+                const userCredential = await signInAnonymously(auth);
+                const user = userCredential.user;
+                
+                log('✅ Anonymous authentication successful');
+                log('👤 User ID: ' + user.uid);
+                log('🔒 Anonymous: ' + user.isAnonymous);
+                
+            } catch (error) {
+                log('❌ Authentication failed: ' + error.message);
+                log('💡 Make sure Anonymous authentication is enabled in Firebase Console');
+            }
+        });
+
+        document.getElementById('test-session').addEventListener('click', async () => {
+            clearLog();
+            log('🎯 Testing PomPom session creation...');
+            
+            if (!db || !auth) {
+                log('❌ Firebase not initialized. Run Firebase test first.');
+                return;
+            }
+            
+            try {
+                // Test session creation
+                const testSessionId = 'test-pom-session-' + Date.now();
+                const appId = window.__app_id || 'pompom-app';
+                
+                log('📝 Creating test session: ' + testSessionId);
+                log('📦 Using app namespace: ' + appId);
+                
+                const sessionRef = doc(db, 'artifacts', appId, 'public/data/pompom_sessions', testSessionId);
+                
+                await setDoc(sessionRef, {
+                    mode: 'pomodoro25',
+                    lastFocusMode: 'pomodoro25', 
+                    duration: 25 * 60,
+                    isRunning: false,
+                    startTime: null,
+                    createdAt: serverTimestamp()
+                });
+                
+                log('✅ Session document created successfully');
+                
+                // Test reading the session back
+                const sessionSnap = await getDoc(sessionRef);
+                if (sessionSnap.exists()) {
+                    log('✅ Session data read back successfully');
+                    log('📊 Session data: ' + JSON.stringify(sessionSnap.data(), null, 2));
+                } else {
+                    log('❌ Could not read session data back');
+                }
+                
+                log('🎉 PomPom Firebase integration test complete!');
+                
+            } catch (error) {
+                log('❌ Session test failed: ' + error.message);
+                log('💡 Check Firestore security rules and permissions');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "name": "pompom-app",
+  "version": "1.0.0",
+  "description": "A productivity timer for remote teams with pom-pom spirit! 🐕🎀",
+  "main": "index.html",
+  "scripts": {
+    "start": "./run",
+    "test": "./run test",
+    "test:firebase": "./run firebase",
+    "firebase:setup": "./setup-firebase.sh",
+    "firebase:deploy": "firebase deploy",
+    "firebase:deploy:rules": "firebase deploy --only firestore:rules,firestore:indexes",
+    "firebase:deploy:hosting": "firebase deploy --only hosting"
+  },
+  "keywords": [
+    "productivity",
+    "timer",
+    "pomodoro",
+    "team",
+    "collaboration",
+    "pomeranian",
+    "pompom"
+  ],
+  "author": "Rez Khan <reswanul@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "firebase-tools": "^13.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DoctorKhan/Pomo.git"
+  },
+  "homepage": "https://aihd-b0b5b.web.app",
+  "bugs": {
+    "url": "https://github.com/DoctorKhan/Pomo/issues"
+  }
+}
