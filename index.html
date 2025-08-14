@@ -226,6 +226,9 @@
                     <div id="calendar-event-btn" class="icon-btn" title="Create Google Calendar + Meet">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M3 0a2 2 0 0 0-2 2v1h14V2a2 2 0 0 0-2-2z"/><path d="M0 4.5A1.5 1.5 0 0 1 1.5 3h13A1.5 1.5 0 0 1 16 4.5v9A2.5 2.5 0 0 1 13.5 16h-11A2.5 2.5 0 0 1 0 13.5z"/></svg>
                     </div>
+                    <div id="copy-link-btn" class="icon-btn" title="Copy Share Link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M10 1.5a1.5 1.5 0 0 0-1.5 1.5v7A1.5 1.5 0 0 0 10 11.5h3A1.5 1.5 0 0 0 14.5 10V3A1.5 1.5 0 0 0 13 1.5z"/><path d="M4.5 4A1.5 1.5 0 0 0 3 5.5v7A1.5 1.5 0 0 0 4.5 14h6A1.5 1.5 0 0 0 12 12.5V12H5.5A1.5 1.5 0 0 1 4 10.5V4z"/></svg>
+                    </div>
                 </div>
                 <div class="space-y-4">
                     <div id="sound-toggle-btn" class="icon-btn" title="Toggle Sound">
@@ -321,13 +324,31 @@
     <div id="settings-modal" class="hidden fixed inset-0 bg-black/50 items-center justify-center z-50">
         <div class="glassmorphism p-6 rounded-2xl shadow-lg max-w-md w-full mx-4">
             <div class="flex items-center justify-between mb-4">
+                <div class="space-y-2 mt-1">
+                    <label class="flex items-center justify-between">
+                        <span class="text-sm">Advanced features</span>
+                        <input id="feature-mode-toggle" type="checkbox" class="w-5 h-5">
+                    </label>
+                    <div class="text-xs text-sky-700">When on: Todos + Planner + Calendar. When off: Timer only.</div>
+                </div>
                 <h3 class="text-2xl font-bold">Settings</h3>
                 <button id="close-settings-btn" class="text-sky-800 text-2xl">&times;</button>
             </div>
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-2">Groq API Key <span class="text-xs text-sky-700">(for AI features)</span></label>
-                    <input id="api-key-input" type="password" placeholder="gsk_..." class="w-full bg-white/20 p-2 rounded-md focus:outline-none placeholder-white/60">
+                    <div class="flex gap-2 items-center">
+                <!-- Feature Mode Toggle -->
+                <div class="space-y-2 mt-1">
+                    <label class="flex items-center justify-between">
+                        <span class="text-sm">Advanced features</span>
+                        <input id="feature-mode-toggle" type="checkbox" class="w-5 h-5">
+                    </label>
+                    <div class="text-xs text-sky-700">When on: Todos + Planner + Calendar. When off: Timer only.</div>
+                </div>
+                        <input id="api-key-input" type="password" placeholder="gsk_..." class="flex-1 bg-white/20 p-2 rounded-md focus:outline-none placeholder-white/60">
+                        <button id="toggle-api-key-visibility" class="btn btn-primary text-xs px-3">Show</button>
+                    </div>
                     <div class="flex gap-2 mt-2">
                         <button id="save-api-key-btn" class="btn btn-secondary flex-1">Save</button>
                         <button id="clear-api-key-btn" class="btn btn-secondary flex-1">Clear</button>
@@ -374,6 +395,7 @@
 	            };
 	            __wrap('error');
 	            __wrap('warn');
+        const copyLinkBtn = document.getElementById('copy-link-btn');
 	            window.addEventListener('error', (e) => {
 	                try { window.__CONSOLE_LOGS.push({ level: 'error', message: e.message || 'window.onerror' }); } catch {}
 	            });
@@ -427,7 +449,11 @@
         const scheduleDescInput = document.getElementById('schedule-desc');
         const scheduleAddBtn = document.getElementById('schedule-add-btn');
         const plannerList = document.getElementById('planner-list');
+    const toggleApiKeyVisibilityBtn = document.getElementById('toggle-api-key-visibility');
         const endSessionModal = document.getElementById('end-session-modal');
+    const basicModeBtn = document.getElementById('basic-mode-btn');
+    const featureModeToggle = document.getElementById('feature-mode-toggle');
+    const advancedModeBtn = document.getElementById('advanced-mode-btn');
         const endSessionTitle = document.getElementById('end-session-title');
         const endSessionMessage = document.getElementById('end-session-message');
         const endSessionDismissBtn = document.getElementById('end-session-dismiss-btn');
@@ -710,6 +736,19 @@
             modeControls.addEventListener('click', (e) => {
                 if (e.target.matches('.mode-btn')) {
                     const mode = e.target.dataset.mode;
+
+	            copyLinkBtn.addEventListener('click', async () => {
+	                try {
+	                    const base = location.origin;
+	                    const slug = sessionId || (teamNameInput?.value || '').trim() || 'session';
+	                    const url = `${base}/${toSlug(slug)}`;
+	                    await navigator.clipboard.writeText(url);
+	                    alert('Share link copied to clipboard!');
+	                } catch (e) {
+	                    console.error('Copy link failed', e);
+	                    alert('Failed to copy link');
+	                }
+	            });
                     setMode(mode);
                 }
             });
@@ -815,6 +854,29 @@
                     const tIdx = localTodos.findIndex(x => (x.id || String(x.createdAt)) === parentId);
                     if (tIdx >= 0) {
                         const subs = localTodos[tIdx].subtasks || [];
+            // Feature mode toggle
+            const applyFeatureMode = (enabled) => {
+                const adv = !!enabled;
+                // Enable/disable UI buttons
+                plannerViewBtn.classList.toggle('hidden', !adv);
+                viewChatBtn.classList.toggle('hidden', !adv);
+                calendarEventBtn.classList.toggle('hidden', !adv);
+                // Views
+                plannerView.classList.toggle('hidden', !adv);
+                chatView.classList.toggle('hidden', !adv);
+                // Persist setting
+                try { localStorage.setItem('pompom_feature_mode', adv ? 'advanced' : 'basic'); } catch {}
+                // If in basic mode and currently not on timer, switch to timer
+                if (!adv) switchView('timer');
+                // Sync toggle UI
+                try { if (featureModeToggle) featureModeToggle.checked = adv; } catch {}
+            };
+            const savedMode = (localStorage.getItem('pompom_feature_mode') || 'advanced');
+            applyFeatureMode(savedMode === 'advanced');
+            if (featureModeToggle) featureModeToggle.addEventListener('change', (e) => applyFeatureMode(e.target.checked));
+
+            // Copy share link available on session and name pages
+            if (copyLinkBtn) copyLinkBtn.classList.remove('hidden');
                         const sub = subs.find(st => (st.id || `${parentId}::${subs.indexOf(st)}`) === sid);
                         if (sub) {
                             const newTodo = { text: sub.text || '', ownerName: userName || getUserNameFromStorage(), due: '', tags: [], createdBy: userName || getUserNameFromStorage(), createdAt: new Date().toISOString(), order: nextTodoOrder++ };
