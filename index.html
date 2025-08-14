@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <!-- Favicon to prevent 404s when developing locally -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50' font-size='48'%3E%E2%98%81%EF%B8%8F%3C/text%3E%3C/svg%3E">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -259,11 +261,30 @@
                         <!-- Subtle background glow -->
                         <div class="absolute inset-0 bg-gradient-to-br from-sky-100/20 to-sky-200/20 rounded-3xl -z-10"></div>
                     </div>
-                    <div id="timer-mode-display" class="text-xl text-sky-700 mb-8">Focus Time (25m) ☁️🐕☁️ ✨</div>
+                    <div id="timer-mode-display" class="text-xl text-sky-700 mb-4">Focus Time (25m) ☁️🐕☁️ ✨</div>
+                    <!-- Current goal pill directly under timer -->
+                    <div id="timer-goal-pill" class="hidden mb-6 px-6 py-3 bg-gradient-to-r from-sky-100 via-blue-50 to-purple-100 rounded-full text-sky-800 text-sm font-semibold shadow-lg border border-sky-200 kawaii-float">
+                        <span class="text-sky-600 mr-2">🎯</span> <span id="timer-goal-text"></span>
+                    </div>
                     <!-- Quick Row: Share link only (advanced toggle moved to Settings) -->
                     <div class="mt-6 mb-2 flex items-center">
                         <div class="ml-auto"></div>
                         <button id="copy-link-btn-inline" class="btn btn-secondary text-xs">Copy share link</button>
+                    </div>
+                    <!-- Pomo Goal input -->
+                    <div class="w-full max-w-xl mt-3">
+                        <label class="block text-sm mb-1 text-sky-800 font-medium">🎯 Pomo goal</label>
+                        <div class="flex gap-2">
+                            <input id="goal-input" type="text" placeholder="What will you accomplish this pomo?" class="flex-1 bg-white/90 text-sky-800 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-sky-400 shadow-sm border border-sky-200">
+                            <button id="save-goal-btn" class="btn btn-primary text-sm px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all">Set ✨</button>
+                        </div>
+                        <div id="current-goal" class="mt-2 text-sky-900 text-sm hidden font-medium"></div>
+                    </div>
+
+                    <!-- Recent goal history -->
+                    <div class="w-full max-w-xl mt-4">
+                        <div class="text-xs text-sky-700 mb-2 font-medium uppercase tracking-wide">Recent goals</div>
+                        <div id="goal-history" class="space-y-2"></div>
                     </div>
                     <div class="flex items-center gap-4">
                         <button id="start-pause-btn" class="kawaii-button text-xl px-8 py-3 rounded-lg font-semibold text-sky-600">Start ✨</button>
@@ -409,7 +430,7 @@
 	        } catch {}
 
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc, serverTimestamp, updateDoc, deleteDoc, setLogLevel, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc, serverTimestamp, updateDoc, deleteDoc, setLogLevel, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- DOM ELEMENTS ---
         const landingPage = document.getElementById('landing-page');
@@ -438,6 +459,13 @@
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
         const sendChatBtn = document.getElementById('send-chat-btn');
+    // Goal UI elements
+    const goalInput = document.getElementById('goal-input');
+    const saveGoalBtn = document.getElementById('save-goal-btn');
+    const currentGoalEl = document.getElementById('current-goal');
+    const timerGoalPill = document.getElementById('timer-goal-pill');
+    const timerGoalText = document.getElementById('timer-goal-text');
+    const goalHistoryEl = document.getElementById('goal-history');
         const viewTimerBtn = document.getElementById('timer-view-btn');
         const viewPlannerBtn = document.getElementById('planner-view-btn');
         const viewParticipantsBtn = document.getElementById('participants-view-btn');
@@ -499,6 +527,46 @@
         let scheduledEvents = [];
         let lastCheckedMinute = -1;
     let isSoundEnabled = localStorage.getItem('pompom_sound_enabled') === 'true';
+        // --- Goal storage helpers ---
+        function goalStorageKey() {
+            return `pompom_goals_${sessionId || 'default'}`;
+        }
+        function loadGoals() {
+            try {
+                const raw = localStorage.getItem(goalStorageKey());
+                return raw ? JSON.parse(raw) : [];
+            } catch { return []; }
+        }
+        function saveGoals(list) {
+            try { localStorage.setItem(goalStorageKey(), JSON.stringify(list)); } catch {}
+        }
+        function renderGoals() {
+            const list = loadGoals();
+            goalHistoryEl.innerHTML = '';
+            list.slice().reverse().slice(0, 5).forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between bg-white/20 rounded-lg px-4 py-3 text-sm shadow-sm border border-white/30 backdrop-blur-sm';
+                const status = { success: '✅', partial: '🟡', failed: '❌' }[item.status] || '⏺️';
+                const carried = item.carried ? ' 🔄' : '';
+                row.innerHTML = `<span class="truncate max-w-[70%] font-medium text-sky-900">${item.text}</span><span class="ml-3 text-lg">${status}${carried}</span>`;
+                goalHistoryEl.appendChild(row);
+            });
+            const current = list.find(g => g.status === 'active');
+            if (current && currentGoalEl) {
+                currentGoalEl.classList.remove('hidden');
+                currentGoalEl.textContent = `Current goal: ${current.text}`;
+            } else if (currentGoalEl) {
+                currentGoalEl.classList.add('hidden');
+                currentGoalEl.textContent = '';
+            }
+            // Update timer pill
+            if (current && timerGoalPill && timerGoalText) {
+                timerGoalPill.classList.remove('hidden');
+                timerGoalText.textContent = current.text;
+            } else if (timerGoalPill) {
+                timerGoalPill.classList.add('hidden');
+            }
+        }
     let localTodos = [];
     let currentTodos = [];
     // Map of participant name -> IANA time zone
@@ -517,6 +585,8 @@
             isRunning: false,
             startTime: null // epoch ms
         };
+            // Goals: re-render after routing determines sessionId
+            try { renderGoals(); } catch {}
         let localChat = [];
 
         const TIMER_MODES = {
@@ -544,7 +614,8 @@
                     app = initializeApp(firebaseConfig);
                     auth = getAuth(app);
                     db = getFirestore(app);
-                    setLogLevel('debug');
+                    // Reduce noisy Firestore logs by default; enable with ?fsdebug=1
+                    setLogLevel(urlParams.get('fsdebug') === '1' ? 'debug' : 'error');
                 } else {
                     console.warn('PomPom running in offline mode: No Firebase config provided. Features like sync, chat, and participants are disabled.');
                 }
@@ -690,7 +761,62 @@
                 try { localStorage.setItem('pompom_team_name', toSlug(name)); } catch {}
                 // Update both path and hash for static hosting
                 if (!USE_HASH_ROUTING) {
+            // Goal handlers
+            if (saveGoalBtn) saveGoalBtn.addEventListener('click', async () => {
+                const text = (goalInput?.value || '').trim();
+                if (!text) { showToast('Enter a goal'); return; }
+                if (OFFLINE_MODE) {
+                    const list = loadGoals();
+                    list.forEach(g => { if (g.status === 'active') g.status = 'partial'; });
+                    list.push({ id: Date.now(), text, status: 'active', startedAt: Date.now() });
+                    saveGoals(list);
+                    renderGoals();
+                } else {
+                    try {
+                        // Close any active goals
+                        const existingSnap = await getDocs(getGoalsRef());
+                        existingSnap.forEach(async d => {
+                            const data = d.data();
+                            if (data.status === 'active') await updateDoc(doc(getGoalsRef(), d.id), { status: 'partial' });
+                        });
+                        await addDoc(getGoalsRef(), { text, status: 'active', startedAt: serverTimestamp(), createdBy: userName || getUserNameFromStorage() });
+                    } catch (e) { console.error('Failed to save goal', e); }
+                }
+                goalInput.value = '';
+                renderGoals();
+                // Auto-post to chat
+                const chatMsg = `🎯 Goal set: ${text}`;
+                if (OFFLINE_MODE) {
+                    localChat.push({ userId: 'local', userName: userName || getUserNameFromStorage(), text: chatMsg, createdAt: new Date() });
+                    renderLocalChat();
+                } else {
+                    try {
+                        await addDoc(getChatRef(), { userId, userName: userName || getUserNameFromStorage(), text: chatMsg, createdAt: serverTimestamp() });
+                    } catch (e) { console.warn('Failed to post goal to chat', e); }
+                }
+            });
+            if (goalInput) goalInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveGoalBtn.click();
+                    // Start timer after brief delay to allow goal save
+                    setTimeout(() => {
+                        if (startPauseBtn && startPauseBtn.textContent.includes('Start')) {
+                            startPauseBtn.click();
+                        }
+                    }, 100);
+                }
+            });
                     try { window.history.pushState({}, name, `/${name}`); } catch {}
+            // Press Enter on goal input: set goal and start timer
+            if (goalInput) goalInput.addEventListener('keydown', async (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (saveGoalBtn) saveGoalBtn.click();
+                    // start timer after slight delay to allow save
+                    setTimeout(() => startPauseBtn?.click(), 50);
+                }
+            });
                 }
                 window.location.hash = `#/${name}`;
                 handleRouting();
@@ -993,6 +1119,7 @@
         const getChatRef = () => collection(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'chat');
     const getPlannerRef = () => collection(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'schedule');
     const getTodosRef = () => collection(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos');
+        const getGoalsRef = () => collection(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'goals');
     const getSubtasksRef = (todoId) => collection(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos', todoId, 'subtasks');
 
         // --- SESSION & USER LOGIC ---
@@ -1023,6 +1150,18 @@
             chatUnsubscribe = onSnapshot(query(getChatRef(), orderBy("createdAt")), updateChatUI);
             if (plannerUnsubscribe) plannerUnsubscribe();
             plannerUnsubscribe = onSnapshot(query(getPlannerRef(), orderBy("time")), updatePlannerUI);
+            if (!OFFLINE_MODE) {
+                if (window._goalsUnsub) window._goalsUnsub();
+                window._goalsUnsub = onSnapshot(query(getGoalsRef(), orderBy('startedAt')), (snap) => {
+                    try {
+                        const list = [];
+                        snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+                        // Mirror to local for unified render
+                        localStorage.setItem(goalStorageKey(), JSON.stringify(list));
+                        renderGoals();
+                    } catch (e) { console.warn('Goals snapshot failed', e); }
+                });
+            }
             if (todosUnsubscribe) todosUnsubscribe();
             todosUnsubscribe = onSnapshot(query(getTodosRef(), orderBy('order')), updateTodosUI);
             if (alarmCheckInterval) clearInterval(alarmCheckInterval);
@@ -1053,6 +1192,7 @@
             const nouns = ["Clouds", "Pomeranians", "Squad", "Team", "Pack", "Fluffs", "Angels", "Cottons"];
             return `${adjectives[Math.floor(Math.random() * adjectives.length)]}-${nouns[Math.floor(Math.random() * nouns.length)]}`;
         }
+
 
         function populateRandomNames() {
             teamNameInput.value = generateRandomTeamName().replace('-', ' ');
@@ -1090,7 +1230,34 @@
             clearInterval(timerInterval);
             timerModeDisplay.textContent = TIMER_MODES[data.mode].label;
             startPauseBtn.textContent = data.isRunning ? 'Pause ⏸️' : 'Start ✨';
-            updateActiveModeButton(data.mode);
+            // Auto-carry over: if a new focus session starts and there is no active goal, carry over last incomplete
+            (async () => {
+                if (OFFLINE_MODE) {
+                    const list = loadGoals();
+                    const hasActive = list.some(g => g.status === 'active');
+                    if (!hasActive && TIMER_MODES[data.mode].type === 'focus') {
+                        const lastIncomplete = [...list].reverse().find(g => g.status === 'partial' || g.status === 'failed');
+                        if (lastIncomplete) {
+                            list.push({ id: Date.now(), text: lastIncomplete.text, status: 'active', startedAt: Date.now(), carried: true });
+                            saveGoals(list);
+                            renderGoals();
+                        }
+                    }
+                } else {
+                    try {
+                        const snap = await getDocs(getGoalsRef());
+                        const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                        const hasActive = docs.some(g => g.status === 'active');
+                        if (!hasActive && TIMER_MODES[data.mode].type === 'focus') {
+                            const lastIncomplete = [...docs].reverse().find(g => g.status === 'partial' || g.status === 'failed');
+                            if (lastIncomplete) {
+                                await addDoc(getGoalsRef(), { text: lastIncomplete.text, status: 'active', startedAt: serverTimestamp(), carried: true, createdBy: userName || getUserNameFromStorage() });
+                            }
+                        }
+                    } catch (e) { console.warn('Carry-over check failed', e); }
+                }
+                updateActiveModeButton(data.mode);
+            })();
 
             const updateDisplay = () => {
                 const start = data.startTime || Date.now();
@@ -1279,6 +1446,53 @@
         async function handleCreateCalendarEvent() {
             try {
                 // Allow tests to run in offline mode if a test sign-in mock is present
+        // --- Goal outcome prompt ---
+        function promptGoalOutcome() {
+            const localList = loadGoals();
+            const localCurrent = localList.find(g => g.status === 'active');
+            if (!localCurrent) return;
+            const container = document.createElement('div');
+            container.className = 'mt-2 flex gap-2';
+            const makeBtn = (label, status) => {
+                const b = document.createElement('button');
+                b.className = 'btn btn-secondary text-xs px-4 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all';
+                const emoji = { success: '✅', partial: '🟡', failed: '❌' }[status] || '';
+                b.textContent = `${emoji} ${label}`;
+                b.addEventListener('click', async () => {
+                    try {
+                        if (OFFLINE_MODE) {
+                            localCurrent.status = status;
+                            localCurrent.endedAt = Date.now();
+                            saveGoals(localList);
+                        } else {
+                            // Find active doc and update
+                            const snap = await getDocs(getGoalsRef());
+                            const active = snap.docs.find(d => d.data()?.status === 'active');
+                            if (active) await updateDoc(doc(getGoalsRef(), active.id), { status });
+                        }
+                        renderGoals();
+                        container.remove();
+                        const statusMsg = status === 'success' ? 'Goal succeeded' : status === 'partial' ? 'Marked partial' : 'Marked failed';
+                        showToast(statusMsg);
+                        // Auto-post outcome to chat
+                        const chatMsg = `${status === 'success' ? '✅' : status === 'partial' ? '🟡' : '❌'} ${statusMsg}: ${localCurrent.text}`;
+                        if (OFFLINE_MODE) {
+                            localChat.push({ userId: 'local', userName: userName || getUserNameFromStorage(), text: chatMsg, createdAt: new Date() });
+                            renderLocalChat();
+                        } else {
+                            try {
+                                await addDoc(getChatRef(), { userId, userName: userName || getUserNameFromStorage(), text: chatMsg, createdAt: serverTimestamp() });
+                            } catch (e) { console.warn('Failed to post outcome to chat', e); }
+                        }
+                    } catch (e) { console.error('Failed to update goal status', e); }
+                });
+                return b;
+            };
+            container.appendChild(makeBtn('Succeeded', 'success'));
+            container.appendChild(makeBtn('Partial', 'partial'));
+            container.appendChild(makeBtn('Failed', 'failed'));
+            if (currentGoalEl) currentGoalEl.after(container);
+        }
                 if (OFFLINE_MODE && !window.__TEST_GOOGLE_SIGNIN__) {
                     showToast('Google Calendar requires online mode');
                     return;
