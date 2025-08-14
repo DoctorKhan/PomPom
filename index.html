@@ -671,6 +671,10 @@
             // Sync Advanced features toggle from saved state and wire change handler
             try {
                 if (featureModeToggle) {
+                    // Ensure a default exists; default to basic (off)
+                    if (!localStorage.getItem('pompom_feature_mode')) {
+                        try { localStorage.setItem('pompom_feature_mode', 'basic'); } catch {}
+                    }
                     featureModeToggle.checked = getUserFeatureToggleOn();
                     featureModeToggle.addEventListener('change', (e) => {
                         try { localStorage.setItem('pompom_feature_mode', e.target.checked ? 'advanced' : 'basic'); } catch {}
@@ -1540,14 +1544,14 @@
         }
 
         // User toggle: persisted mode (advanced/basic) via checkbox
-        function getUserFeatureToggleOn() {
+    function getUserFeatureToggleOn() {
             try {
-                const saved = (localStorage.getItem('pompom_feature_mode') || 'advanced');
+        const saved = (localStorage.getItem('pompom_feature_mode') || 'basic');
                 const savedOn = saved === 'advanced';
                 // If checkbox exists, reflect saved state
                 if (featureModeToggle) featureModeToggle.checked = !!savedOn;
                 return !!savedOn;
-            } catch { return true; }
+            } catch { return false; }
         }
 
         function applyAdvancedVisibility() {
