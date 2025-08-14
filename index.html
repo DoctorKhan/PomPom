@@ -230,6 +230,8 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M10 1.5a1.5 1.5 0 0 0-1.5 1.5v7A1.5 1.5 0 0 0 10 11.5h3A1.5 1.5 0 0 0 14.5 10V3A1.5 1.5 0 0 0 13 1.5z"/><path d="M4.5 4A1.5 1.5 0 0 0 3 5.5v7A1.5 1.5 0 0 0 4.5 14h6A1.5 1.5 0 0 0 12 12.5V12H5.5A1.5 1.5 0 0 1 4 10.5V4z"/></svg>
                     </div>
                 </div>
+                    <!-- Toast container -->
+                    <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-sky-900 text-white px-4 py-2 rounded-lg shadow-lg text-sm z-[60]"></div>
                 <div class="space-y-4">
                     <div id="sound-toggle-btn" class="icon-btn" title="Toggle Sound">
                         <!-- Speaker icon will be injected here -->
@@ -258,6 +260,16 @@
                         <div class="absolute inset-0 bg-gradient-to-br from-sky-100/20 to-sky-200/20 rounded-3xl -z-10"></div>
                     </div>
                     <div id="timer-mode-display" class="text-xl text-sky-700 mb-8">Focus Time (25m) ☁️🐕☁️ ✨</div>
+                    <!-- Quick Settings Row: Advanced Toggle + Share -->
+                    <div class="mt-6 mb-2 flex items-center gap-3">
+                        <label class="flex items-center gap-2 text-sm">
+                            <input id="feature-mode-toggle" type="checkbox" class="w-5 h-5">
+                            <span class="text-sky-800">Advanced features</span>
+                        </label>
+                        <span id="feature-mode-status" class="text-xs text-sky-600">Off</span>
+                        <div class="ml-auto"></div>
+                        <button id="copy-link-btn-inline" class="btn btn-secondary text-xs">Copy share link</button>
+                    </div>
                     <div class="flex items-center gap-4">
                         <button id="start-pause-btn" class="kawaii-button text-xl px-8 py-3 rounded-lg font-semibold text-sky-600">Start ✨</button>
                         <button id="reset-btn" class="kawaii-button text-xl px-6 py-3 rounded-lg font-semibold text-sky-600">Reset 🔄</button>
@@ -286,6 +298,10 @@
                             <div class="flex-grow"><label for="schedule-time" class="text-sm">Time</label><input id="schedule-time" type="time" class="w-full bg-white/20 p-2 rounded-md focus:outline-none"></div>
                             <div class="flex-grow-[3]"><label for="schedule-desc" class="text-sm">Description</label><input id="schedule-desc" type="text" placeholder="e.g., Team Sync" class="w-full bg-white/20 p-2 rounded-md focus:outline-none placeholder-white/50"></div>
                             <button id="schedule-add-btn" class="btn btn-primary">Schedule</button>
+                        </div>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            <button id="calendar-create-btn" class="btn btn-secondary">Create Google Calendar Event</button>
+                            <button id="meet-now-btn" class="btn btn-secondary">Start a Google Meet</button>
                         </div>
                     </div>
                     <div class="mb-6 p-4 glassmorphism rounded-lg">
@@ -324,13 +340,6 @@
     <div id="settings-modal" class="hidden fixed inset-0 bg-black/50 items-center justify-center z-50">
         <div class="glassmorphism p-6 rounded-2xl shadow-lg max-w-md w-full mx-4">
             <div class="flex items-center justify-between mb-4">
-                <div class="space-y-2 mt-1">
-                    <label class="flex items-center justify-between">
-                        <span class="text-sm">Advanced features</span>
-                        <input id="feature-mode-toggle" type="checkbox" class="w-5 h-5">
-                    </label>
-                    <div class="text-xs text-sky-700">When on: Todos + Planner + Calendar. When off: Timer only.</div>
-                </div>
                 <h3 class="text-2xl font-bold">Settings</h3>
                 <button id="close-settings-btn" class="text-sky-800 text-2xl">&times;</button>
             </div>
@@ -338,14 +347,6 @@
                 <div>
                     <label class="block text-sm font-medium mb-2">Groq API Key <span class="text-xs text-sky-700">(for AI features)</span></label>
                     <div class="flex gap-2 items-center">
-                <!-- Feature Mode Toggle -->
-                <div class="space-y-2 mt-1">
-                    <label class="flex items-center justify-between">
-                        <span class="text-sm">Advanced features</span>
-                        <input id="feature-mode-toggle" type="checkbox" class="w-5 h-5">
-                    </label>
-                    <div class="text-xs text-sky-700">When on: Todos + Planner + Calendar. When off: Timer only.</div>
-                </div>
                         <input id="api-key-input" type="password" placeholder="gsk_..." class="flex-1 bg-white/20 p-2 rounded-md focus:outline-none placeholder-white/60">
                         <button id="toggle-api-key-visibility" class="btn btn-primary text-xs px-3">Show</button>
                     </div>
@@ -429,6 +430,8 @@
         const resetBtn = document.getElementById('reset-btn');
         const modeControls = document.getElementById('mode-controls');
         const participantsList = document.getElementById('participants-list');
+    // Routing mode: use hash-only routing to avoid 404s on refresh with static servers
+    const USE_HASH_ROUTING = true;
         const participantCount = document.getElementById('participant-count');
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
@@ -448,6 +451,8 @@
         const scheduleTimeInput = document.getElementById('schedule-time');
         const scheduleDescInput = document.getElementById('schedule-desc');
         const scheduleAddBtn = document.getElementById('schedule-add-btn');
+        const calendarCreateBtn = document.getElementById('calendar-create-btn');
+        const meetNowBtn = document.getElementById('meet-now-btn');
         const plannerList = document.getElementById('planner-list');
     const toggleApiKeyVisibilityBtn = document.getElementById('toggle-api-key-visibility');
         const endSessionModal = document.getElementById('end-session-modal');
@@ -467,6 +472,8 @@
     const apiKeyStatusText = document.getElementById('api-key-status-text');
     const aiFeaturesStatus = document.getElementById('ai-features-status');
     const openGroqConsoleBtn = document.getElementById('open-groq-console-btn');
+    const copyLinkBtnInline = document.getElementById('copy-link-btn-inline');
+    const toastEl = document.getElementById('toast');
     // Todos UI
     const todoIdeaInput = document.getElementById('todo-idea-input');
     const todoAddBtn = document.getElementById('todo-add-btn');
@@ -521,6 +528,15 @@
 
         // --- INITIALIZATION ---
         function init() {
+        // --- TOAST UTILS ---
+        function showToast(msg, ms = 1600) {
+            const el = document.getElementById('toast');
+            if (!el) return;
+            el.textContent = msg;
+            el.classList.remove('hidden');
+            clearTimeout(el._t);
+            el._t = setTimeout(() => el.classList.add('hidden'), ms);
+        }
             try {
                 if (!OFFLINE_MODE) {
                     app = initializeApp(firebaseConfig);
@@ -542,6 +558,7 @@
             updateSoundUI();
             // Initialize settings status once so the modal shows accurate info
             try { updateSettingsStatusUI(); } catch {}
+            try { applyAdvancedVisibility(); } catch {}
             if (!OFFLINE_MODE) handleAuthentication();
             handleRouting();
             setupEventListeners();
@@ -557,6 +574,7 @@
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     userId = user.uid;
+                    try { applyAdvancedVisibility(); } catch {}
                     if (sessionId) await joinSession();
                 } else {
                     try {
@@ -566,18 +584,19 @@
                             await signInAnonymously(auth);
                         }
                     } catch (error) { console.error("Authentication failed:", error); }
+                    finally { try { applyAdvancedVisibility(); } catch {} }
                 }
             });
         }
 
     function handleRouting() {
-            // Support both path-based (/team) and hash-based (/#/team) routing for static hosting
+            // Prefer hash-based routing to avoid 404s on static refresh
             let potentialSessionId = '';
             const hash = window.location.hash || '';
             if (hash.startsWith('#/')) {
                 const seg = hash.slice(2).split('/').filter(Boolean);
                 potentialSessionId = seg[seg.length - 1] || '';
-            } else {
+            } else if (!USE_HASH_ROUTING) {
                 const segments = window.location.pathname.split('/').filter(s => s);
                 potentialSessionId = segments.pop() || '';
             }
@@ -647,6 +666,16 @@
 
         // --- EVENT LISTENERS ---
         function setupEventListeners() {
+            // Sync Advanced features toggle from saved state and wire change handler
+            try {
+                if (featureModeToggle) {
+                    featureModeToggle.checked = getUserFeatureToggleOn();
+                    featureModeToggle.addEventListener('change', (e) => {
+                        try { localStorage.setItem('pompom_feature_mode', e.target.checked ? 'advanced' : 'basic'); } catch {}
+                        applyAdvancedVisibility();
+                    });
+                }
+            } catch {}
             createSessionBtn.addEventListener('click', () => {
                 let name = sessionNameInput.value.trim().replace(/[^a-zA-Z0-9-]/g, '');
                 if (!name) {
@@ -654,9 +683,9 @@
                 }
                 try { localStorage.setItem('pompom_team_name', toSlug(name)); } catch {}
                 // Update both path and hash for static hosting
-                try {
-                    window.history.pushState({}, name, `/${name}`);
-                } catch {}
+                if (!USE_HASH_ROUTING) {
+                    try { window.history.pushState({}, name, `/${name}`); } catch {}
+                }
                 window.location.hash = `#/${name}`;
                 handleRouting();
             });
@@ -675,7 +704,7 @@
                 // Update the session ID if team name was changed
                 if (teamName !== sessionId) {
                     sessionId = toSlug(teamName);
-                    try { window.history.pushState({}, sessionId, `/${sessionId}`); } catch {}
+                    if (!USE_HASH_ROUTING) { try { window.history.pushState({}, sessionId, `/${sessionId}`); } catch {} }
                     window.location.hash = `#/${sessionId}`;
                 }
 
@@ -743,10 +772,10 @@
 	                    const slug = sessionId || (teamNameInput?.value || '').trim() || 'session';
 	                    const url = `${base}/${toSlug(slug)}`;
 	                    await navigator.clipboard.writeText(url);
-	                    alert('Share link copied to clipboard!');
+	                    showToast('Link copied');
 	                } catch (e) {
 	                    console.error('Copy link failed', e);
-	                    alert('Failed to copy link');
+	                    showToast('Copy failed');
 	                }
 	            });
                     setMode(mode);
@@ -760,6 +789,24 @@
 
             scheduleAddBtn.addEventListener('click', scheduleNewPomodoro);
             scheduleDescInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') scheduleNewPomodoro(); });
+            // Planner: Google Calendar + Meet
+            calendarCreateBtn.addEventListener('click', () => {
+                const title = encodeURIComponent(scheduleDescInput.value.trim() || 'PomPom Focus Session');
+                // Build start/end from today + selected time; default 30m
+                const now = new Date();
+                const [hh, mm] = (scheduleTimeInput.value || '00:00').split(':');
+                const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hh||'0',10), parseInt(mm||'0',10), 0);
+                const end = new Date(start.getTime() + 30*60*1000);
+                const fmt = (d) => `${d.getUTCFullYear()}${String(d.getUTCMonth()+1).padStart(2,'0')}${String(d.getUTCDate()).padStart(2,'0')}T${String(d.getUTCHours()).padStart(2,'0')}${String(d.getUTCMinutes()).padStart(2,'0')}00Z`;
+                const dates = `${fmt(start)}/${fmt(end)}`;
+                const details = encodeURIComponent('Created by PomPom');
+                const url = `https://calendar.google.com/calendar/u/0/r/eventedit?text=${title}&dates=${dates}&details=${details}`;
+                window.open(url, '_blank');
+            });
+            meetNowBtn.addEventListener('click', () => {
+                // Open a new Google Meet (anonymous users will get prompted to start a meeting if permitted)
+                window.open('https://meet.google.com/new', '_blank');
+            });
             calendarEventBtn.addEventListener('click', handleCreateCalendarEvent);
             sendChatBtn.addEventListener('click', sendChatMessage);
             chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
@@ -854,29 +901,6 @@
                     const tIdx = localTodos.findIndex(x => (x.id || String(x.createdAt)) === parentId);
                     if (tIdx >= 0) {
                         const subs = localTodos[tIdx].subtasks || [];
-            // Feature mode toggle
-            const applyFeatureMode = (enabled) => {
-                const adv = !!enabled;
-                // Enable/disable UI buttons
-                plannerViewBtn.classList.toggle('hidden', !adv);
-                viewChatBtn.classList.toggle('hidden', !adv);
-                calendarEventBtn.classList.toggle('hidden', !adv);
-                // Views
-                plannerView.classList.toggle('hidden', !adv);
-                chatView.classList.toggle('hidden', !adv);
-                // Persist setting
-                try { localStorage.setItem('pompom_feature_mode', adv ? 'advanced' : 'basic'); } catch {}
-                // If in basic mode and currently not on timer, switch to timer
-                if (!adv) switchView('timer');
-                // Sync toggle UI
-                try { if (featureModeToggle) featureModeToggle.checked = adv; } catch {}
-            };
-            const savedMode = (localStorage.getItem('pompom_feature_mode') || 'advanced');
-            applyFeatureMode(savedMode === 'advanced');
-            if (featureModeToggle) featureModeToggle.addEventListener('change', (e) => applyFeatureMode(e.target.checked));
-
-            // Copy share link available on session and name pages
-            if (copyLinkBtn) copyLinkBtn.classList.remove('hidden');
                         const sub = subs.find(st => (st.id || `${parentId}::${subs.indexOf(st)}`) === sid);
                         if (sub) {
                             const newTodo = { text: sub.text || '', ownerName: userName || getUserNameFromStorage(), due: '', tags: [], createdBy: userName || getUserNameFromStorage(), createdAt: new Date().toISOString(), order: nextTodoOrder++ };
@@ -902,13 +926,26 @@
                         window.location.href = '/';
                     }
                 }
+            // Inline copy share link
+            if (copyLinkBtnInline) copyLinkBtnInline.addEventListener('click', async () => {
+                try {
+                    const base = location.origin;
+                    const slug = sessionId || (teamNameInput?.value || '').trim() || 'session';
+                    const url = `${base}/${toSlug(slug)}`;
+                    await navigator.clipboard.writeText(url);
+                    showToast('Link copied');
+                } catch (e) {
+                    console.error('Copy link failed', e);
+                    showToast('Copy failed');
+                }
+            });
             });
 
             // Settings modal
             settingsBtn.addEventListener('click', () => { updateSettingsStatusUI(); settingsModal.classList.remove('hidden'); settingsModal.classList.add('flex'); });
             closeSettingsBtn.addEventListener('click', () => { settingsModal.classList.add('hidden'); settingsModal.classList.remove('flex'); });
-            saveApiKeyBtn.addEventListener('click', () => { const v = apiKeyInput.value.trim(); if (v) { localStorage.setItem('groq_api_key', v); apiKeyInput.value = ''; updateSettingsStatusUI(); } });
-            clearApiKeyBtn.addEventListener('click', () => { localStorage.removeItem('groq_api_key'); updateSettingsStatusUI(); });
+            saveApiKeyBtn.addEventListener('click', () => { const v = apiKeyInput.value.trim(); if (v) { localStorage.setItem('groq_api_key', v); apiKeyInput.value = ''; updateSettingsStatusUI(); applyAdvancedVisibility(); } });
+            clearApiKeyBtn.addEventListener('click', () => { localStorage.removeItem('groq_api_key'); updateSettingsStatusUI(); applyAdvancedVisibility(); });
             openGroqConsoleBtn.addEventListener('click', () => { window.open('https://console.groq.com/', '_blank'); });
 
             // Todos
@@ -1237,7 +1274,7 @@
             try {
                 // Allow tests to run in offline mode if a test sign-in mock is present
                 if (OFFLINE_MODE && !window.__TEST_GOOGLE_SIGNIN__) {
-                    alert('Google Calendar requires online mode. Configure Firebase and reload.');
+                    showToast('Google Calendar requires online mode');
                     return;
                 }
                 async function getGoogleAccessToken() {
@@ -1254,7 +1291,7 @@
                     return { accessToken: credential?.accessToken, user: result.user };
                 }
                 const { accessToken, user } = await getGoogleAccessToken();
-                if (!accessToken) { alert('Missing Google access token.'); return; }
+                if (!accessToken) { showToast('Missing Google access token'); return; }
 
                 const now = new Date();
                 const durationSec = (TIMER_MODES[localSessionState?.mode || 'pomodoro25']?.duration) || 25*60;
@@ -1286,10 +1323,10 @@
                     await addDoc(getChatRef(), { userId, userName: userName || user?.displayName || user?.email || 'User', text: msg, createdAt: serverTimestamp() });
                 }
                 switchView('chat');
-                alert('Calendar event created and posted to chat.');
+                showToast('Calendar event created');
             } catch (e) {
                 console.error('Create calendar event failed', e);
-                alert('Failed to create calendar event: ' + (e?.message || e));
+                showToast('Calendar event failed');
             }
         }
 
@@ -1447,6 +1484,26 @@
             }
             try {
                 const messages = [];
+            // Prefill Groq key masked and show/hide
+            try {
+                const stored = getGroqAPIKey();
+                if (stored && apiKeyInput) {
+                    apiKeyInput.value = stored;
+                    apiKeyInput.type = 'password';
+                }
+                if (toggleApiKeyVisibilityBtn && apiKeyInput) {
+                    toggleApiKeyVisibilityBtn.addEventListener('click', () => {
+                        if (apiKeyInput.type === 'password') {
+                            apiKeyInput.type = 'text';
+                            toggleApiKeyVisibilityBtn.textContent = 'Hide';
+                        } else {
+                            apiKeyInput.type = 'password';
+                            toggleApiKeyVisibilityBtn.textContent = 'Show';
+                        }
+                    });
+                }
+            } catch {}
+
                 for (const item of history) {
                     messages.push({ role: item.role, content: item.content });
                 }
@@ -1472,6 +1529,54 @@
             const key = getGroqAPIKey();
             apiKeyStatusText.textContent = key ? 'Configured' : 'Not configured';
             aiFeaturesStatus.textContent = key ? 'Enabled' : 'Disabled';
+            applyAdvancedVisibility();
+        }
+
+        function advancedFeaturesOn() {
+            // Consider advanced features on only when Groq key is set and we are online
+            return !!getGroqAPIKey() && !OFFLINE_MODE;
+        }
+
+        // User toggle: persisted mode (advanced/basic) via checkbox
+        function getUserFeatureToggleOn() {
+            try {
+                const saved = (localStorage.getItem('pompom_feature_mode') || 'advanced');
+                const savedOn = saved === 'advanced';
+                // If checkbox exists, reflect saved state
+                if (featureModeToggle) featureModeToggle.checked = !!savedOn;
+                return !!savedOn;
+            } catch { return true; }
+        }
+
+        function applyAdvancedVisibility() {
+            try {
+                // Require both: environment supports advanced AND user toggle is on
+                const envOn = advancedFeaturesOn();
+                const userOn = getUserFeatureToggleOn();
+                const on = envOn && userOn;
+
+                // Nav icons
+                viewPlannerBtn.classList.toggle('hidden', !on);
+                viewChatBtn.classList.toggle('hidden', !on);
+                calendarEventBtn.classList.toggle('hidden', !on);
+                // Views (hide if turning off and currently visible)
+                if (!on) {
+                    plannerView.classList.add('hidden');
+                    chatView.classList.add('hidden');
+                    if (!timerView.classList.contains('hidden')) {
+                        // already on timer
+                    } else {
+                        switchView('timer');
+                    }
+                }
+                // Status label next to checkbox
+                const status = document.getElementById('feature-mode-status');
+                if (status) {
+                    if (on) status.textContent = 'On: Todos + Planner + Calendar';
+                    else if (!userOn) status.textContent = 'Off';
+                    else status.textContent = 'Unavailable (needs Groq key + online)';
+                }
+            } catch {}
         }
 
         function refreshOwnerSelect(names) {
