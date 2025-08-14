@@ -2,15 +2,22 @@
   "name": "pompom-app",
   "version": "1.0.0",
   "description": "A productivity timer for remote teams with pom-pom spirit! 🐕🎀",
-  "main": "index.html",
+  "main": "server.js",
   "scripts": {
-    "start": "./run",
+    "start": "node server.js",
+    "dev": "node server.js",
+    "build": "./build.sh",
     "test": "./run test",
     "test:firebase": "./run firebase",
     "firebase:setup": "./setup-firebase.sh",
     "firebase:deploy": "firebase deploy",
     "firebase:deploy:rules": "firebase deploy --only firestore:rules,firestore:indexes",
     "firebase:deploy:hosting": "firebase deploy --only hosting"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0",
+    "cors": "^2.8.5"
   },
   "keywords": [
     "productivity",

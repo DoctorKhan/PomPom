@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PomPom - A productivity timer for remote teams</title>
-    <script src="firebase-config.js"></script>
+    <script src="firebase-config.js" onerror="console.warn('Firebase config not found - running in offline mode')"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -71,6 +71,25 @@
         .icon-btn:hover {
             @apply bg-white bg-opacity-10;
         }
+        /* New Navigation Button Styles */
+        .nav-btn {
+            @apply flex items-center justify-center rounded-xl cursor-pointer transition-all duration-200 relative;
+        }
+        .nav-btn-primary {
+            @apply w-12 h-12 bg-white/10 hover:bg-white/20 hover:scale-105 shadow-sm;
+        }
+        .nav-btn-primary.active {
+            @apply bg-white/25 shadow-md scale-105;
+        }
+        .nav-btn-secondary {
+            @apply w-10 h-10 bg-white/5 hover:bg-white/15 hover:scale-105;
+        }
+        .nav-btn-utility {
+            @apply w-8 h-8 bg-white/5 hover:bg-white/15 hover:scale-105;
+        }
+        .nav-btn-danger {
+            @apply w-8 h-8 bg-red-500/20 hover:bg-red-500/30 hover:scale-105 text-red-200;
+        }
         input[type="time"]::-webkit-calendar-picker-indicator {
             filter: invert(1);
         }
@@ -78,7 +97,7 @@
             @apply bg-transparent border-b-2 border-transparent focus:border-white focus:outline-none text-center font-semibold rounded-md focus:bg-black/20;
         }
         .mode-btn.active {
-            @apply bg-white text-sky-600 shadow-lg border border-sky-200;
+            @apply bg-white text-sky-600 shadow-lg border border-sky-200 scale-105;
         }
         .pom-pom-bounce {
             animation: pompom-bounce 2s ease-in-out infinite;
@@ -199,7 +218,8 @@
         <!-- Session Page -->
         <div id="session-page" class="hidden h-full w-full glassmorphism rounded-2xl shadow-lg flex">
             <!-- Sidebar -->
-            <nav class="w-24 p-4 flex flex-col items-center justify-between border-r border-white/30 bg-white/10">
+            <nav class="w-20 p-3 flex flex-col items-center justify-between border-r border-white/30 bg-white/10">
+                <!-- User Profile Section -->
                 <div class="text-center">
                     <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center font-bold text-2xl mb-2 mx-auto relative text-sky-600" id="user-avatar">
                         <!-- Cloud Pomeranian decorations -->
@@ -207,45 +227,56 @@
                         <div class="absolute -bottom-1 -left-1 w-4 h-4 bg-gradient-to-br from-pink-200 to-pink-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs" style="animation-delay: 0.7s">💖</div>
                         <div class="absolute -top-1 -left-1 w-4 h-4 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs" style="animation-delay: 1.2s">✨</div>
                     </div>
-                    <input type="text" id="user-name-input" class="name-input w-full text-sm text-sky-800" readonly>
+                    <input type="text" id="user-name-input" class="name-input w-full text-xs text-sky-800" readonly>
                 </div>
-                <div class="space-y-4">
-                    <div id="timer-view-btn" class="icon-btn active" title="Timer">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+                <!-- Main Navigation -->
+                <div class="flex flex-col items-center space-y-1">
+                    <!-- Primary Views -->
+                    <div class="space-y-1 mb-3">
+                        <div id="timer-view-btn" class="nav-btn nav-btn-primary active" title="Timer ⏱️">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+                        </div>
+                        <div id="planner-view-btn" class="nav-btn nav-btn-primary" title="Planner 📋">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>
+                        </div>
                     </div>
-                    <div id="planner-view-btn" class="icon-btn" title="Planner">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>
-                    </div>
-                    <div id="participants-view-btn" class="icon-btn" title="Participants">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M15 14s1 0 1-1-1-4-6-4-6 3-6 4 1 1 1 1h10zm-9.995-.944v-.002.002zM3.022 13h9.956a.274.274 0 0 0 .014-.002l.008-.002c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664a1.05 1.05 0 0 0 .022.004zM8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>
-                    </div>
-                    <div id="chat-view-btn" class="icon-btn" title="Chat">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M2.678 11.894a1 1 0 0 1 .287.801 10.97 10.97 0 0 1-.398 2c1.395-.323 2.247-.697 2.634-.893a1 1 0 0 1 .71-.074A8.06 8.06 0 0 0 8 14c3.996 0 7-2.506 7-5.5S11.996 3 8 3 1 5.506 1 8.5c0 1.468.617 2.83 1.678 3.894zm-.493 3.905a21.682 21.682 0 0 1-.713.129c-.2.032-.352-.176-.273-.362a9.68 9.68 0 0 0 .244-.637l.003-.01c.248-.72.45-1.548.524-2.319C.743 11.37 0 9.76 0 8.5 0 4.654 3.582 1 8 1s8 3.654 8 7.5-3.582 7.5-8 7.5c-1.259 0-2.44-.277-3.524-.764-.543-.266-1.13-.52-1.734-.823z"/></svg>
-                    </div>
-                    <div id="settings-btn" class="icon-btn" title="Settings">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.84-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l-.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
-                    </div>
-                    <div id="calendar-event-btn" class="icon-btn" title="Create Google Calendar + Meet">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M3 0a2 2 0 0 0-2 2v1h14V2a2 2 0 0 0-2-2z"/><path d="M0 4.5A1.5 1.5 0 0 1 1.5 3h13A1.5 1.5 0 0 1 16 4.5v9A2.5 2.5 0 0 1 13.5 16h-11A2.5 2.5 0 0 1 0 13.5z"/></svg>
-                    </div>
-                    <div id="copy-link-btn" class="icon-btn" title="Copy Share Link">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M10 1.5a1.5 1.5 0 0 0-1.5 1.5v7A1.5 1.5 0 0 0 10 11.5h3A1.5 1.5 0 0 0 14.5 10V3A1.5 1.5 0 0 0 13 1.5z"/><path d="M4.5 4A1.5 1.5 0 0 0 3 5.5v7A1.5 1.5 0 0 0 4.5 14h6A1.5 1.5 0 0 0 12 12.5V12H5.5A1.5 1.5 0 0 1 4 10.5V4z"/></svg>
+
+                    <!-- Divider -->
+                    <div class="w-8 h-px bg-white/20 mb-3"></div>
+
+                    <!-- Team Features -->
+                    <div class="space-y-1 mb-3">
+                        <div id="participants-view-btn" class="nav-btn nav-btn-secondary" title="Team 👥">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M15 14s1 0 1-1-1-4-6-4-6 3-6 4 1 1 1 1h10zm-9.995-.944v-.002.002zM3.022 13h9.956a.274.274 0 0 0 .014-.002l.008-.002c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664a1.05 1.05 0 0 0 .022.004zM8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>
+                        </div>
+                        <div id="chat-view-btn" class="nav-btn nav-btn-secondary" title="Chat 💬">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M2.678 11.894a1 1 0 0 1 .287.801 10.97 10.97 0 0 1-.398 2c1.395-.323 2.247-.697 2.634-.893a1 1 0 0 1 .71-.074A8.06 8.06 0 0 0 8 14c3.996 0 7-2.506 7-5.5S11.996 3 8 3 1 5.506 1 8.5c0 1.468.617 2.83 1.678 3.894zm-.493 3.905a21.682 21.682 0 0 1-.713.129c-.2.032-.352-.176-.273-.362a9.68 9.68 0 0 0 .244-.637l.003-.01c.248-.72.45-1.548.524-2.319C.743 11.37 0 9.76 0 8.5 0 4.654 3.582 1 8 1s8 3.654 8 7.5-3.582 7.5-8 7.5c-1.259 0-2.44-.277-3.524-.764-.543-.266-1.13-.52-1.734-.823z"/></svg>
+                        </div>
+                        <div id="copy-link-btn" class="nav-btn nav-btn-secondary" title="Share Link 🔗">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1.002 1.002 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4.018 4.018 0 0 1-.128-1.287z"/><path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243L6.586 4.672z"/></svg>
+                        </div>
+                        <div id="calendar-event-btn" class="nav-btn nav-btn-secondary" title="Calendar 📅">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V5h16V4H0V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5z"/><path d="M11.5 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/></svg>
+                        </div>
                     </div>
                 </div>
-                    <!-- Toast container -->
-                    <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-sky-900 text-white px-4 py-2 rounded-lg shadow-lg text-sm z-[60]"></div>
-                <div class="space-y-4">
-                    <div id="sound-toggle-btn" class="icon-btn" title="Toggle Sound">
+                <!-- Bottom Controls -->
+                <div class="flex flex-col items-center space-y-2">
+                    <div id="sound-toggle-btn" class="nav-btn nav-btn-utility" title="Sound 🔊">
                         <!-- Speaker icon will be injected here -->
                     </div>
-                    <div id="test-alarm-btn" class="icon-btn" title="Test Alarm">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16"><path d="M8 16a2 2 0 0 0 1.985-1.75H6.015A2 2 0 0 0 8 16m.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 6h14c-1.5 0-2-4.902-2-6a5.002 5.002 0 0 0-4.005-4.901"/></svg>
+                    <div id="settings-btn" class="nav-btn nav-btn-utility" title="Settings ⚙️">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.84-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l-.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
                     </div>
-                    <div id="leave-btn" class="icon-btn" title="Leave Fluffy Cloud Team ☁️💔">
-                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z"/><path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/></svg>
+                    <div class="w-6 h-px bg-white/20 my-1"></div>
+                    <div id="leave-btn" class="nav-btn nav-btn-danger" title="Leave Team 👋">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z"/><path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/></svg>
                     </div>
                 </div>
             </nav>
+
+            <!-- Toast container -->
+            <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-sky-900 text-white px-4 py-2 rounded-lg shadow-lg text-sm z-[60]"></div>
 
             <!-- Main Content -->
             <main class="flex-1 flex flex-col p-4 md:p-8 overflow-hidden">
@@ -266,43 +297,39 @@
                     <div id="timer-goal-pill" class="hidden mb-6 px-6 py-3 bg-gradient-to-r from-sky-100 via-blue-50 to-purple-100 rounded-full text-sky-800 text-sm font-semibold shadow-lg border border-sky-200 kawaii-float">
                         <span class="text-sky-600 mr-2">🎯</span> <span id="timer-goal-text"></span>
                     </div>
-                    <!-- Quick Row: Share link only (advanced toggle moved to Settings) -->
-                    <div class="mt-6 mb-2 flex items-center">
-                        <div class="ml-auto"></div>
-                        <button id="copy-link-btn-inline" class="btn btn-secondary text-xs">Copy share link</button>
-                    </div>
+
                     <!-- Pomo Goal input -->
-                    <div class="w-full max-w-xl mt-3">
-                        <label class="block text-sm mb-1 text-sky-800 font-medium">🎯 Pomo goal</label>
-                        <div class="flex gap-2">
-                            <input id="goal-input" type="text" placeholder="What will you accomplish this pomo?" class="flex-1 bg-white/90 text-sky-800 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-sky-400 shadow-sm border border-sky-200">
-                            <button id="save-goal-btn" class="btn btn-primary text-sm px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all">Set ✨</button>
+                    <div class="w-full max-w-xl mt-6">
+                        <label class="block text-sm mb-2 text-sky-800 font-bold uppercase tracking-wide">🎯 Session Goal</label>
+                        <div class="flex gap-3">
+                            <input id="goal-input" type="text" placeholder="What will you accomplish this session?" class="flex-1 bg-white/95 text-sky-800 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-sky-400 shadow-md border border-sky-200 font-medium">
+                            <button id="save-goal-btn" class="btn btn-primary text-sm px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105">Set Goal ✨</button>
                         </div>
-                        <div id="current-goal" class="mt-2 text-sky-900 text-sm hidden font-medium"></div>
+                        <div id="current-goal" class="mt-3 text-sky-900 text-sm hidden font-semibold bg-sky-50/50 px-3 py-2 rounded-lg"></div>
                     </div>
 
                     <!-- Recent goal history -->
-                    <div class="w-full max-w-xl mt-4">
-                        <div class="text-xs text-sky-700 mb-2 font-medium uppercase tracking-wide">Recent goals</div>
-                        <div id="goal-history" class="space-y-2"></div>
+                    <div class="w-full max-w-xl mt-6">
+                        <div class="text-xs text-sky-700 mb-3 font-bold uppercase tracking-wider">📈 Recent Goals</div>
+                        <div id="goal-history" class="space-y-2 max-h-32 overflow-y-auto"></div>
                     </div>
                     <div class="flex items-center gap-4">
-                        <button id="start-pause-btn" class="kawaii-button text-xl px-8 py-3 rounded-lg font-semibold text-sky-600">Start ✨</button>
-                        <button id="reset-btn" class="kawaii-button text-xl px-6 py-3 rounded-lg font-semibold text-sky-600">Reset 🔄</button>
+                        <button id="start-pause-btn" class="kawaii-button text-xl px-10 py-4 rounded-2xl font-bold text-sky-600 shadow-lg hover:shadow-xl transition-all hover:scale-105 bg-white/90 border-2 border-sky-200">Start ✨</button>
+                        <button id="reset-btn" class="kawaii-button text-lg px-6 py-3 rounded-xl font-semibold text-sky-600 shadow-md hover:shadow-lg transition-all hover:scale-105 bg-white/70 border border-sky-200">Reset 🔄</button>
                     </div>
-                    <p class="text-sm text-sky-700 mt-3 opacity-75">Press spacebar to start/pause ⌨️✨</p>
+                    <p class="text-sm text-sky-700 mt-4 opacity-75 font-medium">Press spacebar to start/pause ⌨️✨</p>
                      <div id="mode-controls" class="mt-8">
-                        <div class="mb-2"><span class="text-sm uppercase font-semibold text-sky-700">Focus ☁️</span></div>
-                        <div class="flex items-center gap-2 mb-4">
-                            <button data-mode="pomodoro25" class="btn btn-sm bg-white/10 hover:bg-white/20 mode-btn">25m</button>
-                            <button data-mode="pomodoro30" class="btn btn-sm bg-white/10 hover:bg-white/20 mode-btn">30m</button>
-                            <button data-mode="pomodoro45" class="btn btn-sm bg-white/10 hover:bg-white/20 mode-btn">45m</button>
-                            <button data-mode="pomodoro60" class="btn btn-sm bg-white/10 hover:bg-white/20 mode-btn">60m</button>
+                        <div class="mb-3"><span class="text-sm uppercase font-bold text-sky-700 tracking-wide">🎯 Focus Sessions</span></div>
+                        <div class="flex items-center gap-2 mb-6">
+                            <button data-mode="pomodoro25" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">25m</button>
+                            <button data-mode="pomodoro30" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">30m</button>
+                            <button data-mode="pomodoro45" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">45m</button>
+                            <button data-mode="pomodoro60" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">60m</button>
                         </div>
-                        <div class="mb-2"><span class="text-sm uppercase font-semibold text-sky-700">Break 💤✨</span></div>
+                        <div class="mb-3"><span class="text-sm uppercase font-bold text-sky-700 tracking-wide">☁️ Break Time</span></div>
                         <div class="flex items-center gap-2">
-                            <button data-mode="shortBreak" class="btn btn-sm bg-white/10 hover:bg-white/20 mode-btn">5m</button>
-                            <button data-mode="longBreak" class="btn btn-sm bg-white/10 hover:bg-white/20 mode-btn">15m</button>
+                            <button data-mode="shortBreak" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">5m</button>
+                            <button data-mode="longBreak" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">15m</button>
                         </div>
                     </div>
                 </div>
@@ -361,14 +388,16 @@
             </div>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Groq API Key <span class="text-xs text-sky-700">(for AI features)</span></label>
-                    <div class="flex gap-2 items-center">
-                        <input id="api-key-input" type="password" placeholder="gsk_..." class="flex-1 bg-white/20 p-2 rounded-md focus:outline-none placeholder-white/60">
-                        <button id="toggle-api-key-visibility" class="btn btn-primary text-xs px-3">Show</button>
-                    </div>
-                    <div class="flex gap-2 mt-2">
-                        <button id="save-api-key-btn" class="btn btn-secondary flex-1">Save</button>
-                        <button id="clear-api-key-btn" class="btn btn-secondary flex-1">Clear</button>
+                    <label class="block text-sm font-medium mb-2">AI Features <span class="text-xs text-sky-700">(powered by shared Groq)</span></label>
+                    <div class="p-3 bg-white/10 rounded-md text-sm">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-green-400">✨</span>
+                            <span class="font-medium">Server-side AI integration</span>
+                        </div>
+                        <div class="text-xs text-sky-700">
+                            AI features are provided through a shared Groq API key managed by the server.
+                            No setup required - just use the AI features in Todos and Planner!
+                        </div>
                     </div>
                 </div>
                 <div class="pt-2 border-t border-white/20">
@@ -379,10 +408,9 @@
                     <div class="text-xs text-sky-700 mt-1" id="feature-mode-status">Off</div>
                 </div>
                 <div class="p-3 bg-white/10 rounded-md text-sm">
-                    <div class="flex justify-between"><span>API Key:</span> <span id="api-key-status-text" class="font-semibold">Not configured</span></div>
-                    <div class="flex justify-between"><span>AI Features:</span> <span id="ai-features-status" class="font-semibold">Disabled</span></div>
+                    <div class="flex justify-between"><span>Server AI:</span> <span id="api-key-status-text" class="font-semibold">Checking...</span></div>
+                    <div class="flex justify-between"><span>AI Features:</span> <span id="ai-features-status" class="font-semibold">Checking...</span></div>
                 </div>
-                <button id="open-groq-console-btn" class="btn btn-primary w-full">Open Groq Console</button>
             </div>
         </div>
     </div>
@@ -419,7 +447,6 @@
 	            };
 	            __wrap('error');
 	            __wrap('warn');
-        const copyLinkBtn = document.getElementById('copy-link-btn');
 	            window.addEventListener('error', (e) => {
 	                try { window.__CONSOLE_LOGS.push({ level: 'error', message: e.message || 'window.onerror' }); } catch {}
 	            });
@@ -466,11 +493,13 @@
     const timerGoalPill = document.getElementById('timer-goal-pill');
     const timerGoalText = document.getElementById('timer-goal-text');
     const goalHistoryEl = document.getElementById('goal-history');
-        const viewTimerBtn = document.getElementById('timer-view-btn');
+    const viewTimerBtn = document.getElementById('timer-view-btn');
         const viewPlannerBtn = document.getElementById('planner-view-btn');
         const viewParticipantsBtn = document.getElementById('participants-view-btn');
         const viewChatBtn = document.getElementById('chat-view-btn');
         const calendarEventBtn = document.getElementById('calendar-event-btn');
+    const copyLinkBtn = document.getElementById('copy-link-btn');
+    const copyLinkBtnInline = document.getElementById('copy-link-btn-inline');
         const leaveBtn = document.getElementById('leave-btn');
         const soundToggleBtn = document.getElementById('sound-toggle-btn');
     const testAlarmBtn = document.getElementById('test-alarm-btn');
@@ -502,8 +531,16 @@
     const apiKeyStatusText = document.getElementById('api-key-status-text');
     const aiFeaturesStatus = document.getElementById('ai-features-status');
     const openGroqConsoleBtn = document.getElementById('open-groq-console-btn');
-    const copyLinkBtnInline = document.getElementById('copy-link-btn-inline');
     const toastEl = document.getElementById('toast');
+    // Toast utility available app-wide
+    function showToast(msg, ms = 1600) {
+        const el = toastEl || document.getElementById('toast');
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.remove('hidden');
+        clearTimeout(el._t);
+        el._t = setTimeout(() => el.classList.add('hidden'), ms);
+    }
     // Todos UI
     const todoIdeaInput = document.getElementById('todo-idea-input');
     const todoAddBtn = document.getElementById('todo-add-btn');
@@ -599,16 +636,7 @@
         };
 
         // --- INITIALIZATION ---
-        function init() {
-        // --- TOAST UTILS ---
-        function showToast(msg, ms = 1600) {
-            const el = document.getElementById('toast');
-            if (!el) return;
-            el.textContent = msg;
-            el.classList.remove('hidden');
-            clearTimeout(el._t);
-            el._t = setTimeout(() => el.classList.add('hidden'), ms);
-        }
+    function init() {
             try {
                 if (!OFFLINE_MODE) {
                     app = initializeApp(firebaseConfig);
@@ -739,6 +767,32 @@
 
         // --- EVENT LISTENERS ---
         function setupEventListeners() {
+            // Share link copy utility (supports hash routing; includes fallback)
+            async function copyShareLink() {
+                try {
+                    const base = location.origin;
+                    const slug = toSlug(sessionId || teamNameInput?.value || 'session');
+                    const url = USE_HASH_ROUTING ? `${base}/#/${slug}` : `${base}/${slug}`;
+                    if (navigator.clipboard && window.isSecureContext) {
+                        await navigator.clipboard.writeText(url);
+                    } else {
+                        // Fallback for insecure context or denied permission
+                        const ta = document.createElement('textarea');
+                        ta.value = url;
+                        ta.setAttribute('readonly', '');
+                        ta.style.position = 'absolute';
+                        ta.style.left = '-9999px';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                    }
+                    showToast('Link copied');
+                } catch (e) {
+                    console.error('Copy link failed', e);
+                    showToast('Copy failed');
+                }
+            }
             // Sync Advanced features toggle from saved state and wire change handler
             try {
                 if (featureModeToggle) {
@@ -761,67 +815,14 @@
                 try { localStorage.setItem('pompom_team_name', toSlug(name)); } catch {}
                 // Update both path and hash for static hosting
                 if (!USE_HASH_ROUTING) {
-            // Goal handlers
-            if (saveGoalBtn) saveGoalBtn.addEventListener('click', async () => {
-                const text = (goalInput?.value || '').trim();
-                if (!text) { showToast('Enter a goal'); return; }
-                if (OFFLINE_MODE) {
-                    const list = loadGoals();
-                    list.forEach(g => { if (g.status === 'active') g.status = 'partial'; });
-                    list.push({ id: Date.now(), text, status: 'active', startedAt: Date.now() });
-                    saveGoals(list);
-                    renderGoals();
-                } else {
-                    try {
-                        // Close any active goals
-                        const existingSnap = await getDocs(getGoalsRef());
-                        existingSnap.forEach(async d => {
-                            const data = d.data();
-                            if (data.status === 'active') await updateDoc(doc(getGoalsRef(), d.id), { status: 'partial' });
-                        });
-                        await addDoc(getGoalsRef(), { text, status: 'active', startedAt: serverTimestamp(), createdBy: userName || getUserNameFromStorage() });
-                    } catch (e) { console.error('Failed to save goal', e); }
-                }
-                goalInput.value = '';
-                renderGoals();
-                // Auto-post to chat
-                const chatMsg = `🎯 Goal set: ${text}`;
-                if (OFFLINE_MODE) {
-                    localChat.push({ userId: 'local', userName: userName || getUserNameFromStorage(), text: chatMsg, createdAt: new Date() });
-                    renderLocalChat();
-                } else {
-                    try {
-                        await addDoc(getChatRef(), { userId, userName: userName || getUserNameFromStorage(), text: chatMsg, createdAt: serverTimestamp() });
-                    } catch (e) { console.warn('Failed to post goal to chat', e); }
-                }
-            });
-            if (goalInput) goalInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    saveGoalBtn.click();
-                    // Start timer after brief delay to allow goal save
-                    setTimeout(() => {
-                        if (startPauseBtn && startPauseBtn.textContent.includes('Start')) {
-                            startPauseBtn.click();
-                        }
-                    }, 100);
-                }
-            });
+
                     try { window.history.pushState({}, name, `/${name}`); } catch {}
-            // Press Enter on goal input: set goal and start timer
-            if (goalInput) goalInput.addEventListener('keydown', async (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (saveGoalBtn) saveGoalBtn.click();
-                    // start timer after slight delay to allow save
-                    setTimeout(() => startPauseBtn?.click(), 50);
-                }
-            });
+
                 }
                 window.location.hash = `#/${name}`;
                 handleRouting();
             });
-            sessionNameInput.addEventListener('keypress', (e) => {
+            sessionNameInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     createSessionBtn.click();
@@ -897,20 +898,58 @@
             modeControls.addEventListener('click', (e) => {
                 if (e.target.matches('.mode-btn')) {
                     const mode = e.target.dataset.mode;
-
-	            copyLinkBtn.addEventListener('click', async () => {
-	                try {
-	                    const base = location.origin;
-	                    const slug = sessionId || (teamNameInput?.value || '').trim() || 'session';
-	                    const url = `${base}/${toSlug(slug)}`;
-	                    await navigator.clipboard.writeText(url);
-	                    showToast('Link copied');
-	                } catch (e) {
-	                    console.error('Copy link failed', e);
-	                    showToast('Copy failed');
-	                }
-	            });
                     setMode(mode);
+                }
+            });
+
+            // Bind share link buttons
+            if (copyLinkBtn) copyLinkBtn.addEventListener('click', copyShareLink);
+            if (copyLinkBtnInline) copyLinkBtnInline.addEventListener('click', copyShareLink);
+
+            // Goal handlers
+            if (saveGoalBtn) saveGoalBtn.addEventListener('click', async () => {
+                const text = (goalInput?.value || '').trim();
+                if (!text) { showToast('Enter a goal'); return; }
+                if (OFFLINE_MODE) {
+                    const list = loadGoals();
+                    list.forEach(g => { if (g.status === 'active') g.status = 'partial'; });
+                    list.push({ id: Date.now(), text, status: 'active', startedAt: Date.now() });
+                    saveGoals(list);
+                    renderGoals();
+                } else {
+                    try {
+                        // Close any active goals
+                        const existingSnap = await getDocs(getGoalsRef());
+                        existingSnap.forEach(async d => {
+                            const data = d.data();
+                            if (data.status === 'active') await updateDoc(doc(getGoalsRef(), d.id), { status: 'partial' });
+                        });
+                        await addDoc(getGoalsRef(), { text, status: 'active', startedAt: serverTimestamp(), createdBy: userName || getUserNameFromStorage() });
+                    } catch (e) { console.error('Failed to save goal', e); }
+                }
+                goalInput.value = '';
+                renderGoals();
+                // Auto-post to chat
+                const chatMsg = `🎯 Goal set: ${text}`;
+                if (OFFLINE_MODE) {
+                    localChat.push({ userId: 'local', userName: userName || getUserNameFromStorage(), text: chatMsg, createdAt: new Date() });
+                    renderLocalChat();
+                } else {
+                    try {
+                        await addDoc(getChatRef(), { userId, userName: userName || getUserNameFromStorage(), text: chatMsg, createdAt: serverTimestamp() });
+                    } catch (e) { console.warn('Failed to post goal to chat', e); }
+                }
+            });
+            if (goalInput) goalInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveGoalBtn.click();
+                    // Start timer after brief delay to allow goal save
+                    setTimeout(() => {
+                        if (startPauseBtn && startPauseBtn.textContent.includes('Start')) {
+                            startPauseBtn.click();
+                        }
+                    }, 100);
                 }
             });
 
@@ -944,7 +983,13 @@
             chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
 
             soundToggleBtn.addEventListener('click', toggleSound);
-            testAlarmBtn.addEventListener('click', () => { initAudioAndNotifications(); playAlarm(); showNotification({ description: 'Test alarm' }); });
+            if (testAlarmBtn) {
+                testAlarmBtn.addEventListener('click', () => {
+                    initAudioAndNotifications();
+                    playAlarm();
+                    showNotification({ description: 'Test alarm' });
+                });
+            }
             endSessionDismissBtn.addEventListener('click', () => endSessionModal.classList.add('hidden'));
 
             leaveBtn.addEventListener('click', async () => {
@@ -1058,43 +1103,33 @@
                         window.location.href = '/';
                     }
                 }
-            // Inline copy share link
-            if (copyLinkBtnInline) copyLinkBtnInline.addEventListener('click', async () => {
-                try {
-                    const base = location.origin;
-                    const slug = sessionId || (teamNameInput?.value || '').trim() || 'session';
-                    const url = `${base}/${toSlug(slug)}`;
-                    await navigator.clipboard.writeText(url);
-                    showToast('Link copied');
-                } catch (e) {
-                    console.error('Copy link failed', e);
-                    showToast('Copy failed');
-                }
-            });
+            // (removed duplicate inline handler; now bound above)
             });
 
             // Settings modal
             settingsBtn.addEventListener('click', () => { updateSettingsStatusUI(); settingsModal.classList.remove('hidden'); settingsModal.classList.add('flex'); });
             closeSettingsBtn.addEventListener('click', () => { settingsModal.classList.add('hidden'); settingsModal.classList.remove('flex'); });
-            saveApiKeyBtn.addEventListener('click', () => { const v = apiKeyInput.value.trim(); if (v) { localStorage.setItem('groq_api_key', v); apiKeyInput.value = ''; updateSettingsStatusUI(); applyAdvancedVisibility(); } });
-            clearApiKeyBtn.addEventListener('click', () => { localStorage.removeItem('groq_api_key'); updateSettingsStatusUI(); applyAdvancedVisibility(); });
-            openGroqConsoleBtn.addEventListener('click', () => { window.open('https://console.groq.com/', '_blank'); });
+            // AI features are now server-side - no user key management needed
 
             // Todos
             todoAddBtn.addEventListener('click', async () => { await addTodo(); });
             todoIdeaInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTodo(); });
 
-            // Global Enter key handler for name input page
-            document.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    // Check which page is visible and handle accordingly
-                    if (!nameInputPage.classList.contains('hidden')) {
-                        e.preventDefault();
-                        startSessionBtn.click();
-                    } else if (!landingPage.classList.contains('hidden')) {
-                        e.preventDefault();
-                        createSessionBtn.click();
-                    }
+            // Global Enter key: advance from visible screen (avoid when typing)
+            document.addEventListener('keydown', (e) => {
+                if (e.key !== 'Enter') return;
+                const tag = (e.target && e.target.tagName) || '';
+                const typing = tag === 'INPUT' || tag === 'TEXTAREA';
+                // If on the name input page and not actively typing elsewhere, submit
+                if (!nameInputPage.classList.contains('hidden') && !typing) {
+                    e.preventDefault();
+                    startSessionBtn.click();
+                    return;
+                }
+                // If on landing page and not typing, go to next screen
+                if (!landingPage.classList.contains('hidden') && !typing) {
+                    e.preventDefault();
+                    createSessionBtn.click();
                 }
             });
 
@@ -1131,7 +1166,7 @@
                 if (!sessionSnap.exists()) {
                     await setDoc(sessionRef, { mode: 'pomodoro25', lastFocusMode: 'pomodoro25', duration: TIMER_MODES.pomodoro25.duration, isRunning: false, startTime: null, createdAt: serverTimestamp() });
                 }
-        await setDoc(getUserRef(userId), { name: userName, joinedAt: serverTimestamp(), timeZone: getLocalTimeZone() }, { merge: true });
+    await setDoc(getUserRef(userId), { name: (userName || getUserNameFromStorage()), joinedAt: serverTimestamp(), timeZone: getLocalTimeZone() }, { merge: true });
                 startListening();
             } catch (error) { console.error("Error joining session:", error); }
         }
@@ -1214,7 +1249,7 @@
                 localStorage.setItem('pompom_username', userName);
                 updateUserNameUI();
                 if (!OFFLINE_MODE) {
-            await setDoc(getUserRef(userId), { name: userName, timeZone: getLocalTimeZone() }, { merge: true });
+            await setDoc(getUserRef(userId), { name: (userName || getUserNameFromStorage()), timeZone: getLocalTimeZone() }, { merge: true });
                 } else {
                     updateParticipantsOffline();
                 }
@@ -1318,16 +1353,35 @@
         async function toggleTimer() {
             if (OFFLINE_MODE) {
                 const isRunning = localSessionState.isRunning;
-                localSessionState.isRunning = !isRunning;
-                localSessionState.startTime = Date.now();
+                if (isRunning) {
+                    // Pause: compute remaining and store in duration
+                    const elapsedMs = Date.now() - (localSessionState.startTime || Date.now());
+                    const remaining = Math.max(0, localSessionState.duration - Math.floor(elapsedMs / 1000));
+                    localSessionState.duration = remaining;
+                    localSessionState.isRunning = false;
+                    localSessionState.startTime = null;
+                } else {
+                    // Resume: keep current duration as remaining and start ticking
+                    localSessionState.isRunning = true;
+                    localSessionState.startTime = Date.now();
+                }
                 renderTimerFromLocalState();
                 return;
             }
             const sessionRef = getSessionRef();
             const sessionSnap = await getDoc(sessionRef);
             if (!sessionSnap.exists()) return;
-            const isRunning = sessionSnap.data().isRunning;
-            await updateDoc(sessionRef, { isRunning: !isRunning, startTime: serverTimestamp() });
+            const data = sessionSnap.data();
+            if (data.isRunning) {
+                // Pause: compute remaining based on server startTime
+                const serverStart = data.startTime ? data.startTime.toDate().getTime() : Date.now();
+                const elapsedSec = Math.floor((Date.now() - serverStart) / 1000);
+                const remaining = Math.max(0, (data.duration || 0) - elapsedSec);
+                await updateDoc(sessionRef, { isRunning: false, startTime: null, duration: remaining });
+            } else {
+                // Resume: start ticking from current duration
+                await updateDoc(sessionRef, { isRunning: true, startTime: serverTimestamp() });
+            }
         }
 
         async function resetTimer() {
@@ -1694,14 +1748,8 @@
             soundToggleBtn.innerHTML = icon;
         }
 
-        // ===== Groq API integration (mirrors memefun.html pattern) =====
-        const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
-        function getGroqAPIKey() { return localStorage.getItem('groq_api_key') || ''; }
+        // ===== Groq API integration via backend proxy =====
         async function callGroqAPI(prompt, history = []) {
-            const GROQ_API_KEY = getGroqAPIKey();
-            if (!GROQ_API_KEY) {
-                return "AI not configured. Open Settings (⚙️) to add your Groq API key.";
-            }
             try {
                 const messages = [];
             // Prefill Groq key masked and show/hide
@@ -1729,32 +1777,56 @@
                 }
                 if (!prompt || !prompt.trim()) throw new Error('Prompt cannot be empty');
                 messages.push({ role: 'user', content: prompt.trim() });
-                const body = { model: 'llama-3.1-8b-instant', messages, max_tokens: 500, temperature: 0.7, stream: false };
-                const res = await fetch(GROQ_API_URL, { method: 'POST', headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                const body = {
+                    model: 'llama-3.1-8b-instant',
+                    messages,
+                    max_tokens: 500,
+                    temperature: 0.7,
+                    stream: false
+                };
+
+                // Use backend proxy instead of direct API call
+                const res = await fetch('/api/groq', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
                 if (!res.ok) {
-                    const txt = await res.text();
-                    throw new Error(`Groq API error ${res.status}: ${txt}`);
+                    const errorData = await res.json().catch(() => ({}));
+                    if (res.status === 429) {
+                        throw new Error('Rate limit exceeded. Please try again later.');
+                    } else if (res.status === 503) {
+                        throw new Error('AI service not configured. Please contact the administrator.');
+                    }
+                    throw new Error(errorData.error || `AI service error ${res.status}`);
                 }
+
                 const data = await res.json();
                 const content = data?.choices?.[0]?.message?.content?.trim();
-                if (!content) throw new Error('Invalid response');
+                if (!content) throw new Error('Invalid AI response');
                 return content;
             } catch (err) {
-                if (String(err?.message||'').includes('CORS')) return 'CORS error contacting AI. See console.';
-                return `AI error: ${err.message}`;
+                console.error('AI request failed:', err);
+                return `AI temporarily unavailable: ${err.message}`;
             }
         }
 
         function updateSettingsStatusUI() {
-            const key = getGroqAPIKey();
-            apiKeyStatusText.textContent = key ? 'Configured' : 'Not configured';
-            aiFeaturesStatus.textContent = key ? 'Enabled' : 'Disabled';
+            // Check if server-side AI is available
+            fetch('/api/health').then(res => res.json()).then(data => {
+                apiKeyStatusText.textContent = data.groqConfigured ? 'Server-side configured' : 'Not configured';
+                aiFeaturesStatus.textContent = data.groqConfigured ? 'Enabled (shared)' : 'Disabled';
+            }).catch(() => {
+                apiKeyStatusText.textContent = 'Server unavailable';
+                aiFeaturesStatus.textContent = 'Disabled';
+            });
             applyAdvancedVisibility();
         }
 
         function advancedFeaturesOn() {
-            // Consider advanced features on only when Groq key is set and we are online
-            return !!getGroqAPIKey() && !OFFLINE_MODE;
+            // Advanced features are on when we're online (server handles AI)
+            return !OFFLINE_MODE;
         }
 
         // User toggle: persisted mode (advanced/basic) via checkbox
@@ -1768,7 +1840,7 @@
             } catch { return false; }
         }
 
-        function applyAdvancedVisibility() {
+    function applyAdvancedVisibility() {
             try {
                 // Require both: environment supports advanced AND user toggle is on
                 const envOn = advancedFeaturesOn();
@@ -1777,12 +1849,10 @@
 
                 // Nav icons
                 viewPlannerBtn.classList.toggle('hidden', !on);
-                viewChatBtn.classList.toggle('hidden', !on);
                 calendarEventBtn.classList.toggle('hidden', !on);
                 // Views (hide if turning off and currently visible)
                 if (!on) {
                     plannerView.classList.add('hidden');
-                    chatView.classList.add('hidden');
                     if (!timerView.classList.contains('hidden')) {
                         // already on timer
                     } else {
@@ -1794,7 +1864,7 @@
                 if (status) {
                     if (on) status.textContent = 'On: Todos + Planner + Calendar';
                     else if (!userOn) status.textContent = 'Off';
-                    else status.textContent = 'Unavailable (needs Groq key + online)';
+                    else status.textContent = 'Unavailable (needs online connection)';
                 }
             } catch {}
         }

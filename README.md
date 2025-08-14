@@ -57,11 +57,12 @@ firebase deploy --only firestore:rules,firestore:indexes
 ```
 
 **Firebase Configuration:**
-- **Project ID**: `aihd-b0b5b` (shared with AIHD app)
+- **Setup**: Copy `firebase-config.example.js` to `firebase-config.js` and add your credentials
 - **App Namespace**: `pompom-app` (separate data namespace)
 - **Database Path**: `/artifacts/pompom-app/public/data/pompom_sessions/`
 - **Authentication**: Anonymous authentication enabled
 - **Security**: Firestore rules configured for PomPom sessions
+- **⚠️ Security**: See `README-SECURITY.md` for important security setup
 
 ### Features
 1. **Landing Page**: Create or join a session with the new PomPom branding
@@ -70,7 +71,9 @@ firebase deploy --only firestore:rules,firestore:indexes
 4. **Team Collaboration**: Chat, planning, and participant management
 5. **Customizable**: Multiple timer modes and sound settings
 
-## Configuration
+## 🔐 Security & Configuration
+
+**⚠️ IMPORTANT**: Before committing this repository publicly, see `README-SECURITY.md` for security setup.
 
 This app can run in two modes:
 

@@ -44,6 +44,10 @@ jspm_packages/
 .firebase/
 .firebaserc
 
+# Configuration files with sensitive data
+firebase-config.js
+config.js
+
 # Logs
 logs
 *.log
