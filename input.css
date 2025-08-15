@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom utilities and animations */
+body {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 25%, #7DD3FC 50%, #38BDF8 75%, #0EA5E9 100%);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Card and glass effects moved from inline <style> */
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(56, 189, 248, 0.1);
+}
+
+.studio-ghibli-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(240, 249, 255, 0.3) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px rgba(56, 189, 248, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+
+/* Floating background sparkles (CSS only) */
+.bg-sparkles::before {
+  content: ' ';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  background-image: radial-gradient(circle at 10% 20%, rgba(255,255,255,.8) 0 6px, transparent 7px),
+    radial-gradient(circle at 80% 70%, rgba(255,255,255,.7) 0 5px, transparent 6px),
+    radial-gradient(circle at 90% 30%, rgba(255,255,255,.6) 0 4px, transparent 5px);
+  background-repeat: no-repeat;
+}
+
+.kawaii-float { animation: kawaii-float 3s ease-in-out infinite; }
+@keyframes kawaii-float {
+  0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+  33% { transform: translateY(-8px) scale(1.1) rotate(2deg); }
+  66% { transform: translateY(-4px) scale(0.95) rotate(-1deg); }
+}
+
+.pom-pom-bounce { animation: pompom-bounce 2s ease-in-out infinite; }
+@keyframes pompom-bounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-10px) rotate(-5deg); }
+  50% { transform: translateY(-5px) rotate(5deg); }
+  75% { transform: translateY(-15px) rotate(-3deg); }
+}
+
+.ghibli-glow { box-shadow: 0 0 20px rgba(56, 189, 248, 0.3), 0 0 40px rgba(56, 189, 248, 0.1); animation: ghibli-glow 4s ease-in-out infinite alternate; }
+@keyframes ghibli-glow {
+  0% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.3), 0 0 40px rgba(56, 189, 248, 0.1); }
+  100% { box-shadow: 0 0 30px rgba(56, 189, 248, 0.4), 0 0 60px rgba(56, 189, 248, 0.2); }
+}
+
+.kawaii-button { background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%); border: 2px solid rgba(56, 189, 248, 0.3); transition: all .3s ease; }
+.kawaii-button:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(56, 189, 248, .3); border-color: rgba(56, 189, 248, .5); }
+
+/* Tailwind-driven component classes previously using @apply */
+.btn { @apply py-2 px-4 rounded-lg font-semibold transition-colors duration-200; }
+.btn-primary { @apply bg-white text-sky-600 hover:bg-sky-50 shadow-lg border border-sky-200; }
+.btn-secondary { @apply bg-sky-500 hover:bg-sky-600 text-white shadow-lg; }
+.icon-btn { @apply w-12 h-12 flex items-center justify-center rounded-full cursor-pointer transition-colors duration-200; }
+.icon-btn.active { @apply bg-white bg-opacity-20; }
+.icon-btn:hover { @apply bg-white bg-opacity-10; }
+.nav-btn { @apply flex items-center justify-center rounded-xl cursor-pointer transition-all duration-200 relative; }
+.nav-btn-primary { @apply w-12 h-12 bg-white/10 hover:bg-white/20 hover:scale-105 shadow-sm; }
+.nav-btn-primary.active { @apply bg-white/25 shadow-md scale-105; }
+.nav-btn-secondary { @apply w-10 h-10 bg-white/5 hover:bg-white/15 hover:scale-105; }
+.nav-btn-utility { @apply w-8 h-8 bg-white/5 hover:bg-white/15 hover:scale-105; }
+.nav-btn-danger { @apply w-8 h-8 bg-red-500/20 hover:bg-red-500/30 hover:scale-105 text-red-200; }
+.name-input { @apply bg-transparent border-b-2 border-transparent focus:border-white focus:outline-none text-center font-semibold rounded-md focus:bg-black/20; }
+.mode-btn.active { @apply bg-white text-sky-600 shadow-lg border border-sky-200 scale-105; }
+
+/* Small helper */
+.cta-glow { box-shadow: 0 12px 28px rgba(14,165,233,0.45), 0 0 0 8px rgba(255,255,255,0.18); }

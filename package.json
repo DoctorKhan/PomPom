@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "build": "./build.sh",
+  "build": "npm run css:build",
+  "css:build": "tailwindcss -i ./input.css -o ./styles.css --minify",
     "test": "./run test",
     "test:firebase": "./run firebase",
     "firebase:setup": "./setup-firebase.sh",
@@ -31,7 +32,8 @@
   "author": "Rez Khan <reswanul@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "firebase-tools": "^13.0.0"
+  "firebase-tools": "^13.0.0",
+  "tailwindcss": "^3.4.14"
   },
   "engines": {
     "node": ">=16.0.0"
