@@ -421,6 +421,11 @@
     const testAlarmBtn = document.getElementById('test-alarm-btn');
         const timerView = document.getElementById('timer-view');
         const plannerView = document.getElementById('planner-view');
+        // Ensure advanced buttons are hidden by default (basic mode)
+        try {
+            if (viewPlannerBtn) viewPlannerBtn.classList.add('hidden');
+            if (calendarEventBtn) calendarEventBtn.classList.add('hidden');
+        } catch {}
         const participantsView = document.getElementById('participants-view');
         const chatView = document.getElementById('chat-view');
         const scheduleTimeInput = document.getElementById('schedule-time');
@@ -574,6 +579,14 @@
                 console.error("Firebase initialization failed.", e);
                 OFFLINE_MODE = true;
             }
+            // Ensure Basic UI is the default for everyone (one-time migration)
+            try {
+                const v = localStorage.getItem('pompom_feature_mode_v') || '1';
+                if (v !== '2') {
+                    localStorage.setItem('pompom_feature_mode', 'basic');
+                    localStorage.setItem('pompom_feature_mode_v', '2');
+                }
+            } catch {}
             // Default sound ON for first-time users
             if (localStorage.getItem('pompom_sound_enabled') === null) {
                 isSoundEnabled = true;
