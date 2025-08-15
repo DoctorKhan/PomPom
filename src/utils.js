@@ -96,6 +96,35 @@ function parseTagsFromString(str) {
   return Array.from(new Set([...hash, ...words]));
 }
 
+
+function bestMatchOwner(inputName, members, me = '') {
+  const fallback = me || '';
+  if (!members || !members.length) return fallback;
+  const norm = (s) => (s||'').toLowerCase().trim();
+  const target = norm(inputName);
+  if (!target) return fallback;
+  const exact = members.find(m => norm(m) === target);
+  if (exact) return exact;
+  const tokens = target.split(/\s+/).filter(Boolean);
+  const sw = members.find(m => tokens.some(t => norm(m).startsWith(t)));
+  if (sw) return sw;
+  const inc = members.find(m => tokens.some(t => norm(m).includes(t)));
+  if (inc) return inc;
+  return fallback;
+}
+
+function formatDateTimeForOwner(dueISO, ownerTZ) {
+  if (!dueISO) return '—';
+  try {
+    const dt = new Date(dueISO);
+    if (isNaN(dt.getTime())) return '—';
+    const opts = { dateStyle: 'medium', timeStyle: 'short', hour12: true, timeZone: ownerTZ || undefined };
+    return new Intl.DateTimeFormat(undefined, opts).format(dt);
+  } catch {
+    try { return new Date(dueISO).toLocaleString(); } catch { return '—'; }
+  }
+}
+
 module.exports = {
   extractJSON,
   toISOFromAny,
@@ -103,5 +132,7 @@ module.exports = {
   parseDueOrNull,
   extractTagsFromText,
   parseTagsFromString,
+  bestMatchOwner,
+  formatDateTimeForOwner,
 };
 

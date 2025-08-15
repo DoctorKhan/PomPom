@@ -945,10 +945,7 @@
                 const url = `https://calendar.google.com/calendar/u/0/r/eventedit?text=${title}&dates=${dates}&details=${details}`;
                 window.open(url, '_blank');
             });
-            meetNowBtn.addEventListener('click', () => {
-                // Open a new Google Meet (anonymous users will get prompted to start a meeting if permitted)
-                window.open('https://meet.google.com/new', '_blank');
-            });
+            meetNowBtn.addEventListener('click', () => { handleStartMeet(); });
             calendarEventBtn.addEventListener('click', handleCreateCalendarEvent);
             sendChatBtn.addEventListener('click', sendChatMessage);
             chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
@@ -1601,6 +1598,68 @@
             const start = audioCtx.currentTime;
             const baseGain = 0.15;
             const noteDur = 0.18;
+
+            async function handleStartMeet() {
+                try {
+                    // Open Meet creation page in a new tab and attempt to capture link via Calendar API if signed in
+                    const win = window.open('https://meet.google.com/new', '_blank');
+                    showToast('Opening Google Meet...');
+                    // Best-effort: if user is signed in with Google, also create a Calendar event so we can reliably get the Meet link and post it to chat
+                    if (OFFLINE_MODE) {
+                        const msg = `${(userName || getUserNameFromStorage() || 'Someone')} started a Meet. Check the new tab.`;
+                        localChat.push({ userId: 'local', userName: userName || 'You', text: msg, createdAt: new Date() });
+                        renderLocalChat();
+                        switchView('chat');
+                        return;
+                    }
+                    // Reuse the same flow as calendar creation to get a Meet link if possible
+                    const provider = new GoogleAuthProvider();
+                    provider.addScope('https://www.googleapis.com/auth/calendar.events');
+                    provider.addScope('https://www.googleapis.com/auth/userinfo.email');
+                    provider.setCustomParameters({ prompt: 'select_account consent' });
+                    let accessToken = null;
+                    try {
+                        const result = await signInWithPopup(auth, provider);
+                        const credential = GoogleAuthProvider.credentialFromResult(result);
+                        accessToken = credential?.accessToken || null;
+                    } catch (e) {
+                        console.warn('Google sign-in skipped for meet capture', e);
+                    }
+                    if (!accessToken) {
+                        const msg = `${(userName || getUserNameFromStorage() || 'Someone')} started a Google Meet.`;
+                        await addDoc(getChatRef(), { userId, userName: userName || getUserNameFromStorage(), text: msg, createdAt: serverTimestamp() });
+                        switchView('chat');
+                        return;
+                    }
+                    // Try creating a quick 30-min event to obtain a meet link to share immediately
+                    const now = new Date();
+                    const start = new Date(now.getTime() + 1 * 60 * 1000);
+                    const end = new Date(start.getTime() + 30 * 60 * 1000);
+                    const event = {
+                        summary: `Quick Meet — ${teamNameInput?.value || sessionId || 'PomPom'}`,
+                        description: `Started from PomPom by ${(userName || 'User')}`,
+                        start: { dateTime: start.toISOString() },
+                        end: { dateTime: end.toISOString() },
+                        conferenceData: { createRequest: { requestId: `${Date.now()}-meet` } },
+                    };
+                    const doFetch = window.__TEST_FETCH__ || fetch;
+                    const resp = await doFetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(event)
+                    });
+                    if (!resp.ok) throw new Error(`Calendar API error ${resp.status}`);
+                    const data = await resp.json();
+                    const meetLink = data.hangoutLink || (data.conferenceData?.entryPoints||[]).find(e=>e.entryPointType==='video')?.uri || '';
+                    const msg = `${(userName || getUserNameFromStorage() || 'Someone')} started a Meet: ${meetLink || '(open tab to fetch link)'}`;
+                    await addDoc(getChatRef(), { userId, userName: userName || getUserNameFromStorage(), text: msg, createdAt: serverTimestamp() });
+                    switchView('chat');
+                } catch (e) {
+                    console.error('Start Meet failed', e);
+                    showToast('Could not post Meet link');
+                }
+            }
+
             const gap = 0.06;
             sequence.forEach((n, i) => {
                 const t0 = start + i * (noteDur + gap);
