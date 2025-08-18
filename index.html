@@ -244,8 +244,11 @@
                             <button data-mode="shortBreak" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">5m</button>
                             <button data-mode="longBreak" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">15m</button>
                         </div>
+                            <button data-mode="test3s" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">3s test</button>
+
                     </div>
                 </div>
+
                 <div id="planner-view" class="hidden flex-1 flex flex-col">
                     <h2 class="text-3xl font-bold mb-6">Day Planner</h2>
                     <div class="mb-6 p-4 glassmorphism rounded-lg">
@@ -333,6 +336,18 @@
                         </div>
                     </div>
                 </div>
+
+                        <!-- Sound & Alarm Test -->
+                        <div class="p-4 bg-gradient-to-r from-red-200/30 to-pink-200/30 rounded-lg border border-white/40">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-semibold text-sky-900">Sound & Notifications</div>
+                                    <div class="text-xs text-sky-700">Click to test. Allow notifications in your browser.</div>
+                                </div>
+                                <button id="test-alarm-btn" class="btn btn-secondary px-4">Test sound</button>
+                            </div>
+                        </div>
+
             </div>
         </div>
     </div>
@@ -588,6 +603,7 @@
             pomodoro60: { duration: 60 * 60, label: 'Focus Time (60m) ☁️✨', type: 'focus' },
             shortBreak: { duration: 5 * 60, label: 'Short Break (5m) 💤💖', type: 'break' },
             longBreak: { duration: 15 * 60, label: 'Long Break (15m) 💤💖', type: 'break' },
+            test3s: { duration: 3, label: 'Test (3s) ✨', type: 'focus' },
         };
 
         // --- INITIALIZATION ---
@@ -1610,6 +1626,16 @@
         // --- PLANNER & ALARM LOGIC ---
         function initAudioAndNotifications() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            // iOS/Safari often starts suspended; resume on first gesture
+            if (audioCtx && audioCtx.state === 'suspended') {
+                const resume = () => {
+                    audioCtx.resume().catch(() => {});
+                    document.removeEventListener('touchstart', resume);
+                    document.removeEventListener('click', resume);
+                };
+                document.addEventListener('touchstart', resume, { once: true });
+                document.addEventListener('click', resume, { once: true });
+            }
             if (Notification.permission !== "granted") Notification.requestPermission();
         }
 
@@ -1804,6 +1830,15 @@
             isSoundEnabled = !isSoundEnabled;
             localStorage.setItem('pompom_sound_enabled', isSoundEnabled);
             updateSoundUI();
+            // When sound is turned ON, immediately unlock AudioContext and play a confirmation chime
+            if (isSoundEnabled) {
+                initAudioAndNotifications();
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume().catch(() => {});
+                }
+                // Play a short confirmation chime so the user knows sound is active
+                playAlarm();
+            }
         }
 
         function updateSoundUI() {
