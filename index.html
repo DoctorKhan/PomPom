@@ -244,7 +244,7 @@
                             <button data-mode="shortBreak" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">5m</button>
                             <button data-mode="longBreak" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">15m</button>
                         </div>
-                            <button data-mode="test3s" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">3s test</button>
+                            <button data-mode="test3s" class="hidden mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">3s test</button>
 
                     </div>
                 </div>
@@ -1004,117 +1004,28 @@
             endSessionDismissBtn.addEventListener('click', () => endSessionModal.classList.add('hidden'));
 
             leaveBtn.addEventListener('click', async () => {
-                // Confirm before leaving
-                if (confirm('Are you sure you want to leave this fluffy cloud team? ☁️💔')) {
-                    try {
-                        // Clean up timers and listeners
-                        clearInterval(timerInterval);
-                        clearInterval(alarmCheckInterval);
-
-                        // Remove user from session if online
-                        // remove subtask from local
-                        const tIdx = localTodos.findIndex(x => (x.id || String(x.createdAt)) === parentId);
-                        if (tIdx >= 0) {
-                            localTodos[tIdx].subtasks = (localTodos[tIdx].subtasks || []).filter(st => (st.id || '') !== s.id);
-                        }
-                        if (!OFFLINE_MODE && userId) {
-                            const userRef = getUserRef(userId);
-                            await deleteDoc(userRef);
-                        if (s.id) {
-                            await deleteDoc(doc(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos', parentId, 'subtasks', s.id));
-                        }
-                        }
-
-                        // Clear local storage
-                        localStorage.removeItem('sessionId');
-                        localStorage.removeItem('userId');
-
-                        // Return to landing page
-                // DnD events for subtasks
-                row.addEventListener('dragstart', (e) => {
-                    draggingSubtask = { parentId, sid: row.dataset.sid };
-                    row.classList.add('opacity-70');
-                });
-                row.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
-                row.addEventListener('drop', async (e) => {
-                    e.preventDefault();
-                    if (!draggingSubtask || draggingSubtask.parentId !== parentId) return;
-                    const rows = Array.from(container.children);
-                    const fromIdx = rows.findIndex(r => r.dataset.sid === draggingSubtask.sid);
-                    const toIdx = rows.findIndex(r => r === row);
-                    if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return;
-                    const arr = rows.slice();
-                    const [moved] = arr.splice(fromIdx, 1);
-                    arr.splice(toIdx, 0, moved);
-                    // Reassign order based on new DOM order
-                    for (let i = 0; i < arr.length; i++) {
-                        const sid = arr[i].dataset.sid;
-                        if (OFFLINE_MODE) {
-                            const tIdx = localTodos.findIndex(x => (x.id || String(x.createdAt)) === parentId);
-                            if (tIdx >= 0) {
-                                const subs = localTodos[tIdx].subtasks || [];
-                                const sub = subs.find(st => (st.id || `${parentId}::`) === sid || (st.id ? st.id : `${parentId}::${subs.indexOf(st)}`) === sid);
-                                if (sub) sub.order = i;
-                            }
-                        } else {
-                            // Persist to Firestore if we have real IDs
-                            const real = items.find(x => (x.id || `${parentId}::`) === sid);
-                            if (real && real.id) {
-                                await updateDoc(doc(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos', parentId, 'subtasks', real.id), { order: i });
-                            }
-                        }
+                const sure = confirm('Are you sure you want to leave this fluffy cloud team? ☁️💔');
+                if (!sure) return;
+                try {
+                    // Clean up timers and listeners
+                    clearInterval(timerInterval);
+                    clearInterval(alarmCheckInterval);
+                    if (sessionUnsubscribe) sessionUnsubscribe();
+                    if (participantsUnsubscribe) participantsUnsubscribe();
+                    if (chatUnsubscribe) chatUnsubscribe();
+                    if (plannerUnsubscribe) plannerUnsubscribe();
+                    if (todosUnsubscribe) todosUnsubscribe();
+                    // Remove user from session (online only)
+                    if (!OFFLINE_MODE && userId) {
+                        try { await deleteDoc(getUserRef(userId)); } catch {}
                     }
-                    // Rerender
-                    if (OFFLINE_MODE) renderTodosLocal();
-                });
-                row.addEventListener('dragend', () => { row.classList.remove('opacity-70'); draggingSubtask = null; });
-                        window.location.href = '/';
-                    } catch (error) {
-                        console.error('Error leaving session:', error);
-                        // Still navigate away even if cleanup fails
-
-        // Allow promoting by dragging a subtask to the main list container
-        function enableSubtaskPromoteViaDrag() {
-            if (!todoList) return;
-            todoList.addEventListener('dragover', (e) => {
-                if (draggingSubtask) e.preventDefault();
-            });
-            todoList.addEventListener('drop', async (e) => {
-                if (!draggingSubtask) return;
-                e.preventDefault();
-                const { parentId, sid } = draggingSubtask;
-                draggingSubtask = null;
-                // Find subtask data
-                if (OFFLINE_MODE) {
-                    const tIdx = localTodos.findIndex(x => (x.id || String(x.createdAt)) === parentId);
-                    if (tIdx >= 0) {
-                        const subs = localTodos[tIdx].subtasks || [];
-                        const sub = subs.find(st => (st.id || `${parentId}::${subs.indexOf(st)}`) === sid);
-                        if (sub) {
-                            const newTodo = { text: sub.text || '', ownerName: userName || getUserNameFromStorage(), due: '', tags: [], createdBy: userName || getUserNameFromStorage(), createdAt: new Date().toISOString(), order: nextTodoOrder++ };
-                            newTodo.id = `${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
-                            localTodos.push(newTodo);
-                            localTodos[tIdx].subtasks = subs.filter(st => (st.id || `${parentId}::${subs.indexOf(st)}`) !== sid);
-                            renderTodosLocal();
-                        }
-                    }
-                } else {
-                    // Online: need the real subtask doc
-                    const subRef = getSubtasksRef(parentId);
-                    // We cannot fetch here without network; assume sid is Firestore id when online
-                    const newTodo = { text: '', ownerName: userName || getUserNameFromStorage(), due: '', tags: [], createdBy: userName || getUserNameFromStorage(), createdAt: new Date().toISOString(), order: nextTodoOrder++ };
-                    try {
-                        // Create placeholder; we'll try to delete the subtask if sid exists
-                        await addDoc(getTodosRef(), newTodo);
-                        try { await deleteDoc(doc(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos', parentId, 'subtasks', sid)); } catch {}
-                    } catch (err) { console.error('Promote via drag failed', err); }
+                } catch (error) {
+                    console.error('Error during leave cleanup:', error);
+                } finally {
+                    // Navigate back to landing (hash routing)
+                    window.location.hash = '#/';
+                    handleRouting();
                 }
-            });
-        }
-                        window.location.href = '/';
-                    }
-                }
-            // (removed duplicate inline handler; now bound above)
             });
 
             // Settings modal
@@ -1280,7 +1191,7 @@
         // --- TIMER LOGIC ---
         function renderTimerFromLocalState() {
             const data = { ...localSessionState };
-            const wasRunning = startPauseBtn.textContent === 'Pause';
+            const wasRunning = data.isRunning;
             clearInterval(timerInterval);
             timerModeDisplay.textContent = TIMER_MODES[data.mode].label;
             startPauseBtn.textContent = data.isRunning ? 'Pause ⏸️' : 'Start ✨';
@@ -1338,7 +1249,7 @@
         function updateTimerUI(docSnap) {
             if (!docSnap.exists()) return;
             const data = docSnap.data();
-            const wasRunning = startPauseBtn.textContent === 'Pause';
+            const wasRunning = data.isRunning;
 
             clearInterval(timerInterval);
             timerModeDisplay.textContent = TIMER_MODES[data.mode].label;
@@ -1480,10 +1391,12 @@
         function updateChatUI(snapshot) {
             chatMessages.innerHTML = '';
             const messages = snapshot.docs.map(doc => doc.data());
+            const linkPattern = /(https?:\/\/[^\s]+)/g;
+            const wrapLinks = (text) => String(text||'').replace(linkPattern, '<a href="$1" target="_blank" class="text-sky-700 underline">$1<\/a>');
             messages.forEach(msg => {
                  const m = document.createElement('div');
                  m.className = 'mb-2';
-                 m.innerHTML = `<p><strong class="font-semibold">${msg.userName}</strong>: ${msg.text}</p>`;
+                 m.innerHTML = `<p><strong class=\"font-semibold\">${msg.userName}</strong>: ${wrapLinks(msg.text)}</p>`;
                  chatMessages.appendChild(m);
             });
             chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -1491,10 +1404,12 @@
 
         function renderLocalChat() {
             chatMessages.innerHTML = '';
+            const linkPattern = /(https?:\/\/[^\s]+)/g;
+            const wrapLinks = (text) => String(text||'').replace(linkPattern, '<a href="$1" target="_blank" class="text-sky-700 underline">$1<\/a>');
             localChat.forEach(msg => {
                 const m = document.createElement('div');
                 m.className = 'mb-2';
-                m.innerHTML = `<p><strong class="font-semibold">${msg.userName}</strong>: ${msg.text}</p>`;
+                m.innerHTML = `<p><strong class=\"font-semibold\">${msg.userName}</strong>: ${wrapLinks(msg.text)}</p>`;
                 chatMessages.appendChild(m);
             });
             chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -1516,7 +1431,66 @@
         }
 
 
-        async function handleCreateCalendarEvent() {
+        // Start a Google Meet and try to capture/share the link via Calendar API
+        async function handleStartMeet() {
+            // Defer to testable factory when available, else use inline fallback
+            try {
+                if (window.__createHandleStartMeet) {
+                    const impl = window.__createHandleStartMeet({
+                        OFFLINE_MODE,
+                        windowOpen: (url, t) => window.open(url, t),
+                        showToast,
+                        localChat,
+                        getUserNameFromStorage,
+                        userName,
+                        switchView,
+                        GoogleAuthProvider,
+                        signInWithPopup,
+                        auth,
+                        addDoc,
+                        getChatRef,
+                        serverTimestamp,
+                        doFetch: window.__TEST_FETCH__ || fetch,
+                        teamNameInput,
+                        sessionId
+                    });
+                    return impl();
+                }
+            } catch {}
+            // Minimal fallback (shouldn’t be used in tests)
+            try { window.open('https://meet.google.com/new', '_blank'); showToast('Opening Google Meet...'); } catch {}
+        }
+
+        // Ensure Meet link message is always clickable in chat rendering
+        (function patchChatLinkRendering(){
+            const linkPattern = /(https?:\/\/[^\s]+)/g;
+            const wrapLinks = (text) => text.replace(linkPattern, '<a href="$1" target="_blank" class="text-sky-700 underline">$1<\/a>');
+            const originalRenderLocal = renderLocalChat;
+            window.renderLocalChat = function() {
+                chatMessages.innerHTML = '';
+                localChat.forEach(msg => {
+                    const m = document.createElement('div'); m.className = 'mb-2';
+                    m.innerHTML = `<p><strong class="font-semibold">${msg.userName}<\/strong>: ${wrapLinks(msg.text)}<\/p>`;
+                    chatMessages.appendChild(m);
+                });
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            };
+            const originalUpdateChatUI = updateChatUI;
+            window.updateChatUI = function(snapshot){
+                chatMessages.innerHTML='';
+                const messages = snapshot.docs.map(doc=>doc.data());
+                messages.forEach(msg=>{
+                    const m=document.createElement('div'); m.className='mb-2';
+                    m.innerHTML = `<p><strong class=\"font-semibold\">${msg.userName}<\/strong>: ${wrapLinks(msg.text)}<\/p>`;
+                    chatMessages.appendChild(m);
+                });
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            };
+        })();
+
+
+
+    async function handleCreateCalendarEvent() {
             try {
                 // Allow tests to run in offline mode if a test sign-in mock is present
         // --- Goal outcome prompt ---
@@ -1566,6 +1540,7 @@
             container.appendChild(makeBtn('Failed', 'failed'));
             if (currentGoalEl) currentGoalEl.after(container);
         }
+
                 if (OFFLINE_MODE && !window.__TEST_GOOGLE_SIGNIN__) {
                     showToast('Google Calendar requires online mode');
                     return;
@@ -1619,7 +1594,25 @@
                 showToast('Calendar event created');
             } catch (e) {
                 console.error('Create calendar event failed', e);
-                showToast('Calendar event failed');
+                const msg = (e && (e.code || e.message || '')) + '';
+                // If Google sign-in provider isn't enabled, gracefully fall back to manual event page
+                if (msg.includes('auth/operation-not-allowed')) {
+                    showToast('Enable Google Sign-In in Firebase, opening Calendar…');
+                    try {
+                        const now = new Date();
+                        const durationSec = (TIMER_MODES[localSessionState?.mode || 'pomodoro25']?.duration) || 25*60;
+                        const start = new Date(now.getTime() + 60*1000);
+                        const end = new Date(start.getTime() + durationSec*1000);
+                        const fmt = (d) => `${d.getUTCFullYear()}${String(d.getUTCMonth()+1).padStart(2,'0')}${String(d.getUTCDate()).padStart(2,'0')}T${String(d.getUTCHours()).padStart(2,'0')}${String(d.getUTCMinutes()).padStart(2,'0')}00Z`;
+                        const dates = `${fmt(start)}/${fmt(end)}`;
+                        const title = encodeURIComponent(`PomPom Focus — ${teamNameInput?.value || sessionId || 'Session'}`);
+                        const details = encodeURIComponent(`Created from PomPom by ${(userName || 'User')}`);
+                        const url = `https://calendar.google.com/calendar/u/0/r/eventedit?text=${title}&dates=${dates}&details=${details}`;
+                        window.open(url, '_blank');
+                    } catch {}
+                } else {
+                    showToast('Calendar event failed');
+                }
             }
         }
 
@@ -1639,7 +1632,7 @@
             if (Notification.permission !== "granted") Notification.requestPermission();
         }
 
-        function playAlarm() {
+    function playAlarm() {
             if (!isSoundEnabled || !audioCtx) return;
             // Gentle chime: short arpeggio with envelope and low-pass filter
             const sequence = [
@@ -1651,67 +1644,6 @@
             const start = audioCtx.currentTime;
             const baseGain = 0.15;
             const noteDur = 0.18;
-
-            async function handleStartMeet() {
-                try {
-                    // Open Meet creation page in a new tab and attempt to capture link via Calendar API if signed in
-                    const win = window.open('https://meet.google.com/new', '_blank');
-                    showToast('Opening Google Meet...');
-                    // Best-effort: if user is signed in with Google, also create a Calendar event so we can reliably get the Meet link and post it to chat
-                    if (OFFLINE_MODE) {
-                        const msg = `${(userName || getUserNameFromStorage() || 'Someone')} started a Meet. Check the new tab.`;
-                        localChat.push({ userId: 'local', userName: userName || 'You', text: msg, createdAt: new Date() });
-                        renderLocalChat();
-                        switchView('chat');
-                        return;
-                    }
-                    // Reuse the same flow as calendar creation to get a Meet link if possible
-                    const provider = new GoogleAuthProvider();
-                    provider.addScope('https://www.googleapis.com/auth/calendar.events');
-                    provider.addScope('https://www.googleapis.com/auth/userinfo.email');
-                    provider.setCustomParameters({ prompt: 'select_account consent' });
-                    let accessToken = null;
-                    try {
-                        const result = await signInWithPopup(auth, provider);
-                        const credential = GoogleAuthProvider.credentialFromResult(result);
-                        accessToken = credential?.accessToken || null;
-                    } catch (e) {
-                        console.warn('Google sign-in skipped for meet capture', e);
-                    }
-                    if (!accessToken) {
-                        const msg = `${(userName || getUserNameFromStorage() || 'Someone')} started a Google Meet.`;
-                        await addDoc(getChatRef(), { userId, userName: userName || getUserNameFromStorage(), text: msg, createdAt: serverTimestamp() });
-                        switchView('chat');
-                        return;
-                    }
-                    // Try creating a quick 30-min event to obtain a meet link to share immediately
-                    const now = new Date();
-                    const start = new Date(now.getTime() + 1 * 60 * 1000);
-                    const end = new Date(start.getTime() + 30 * 60 * 1000);
-                    const event = {
-                        summary: `Quick Meet — ${teamNameInput?.value || sessionId || 'PomPom'}`,
-                        description: `Started from PomPom by ${(userName || 'User')}`,
-                        start: { dateTime: start.toISOString() },
-                        end: { dateTime: end.toISOString() },
-                        conferenceData: { createRequest: { requestId: `${Date.now()}-meet` } },
-                    };
-                    const doFetch = window.__TEST_FETCH__ || fetch;
-                    const resp = await doFetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1', {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify(event)
-                    });
-                    if (!resp.ok) throw new Error(`Calendar API error ${resp.status}`);
-                    const data = await resp.json();
-                    const meetLink = data.hangoutLink || (data.conferenceData?.entryPoints||[]).find(e=>e.entryPointType==='video')?.uri || '';
-                    const msg = `${(userName || getUserNameFromStorage() || 'Someone')} started a Meet: ${meetLink || '(open tab to fetch link)'}`;
-                    await addDoc(getChatRef(), { userId, userName: userName || getUserNameFromStorage(), text: msg, createdAt: serverTimestamp() });
-                    switchView('chat');
-                } catch (e) {
-                    console.error('Start Meet failed', e);
-                    showToast('Could not post Meet link');
-                }
-            }
 
             const gap = 0.06;
             sequence.forEach((n, i) => {
