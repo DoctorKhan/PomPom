@@ -450,48 +450,54 @@
                     </div>
                 </div>
 
-                <div id="planner-view" class="hidden flex-1 flex flex-col">
-                    <h2 class="text-3xl font-bold mb-6">Day Planner</h2>
-                    <div class="mb-6 p-4 glassmorphism rounded-lg">
-                        <h3 class="font-semibold mb-2">Schedule New Pomodoro</h3>
-                        <!-- Natural language to fields -->
-                        <div class="mb-3">
-                            <label for="nl-event-input" class="text-sm">Quick event (type like: "Weekly Group Meeting Monday at 2pm")</label>
-                            <div class="flex gap-2 items-end">
-                                <input id="nl-event-input" type="text" placeholder="e.g., Weekly Group Meeting Monday at 2pm" class="flex-1 bg-white/20 p-2 rounded-md focus:outline-none placeholder-white/50">
-                                <button id="nl-parse-btn" class="btn btn-primary whitespace-nowrap">Fill from text</button>
+                <div id="planner-view" class="hidden flex-1 flex flex-col max-w-2xl mx-auto">
+                    <h2 class="text-2xl font-bold mb-6 text-center">Day Planner</h2>
+
+                    <!-- Simplified schedule section -->
+                    <div class="mb-6 p-4 bg-white/20 rounded-lg border border-white/30">
+                        <h3 class="font-medium mb-3 text-lg">Quick Schedule</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <input id="nl-event-input" type="text" placeholder="e.g., Team meeting at 2pm" class="w-full bg-white/30 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-white/60 text-sm">
+                                <div id="nl-recurrence-hint" class="text-xs text-sky-700 mt-1 hidden"></div>
                             </div>
-                            <div id="nl-recurrence-hint" class="text-xs text-sky-700 mt-1 hidden"></div>
-                        </div>
-                        <div class="flex flex-wrap gap-4 items-end">
-                            <div class="flex-grow"><label for="schedule-time" class="text-sm">Time</label><input id="schedule-time" type="time" class="w-full bg-white/20 p-2 rounded-md focus:outline-none"></div>
-                            <div class="flex-grow-[3]"><label for="schedule-desc" class="text-sm">Description</label><input id="schedule-desc" type="text" placeholder="e.g., Team Sync" class="w-full bg-white/20 p-2 rounded-md focus:outline-none placeholder-white/50"></div>
-                            <button id="schedule-add-btn" class="btn btn-primary">Schedule</button>
-                        </div>
-                        <div class="mt-3 flex flex-wrap gap-2">
-                            <button id="calendar-create-btn" class="btn btn-secondary">Create Google Calendar Event</button>
-                            <button id="meet-now-btn" class="btn btn-secondary">Start a Google Meet</button>
+                            <div class="flex gap-2">
+                                <button id="nl-parse-btn" class="btn btn-primary flex-1">Add Event</button>
+                                <button id="calendar-create-btn" class="btn btn-secondary">Calendar</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="mb-6 p-4 glassmorphism rounded-lg">
-                        <h3 class="font-semibold mb-3">Team Todos (AI assisted)</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end mb-3">
-                            <div class="md:col-span-4">
-                                <label for="todo-idea-input" class="text-sm">Task idea</label>
-                                <input id="todo-idea-input" type="text" placeholder="e.g., Draft weekly update" class="w-full bg-white/20 p-2 rounded-md focus:outline-none placeholder-white/50" aria-label="Task idea (press Enter to add)">
+
+                    <!-- Simplified todos section -->
+                    <div class="mb-6 p-4 bg-white/20 rounded-lg border border-white/30">
+                        <h3 class="font-medium mb-3 text-lg">Team Tasks</h3>
+                        <div class="space-y-3">
+                            <div class="flex gap-2">
+                                <input id="todo-idea-input" type="text" placeholder="Add a task..." class="flex-1 bg-white/30 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-white/60 text-sm">
+                                <button id="todo-add-btn" class="btn btn-primary">Add</button>
                             </div>
-                            <div class="flex gap-2 md:col-span-1">
-                                <button id="todo-add-btn" class="btn btn-primary w-full" title="Add (AI will set owner & due)">Add</button>
-                            </div>
+                            <div id="todo-status" class="text-xs text-sky-700"></div>
                         </div>
-                        <div class="text-xs text-sky-700 mb-2">Owner and due date are picked automatically by AI. You can reorder and edit the task text later.</div>
-                        <div id="todo-status" class="text-sm text-sky-800"></div>
                     </div>
-                    <div id="todo-list" class="flex-1 overflow-y-auto space-y-2 pr-2"></div>
-                    <div id="planner-list" class="flex-1 overflow-y-auto space-y-2 pr-2"></div>
+
+                    <!-- Clean lists -->
+                    <div class="flex-1 space-y-4 overflow-y-auto">
+                        <div id="planner-list" class="space-y-2"></div>
+                        <div id="todo-list" class="space-y-2"></div>
+                    </div>
                 </div>
-                <div id="participants-view" class="hidden flex-1 flex flex-col"><h2 class="text-3xl font-bold mb-6">Fluffy Friends ☁️ (<span id="participant-count">0</span>)</h2><div id="participants-list" class="flex-1 overflow-y-auto space-y-2"></div></div>
-                <div id="chat-view" class="hidden flex-1 flex flex-col h-full"><h2 class="text-3xl font-bold mb-4">Chat ☁️💬</h2><div id="chat-messages" class="flex-1 overflow-y-auto mb-4 p-4 bg-black/10 rounded-lg"></div><div class="flex gap-2"><input id="chat-input" type="text" placeholder="Type a fluffy message... (◕‿◕)" class="w-full bg-white text-sky-800 px-4 py-2 rounded-lg focus:outline-none placeholder-sky-400"><button id="send-chat-btn" class="btn btn-primary">Send ✨</button></div></div>
+                <div id="participants-view" class="hidden flex-1 flex flex-col max-w-2xl mx-auto">
+                    <h2 class="text-2xl font-bold mb-6 text-center">Team Members (<span id="participant-count">0</span>)</h2>
+                    <div id="participants-list" class="flex-1 overflow-y-auto space-y-3 p-4 bg-white/20 rounded-lg border border-white/30"></div>
+                </div>
+                <div id="chat-view" class="hidden flex-1 flex flex-col h-full max-w-2xl mx-auto">
+                    <h2 class="text-2xl font-bold mb-4 text-center">Team Chat</h2>
+                    <div id="chat-messages" class="flex-1 overflow-y-auto mb-4 p-4 bg-white/20 rounded-lg border border-white/30"></div>
+                    <div class="flex gap-2">
+                        <input id="chat-input" type="text" placeholder="Type a message..." class="flex-1 bg-white/30 text-sky-800 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-white/60">
+                        <button id="send-chat-btn" class="btn btn-primary">Send</button>
+                    </div>
+                </div>
             </main>
         </div>
 
@@ -936,21 +942,50 @@
                 const segments = window.location.pathname.split('/').filter(s => s);
                 potentialSessionId = segments.pop() || '';
             }
+
             if (potentialSessionId) {
+                // Update current session and persist the team slug so we remember it next time
                 sessionId = potentialSessionId;
-        // Show name input page first, prefilling from storage when available
-        showNameInputPage();
-        const storedTeam = getTeamNameFromStorage();
-        const storedUser = localStorage.getItem('pompom_username');
-        teamNameInput.value = storedTeam || sessionId;
-        userNameSetupInput.value = storedUser || generateRandomUserName();
-        updateTeamLinkPreview();
-        validateStartCta();
+                try { localStorage.setItem('pompom_team_name', toSlug(sessionId)); } catch {}
+
+                // If we already have a stored username, skip the name screen and jump straight into the session
+                const storedUser = (localStorage.getItem('pompom_username') || '').trim();
+                if (storedUser) {
+                    userName = storedUser;
+                    try { updateUserNameUI(); } catch {}
+                    try { initAudioAndNotifications(); } catch {}
+                    showSessionPage();
+                    if (OFFLINE_MODE) {
+                        // Basic offline setup
+                        updateParticipantsOffline();
+                        renderTimerFromLocalState();
+                        if (alarmCheckInterval) clearInterval(alarmCheckInterval);
+                        alarmCheckInterval = setInterval(checkAlarms, 1000);
+                    } else if (userId) {
+                        joinSession();
+                    }
+                    return; // Done routing
+                }
+
+                // Otherwise show name input page, prefilling from storage when available
+                showNameInputPage();
+                const storedTeam = getTeamNameFromStorage();
+                teamNameInput.value = storedTeam || sessionId;
+                userNameSetupInput.value = generateRandomUserName();
+                updateTeamLinkPreview();
+                validateStartCta();
             } else {
+                // No explicit session in URL. If we remember both team and user, auto-redirect to that team.
+                const storedTeam = getTeamNameFromStorage();
+                const storedUser = (localStorage.getItem('pompom_username') || '').trim();
+                if (storedTeam && storedUser) {
+                    window.location.hash = `#/${storedTeam}`;
+                    return; // Allow router to re-run
+                }
+
+                // Otherwise, show landing and prefill with stored team (if any)
                 showLandingPage();
-        // Prefill landing input with stored team name if available
-        const storedTeam = getTeamNameFromStorage();
-        if (storedTeam) sessionNameInput.value = storedTeam;
+                if (storedTeam) sessionNameInput.value = storedTeam;
             }
         }
 
