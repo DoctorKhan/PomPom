@@ -775,15 +775,52 @@
             return { summary: __inferSummary__(text), startLocal: __toLocalParts__(start), endLocal: __toLocalParts__(end), recurrenceRRule: recur };
         }
         async function __aiParseEvent__(text){
-            try{
-                const body={ model:'llama-3.1-70b-versatile', temperature:0.1, messages:[{role:'system', content:'Return only JSON with keys: summary, startLocal, endLocal, recurrenceRRule'}, {role:'user', content:text}] };
-                const r=await fetch('/api/groq',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
-                if(!r.ok) throw new Error('AI not available');
-                const data=await r.json();
-                const content=(data?.choices?.[0]?.message?.content)||'';
-                const m=content.match(/```(?:json)?\n([\s\S]*?)```/i); const raw=m?m[1]:content; const obj=JSON.parse(raw);
+            if (!text || typeof text !== 'string' || text.trim().length < 3) {
+                showToast('Please enter a longer event description.');
+                throw new Error('Event text too short');
+            }
+            try {
+                const body = {
+                    model: 'llama-3.1-8b-instant',
+                    temperature: 0.1,
+                    response_format: { type: 'json_object' },
+                    messages: [
+                        { role: 'system', content: 'Return only JSON with keys: summary, startLocal, endLocal, recurrenceRRule' },
+                        { role: 'user', content: text }
+                    ]
+                };
+                const r = await fetch('/api/groq', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                if (!r.ok) {
+                    let msg = 'AI not available';
+                    try {
+                        const err = await r.json();
+                        if (r.status === 400) msg = err.error || 'Bad request to AI. Try rephrasing.';
+                        else if (err.error) msg = err.error;
+                    } catch {}
+                    showToast(msg);
+                    throw new Error(msg);
+                }
+                const data = await r.json();
+                const content = data?.choices?.[0]?.message?.content;
+                let obj;
+                if (typeof content === 'string') {
+                    const m = content.match(/```(?:json)?\n([\s\S]*?)```/i);
+                    const raw = m ? m[1] : content;
+                    obj = JSON.parse(raw);
+                } else if (content && typeof content === 'object') {
+                    obj = content;
+                } else {
+                    throw new Error('Invalid AI response');
+                }
                 return obj;
-            }catch{ throw new Error('AI parse failed'); }
+            } catch (e) {
+                showToast('AI parse failed. Try again or use a simpler event.');
+                throw new Error('AI parse failed');
+            }
         }
         let __lastParsedDate__ = null; // Persist preferred start for calendar
 
@@ -1324,10 +1361,14 @@
             if (scheduleDescInput) scheduleDescInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') scheduleNewPomodoro(); });
             // Planner: Google Calendar + Meet
             if (calendarCreateBtn) calendarCreateBtn.addEventListener('click', () => {
-                const title = encodeURIComponent(scheduleDescInput.value.trim() || 'PomPom Focus Session');
+                // Use safe defaults when optional inputs are not present
+                const desc = (scheduleDescInput && typeof scheduleDescInput.value === 'string') ? scheduleDescInput.value.trim() : '';
+                const title = encodeURIComponent(desc || 'PomPom Focus Session');
                 // Build start/end from last parsed date or today + selected time; default 30m
                 const base = __lastParsedDate__ ? new Date(__lastParsedDate__) : new Date();
-                const [hh, mm] = (scheduleTimeInput.value || '00:00').split(':');
+                let hhmm = '00:00';
+                try { hhmm = (scheduleTimeInput && scheduleTimeInput.value) ? scheduleTimeInput.value : '00:00'; } catch {}
+                const [hh, mm] = String(hhmm).split(':');
                 const start = __lastParsedDate__ ? new Date(__lastParsedDate__) : new Date(base.getFullYear(), base.getMonth(), base.getDate(), parseInt(hh||'0',10), parseInt(mm||'0',10), 0);
                 const end = new Date(start.getTime() + 30*60*1000);
                 const fmt = (d) => `${d.getUTCFullYear()}${String(d.getUTCMonth()+1).padStart(2,'0')}${String(d.getUTCDate()).padStart(2,'0')}T${String(d.getUTCHours()).padStart(2,'0')}${String(d.getUTCMinutes()).padStart(2,'0')}00Z`;

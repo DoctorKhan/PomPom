@@ -115,7 +115,7 @@ function createAIEventParser({ doFetch = (url, opts) => fetch(url, opts) } = {})
 	return async function aiParse(text) {
 		const prompt = `You convert scheduling text to JSON with fields: summary, startLocal (YYYY-MM-DDTHH:MM), endLocal, recurrenceRRule (or empty). Only return JSON.`;
 		const body = {
-			model: 'llama-3.1-70b-versatile',
+			model: 'llama-3.1-8b-instant',
 			messages: [
 				{ role: 'system', content: prompt },
 				{ role: 'user', content: text }

@@ -41,6 +41,11 @@ app.post('/api/groq', async (req, res) => {
       if (response.status === 429) {
         return res.status(429).json({ error: 'Rate limit exceeded. Please try again later.' });
       }
+      if (response.status === 400) {
+        console.error('Groq API 400 Bad Request:', errorData);
+        return res.status(400).json({ error: errorData.error?.message || 'Bad request to Groq API. Please check your prompt or input format.' });
+      }
+      console.error(`Groq API error ${response.status}:`, errorData);
       return res.status(response.status).json({ error: errorData.error?.message || `Groq API error ${response.status}` });
     }
 
