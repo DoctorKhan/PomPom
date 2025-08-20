@@ -169,9 +169,9 @@
             display: none;
         }
 
-        /* Restore kawaii animations and styling for session page */
+        /* Subtle kawaii animations for session page */
         .kawaii-float {
-            animation: kawaii-float 3s ease-in-out infinite;
+            animation: kawaii-float 4s ease-in-out infinite;
         }
 
         @keyframes kawaii-float {
@@ -179,7 +179,7 @@
                 transform: translateY(0px);
             }
             50% {
-                transform: translateY(-10px);
+                transform: translateY(-5px);
             }
         }
 
@@ -399,58 +399,54 @@
             <!-- Main Content -->
             <main class="flex-1 flex flex-col p-4 md:p-8 overflow-hidden">
                 <!-- All views here -->
-                <div id="timer-view" class="flex-1 flex flex-col items-center justify-center">
-                    <div class="relative">
-                        <div id="timer-display" class="text-7xl md:text-9xl font-bold mb-4 relative z-10">25:00</div>
-                        <!-- Studio Ghibli inspired floating elements -->
-                        <div class="absolute -top-6 -right-6 w-12 h-12 bg-gradient-to-br from-blue-200 to-blue-400 rounded-full kawaii-float shadow-lg flex items-center justify-center">☁️</div>
-                        <div class="absolute -top-6 -left-6 w-10 h-10 bg-gradient-to-br from-purple-200 to-purple-400 rounded-full kawaii-float shadow-lg flex items-center justify-center" style="animation-delay: 0.5s">💫</div>
-                        <div class="absolute -bottom-6 -right-6 w-8 h-8 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-full kawaii-float shadow-lg flex items-center justify-center" style="animation-delay: 1s">✨</div>
-                        <div class="absolute -bottom-6 -left-6 w-10 h-10 bg-gradient-to-br from-pink-200 to-pink-400 rounded-full kawaii-float shadow-lg flex items-center justify-center" style="animation-delay: 1.5s">💖</div>
-                        <!-- Subtle background glow -->
-                        <div class="absolute inset-0 bg-gradient-to-br from-sky-100/20 to-sky-200/20 rounded-3xl -z-10"></div>
-                    </div>
-                    <div id="timer-mode-display" class="text-xl text-sky-700 mb-4">Focus Time (25m) ☁️🐕☁️ ✨</div>
-                    <!-- Current goal pill directly under timer -->
-                    <div id="timer-goal-pill" class="hidden mb-6 px-6 py-3 bg-gradient-to-r from-sky-100 via-blue-50 to-purple-100 rounded-full text-sky-800 text-sm font-semibold shadow-lg border border-sky-200 kawaii-float">
-                        <span class="text-sky-600 mr-2">🎯</span> <span id="timer-goal-text"></span>
+                <div id="timer-view" class="flex-1 flex flex-col items-center justify-center max-w-2xl mx-auto">
+                    <!-- Cleaner timer display -->
+                    <div class="relative mb-8">
+                        <div id="timer-display" class="text-6xl md:text-7xl font-bold mb-2 text-center">25:00</div>
+                        <!-- Just two subtle floating elements -->
+                        <div class="absolute -top-4 -right-4 w-8 h-8 bg-gradient-to-br from-blue-200 to-blue-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-sm">☁️</div>
+                        <div class="absolute -bottom-4 -left-4 w-8 h-8 bg-gradient-to-br from-pink-200 to-pink-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-sm" style="animation-delay: 1s">✨</div>
                     </div>
 
-                    <!-- Pomo Goal input -->
-                    <div class="w-full max-w-xl mt-6">
-                        <label class="block text-sm mb-2 text-sky-800 font-bold uppercase tracking-wide">🎯 Session Goal</label>
-                        <div class="flex gap-3">
-                            <input id="goal-input" type="text" placeholder="What will you accomplish this session?" class="flex-1 bg-white/95 text-sky-800 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-sky-400 shadow-md border border-sky-200 font-medium">
-                            <button id="save-goal-btn" class="btn btn-primary text-sm px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105">Set Goal ✨</button>
-                        </div>
-                        <div id="current-goal" class="mt-3 text-sky-900 text-sm hidden font-semibold bg-sky-50/50 px-3 py-2 rounded-lg"></div>
+                    <div id="timer-mode-display" class="text-lg text-sky-700 mb-6 text-center">Focus Time (25m)</div>
+
+                    <!-- Current goal pill -->
+                    <div id="timer-goal-pill" class="hidden mb-6 px-4 py-2 bg-sky-50 rounded-full text-sky-800 text-sm font-medium border border-sky-200">
+                        <span class="text-sky-600 mr-1">🎯</span> <span id="timer-goal-text"></span>
                     </div>
 
-                    <!-- Recent goal history -->
-                    <div class="w-full max-w-xl mt-6">
-                        <div class="text-xs text-sky-700 mb-3 font-bold uppercase tracking-wider">📈 Recent Goals</div>
-                        <div id="goal-history" class="space-y-2 max-h-32 overflow-y-auto"></div>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <button id="start-pause-btn" class="kawaii-button text-xl px-10 py-4 rounded-2xl font-bold text-sky-600 shadow-lg hover:shadow-xl transition-all hover:scale-105 bg-white/90 border-2 border-sky-200">Start ✨</button>
-                        <button id="reset-btn" class="kawaii-button text-lg px-6 py-3 rounded-xl font-semibold text-sky-600 shadow-md hover:shadow-lg transition-all hover:scale-105 bg-white/70 border border-sky-200">Reset 🔄</button>
-                    </div>
-                    <p class="text-sm text-sky-700 mt-4 opacity-75 font-medium">Press spacebar to start/pause ⌨️✨</p>
-                     <div id="mode-controls" class="mt-8">
-                        <div class="mb-3"><span class="text-sm uppercase font-bold text-sky-700 tracking-wide">🎯 Focus Sessions</span></div>
-                        <div class="flex items-center gap-2 mb-6">
-                            <button data-mode="pomodoro25" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">25m</button>
-                            <button data-mode="pomodoro30" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">30m</button>
-                            <button data-mode="pomodoro45" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">45m</button>
-                            <button data-mode="pomodoro60" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">60m</button>
+                    <!-- Compact goal input -->
+                    <div class="w-full max-w-md mb-6">
+                        <div class="flex gap-2">
+                            <input id="goal-input" type="text" placeholder="Session goal..." class="flex-1 bg-white/90 text-sky-800 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-sky-400 text-sm border border-sky-200">
+                            <button id="save-goal-btn" class="btn btn-primary text-sm px-4 py-2 rounded-lg">Set</button>
                         </div>
-                        <div class="mb-3"><span class="text-sm uppercase font-bold text-sky-700 tracking-wide">☁️ Break Time</span></div>
-                        <div class="flex items-center gap-2">
-                            <button data-mode="shortBreak" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">5m</button>
-                            <button data-mode="longBreak" class="mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">15m</button>
-                        </div>
-                            <button data-mode="test3s" class="hidden mode-btn bg-white/15 hover:bg-white/25 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-sm">3s test</button>
+                        <div id="current-goal" class="mt-2 text-sky-900 text-sm hidden bg-sky-50/50 px-3 py-1 rounded"></div>
+                    </div>
 
+                    <!-- Compact control buttons -->
+                    <div class="flex items-center gap-3 mb-6">
+                        <button id="start-pause-btn" class="kawaii-button text-lg px-8 py-3 rounded-xl font-semibold text-sky-600 shadow-md hover:shadow-lg transition-all bg-white/90 border border-sky-200">Start</button>
+                        <button id="reset-btn" class="kawaii-button text-sm px-4 py-3 rounded-lg font-medium text-sky-600 shadow-sm hover:shadow-md transition-all bg-white/70 border border-sky-200">Reset</button>
+                    </div>
+
+                    <p class="text-xs text-sky-600 mb-6 opacity-75">Press spacebar to start/pause</p>
+
+                    <!-- Compact mode controls -->
+                    <div id="mode-controls" class="w-full max-w-md">
+                        <div class="flex items-center justify-center gap-2 mb-3">
+                            <button data-mode="pomodoro25" class="mode-btn bg-white/20 hover:bg-white/30 px-3 py-1 rounded-lg text-xs font-medium transition-all">25m</button>
+                            <button data-mode="pomodoro30" class="mode-btn bg-white/20 hover:bg-white/30 px-3 py-1 rounded-lg text-xs font-medium transition-all">30m</button>
+                            <button data-mode="pomodoro45" class="mode-btn bg-white/20 hover:bg-white/30 px-3 py-1 rounded-lg text-xs font-medium transition-all">45m</button>
+                            <button data-mode="shortBreak" class="mode-btn bg-white/20 hover:bg-white/30 px-3 py-1 rounded-lg text-xs font-medium transition-all">5m break</button>
+                            <button data-mode="longBreak" class="mode-btn bg-white/20 hover:bg-white/30 px-3 py-1 rounded-lg text-xs font-medium transition-all">15m break</button>
+                        </div>
+                        <button data-mode="test3s" class="hidden mode-btn bg-white/20 hover:bg-white/30 px-3 py-1 rounded-lg text-xs font-medium transition-all">3s test</button>
+                    </div>
+
+                    <!-- Compact goal history -->
+                    <div class="w-full max-w-md mt-4">
+                        <div id="goal-history" class="space-y-1 max-h-20 overflow-y-auto text-xs"></div>
                     </div>
                 </div>
 
