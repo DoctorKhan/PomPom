@@ -252,12 +252,11 @@ describe('PomPom Integration Tests', () => {
     test('should have consistent theme colors', () => {
         const styles = document.querySelector('style').textContent;
 
-        // Check for blue color theme
+        // Check for current blue color theme
         expect(styles).toContain('#0ea5e9'); // Sky blue color
-        expect(styles).toContain('#667eea'); // Purple-blue gradient color
-
-        // Check for gradient backgrounds
-        expect(styles).toContain('gradient');
+        // New palette uses gradients between sky and blue
+        expect(styles).toContain('#3b82f6'); // Blue for gradients
+        expect(styles).toContain('linear-gradient');
     });
 
     test('should have proper responsive design classes', () => {
