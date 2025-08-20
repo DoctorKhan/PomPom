@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fetch = require('node-fetch');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -10,6 +11,9 @@ const PORT = process.env.PORT || 8000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static('.'));
+
+// Avoid favicon 404 noise in console during local development
+app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -45,6 +49,33 @@ app.post('/api/groq', async (req, res) => {
   } catch (error) {
     console.error('Groq API proxy error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Test logging endpoint
+app.post('/api/test-log', (req, res) => {
+  try {
+    const { level, message, timestamp, testName, data } = req.body;
+    const logEntry = {
+      timestamp: timestamp || new Date().toISOString(),
+      level: level || 'info',
+      testName: testName || 'unknown',
+      message,
+      data
+    };
+
+    const logLine = `[${logEntry.timestamp}] ${logEntry.level.toUpperCase()} [${logEntry.testName}] ${logEntry.message}${logEntry.data ? ' | ' + JSON.stringify(logEntry.data) : ''}\n`;
+
+    // Append to test log file
+    fs.appendFileSync('test-results.log', logLine);
+
+    // Also log to console for immediate feedback
+    console.log(`TEST LOG: ${logLine.trim()}`);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Test logging error:', error);
+    res.status(500).json({ error: 'Failed to log test result' });
   }
 });
 

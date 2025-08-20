@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PomPom Test</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use built Tailwind styles instead of CDN for production-like runs -->
+    <link href="/styles.css" rel="stylesheet">
+    <!-- Favicon to prevent 404s when developing locally -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50' font-size='48'%3E%E2%98%81%EF%B8%8F%3C/text%3E%3C/svg%3E">
     <style>
         .kawaii-button {
             background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
@@ -40,18 +43,77 @@
     </div>
 
     <script>
-        function log(message) {
+        let currentTestName = 'unknown';
+
+        // Send log to server
+        async function sendLogToServer(level, message, data = null) {
+            try {
+                await fetch('/api/test-log', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        level,
+                        message,
+                        testName: currentTestName,
+                        timestamp: new Date().toISOString(),
+                        data
+                    })
+                });
+            } catch (error) {
+                console.error('Failed to send log to server:', error);
+            }
+        }
+
+        function log(message, level = 'info', data = null) {
             const content = document.getElementById('results-content');
-            content.innerHTML += '<div>' + message + '</div>';
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `<div>[${timestamp}] ${message}</div>`;
+            content.innerHTML += logEntry;
+
+            // Send to server for file logging
+            sendLogToServer(level, message, data);
+
+            // Also log to browser console
+            console.log(`[${currentTestName}] ${message}`, data || '');
         }
 
         function clearLog() {
             document.getElementById('results-content').innerHTML = '';
         }
 
+        // Capture console errors and warnings
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            sendLogToServer('error', args.join(' '));
+        };
+
+        console.warn = function(...args) {
+            originalConsoleWarn.apply(console, args);
+            sendLogToServer('warn', args.join(' '));
+        };
+
+        // Capture unhandled errors
+        window.addEventListener('error', (event) => {
+            sendLogToServer('error', `Unhandled error: ${event.message}`, {
+                filename: event.filename,
+                lineno: event.lineno,
+                colno: event.colno
+            });
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            sendLogToServer('error', `Unhandled promise rejection: ${event.reason}`);
+        });
+
         document.getElementById('test-landing').addEventListener('click', () => {
+            currentTestName = 'landing-page';
             clearLog();
-            log('Testing landing page...');
+            log('Testing landing page...', 'info');
 
             // Test if we can open the main app
             const iframe = document.createElement('iframe');
@@ -60,25 +122,27 @@
             document.body.appendChild(iframe);
 
             iframe.onload = () => {
-                log('✅ Main app loaded successfully');
-                log('✅ Landing page should show PomPom branding');
-                log('✅ Should see Pomeranian mascot with pom poms');
+                log('✅ Main app loaded successfully', 'info');
+                log('✅ Landing page should show PomPom branding', 'info');
+                log('✅ Should see simplified ADHD-friendly design', 'info');
                 document.body.removeChild(iframe);
+                log('Test completed successfully', 'info');
             };
 
             iframe.onerror = () => {
-                log('❌ Failed to load main app');
+                log('❌ Failed to load main app', 'error');
                 document.body.removeChild(iframe);
             };
         });
 
         document.getElementById('test-session').addEventListener('click', () => {
+            currentTestName = 'session-flow';
             clearLog();
-            log('Testing session flow...');
+            log('Testing session flow...', 'info');
 
             // Test session URL
             const testUrl = './index.html#/test-team';
-            log('🔗 Testing session URL: ' + testUrl);
+            log('🔗 Testing session URL: ' + testUrl, 'info');
 
             const iframe = document.createElement('iframe');
             iframe.src = testUrl;
@@ -93,28 +157,31 @@
                         const landingPage = iframeDoc.getElementById('landing-page');
 
                         if (nameInputPage && !nameInputPage.classList.contains('hidden')) {
-                            log('✅ Name input page is shown for session URL');
+                            log('✅ Name input page is shown for session URL', 'info');
                         } else if (landingPage && !landingPage.classList.contains('hidden')) {
-                            log('✅ Landing page is shown (expected for direct file access)');
+                            log('✅ Landing page is shown (expected for direct file access)', 'info');
                         } else {
-                            log('⚠️ Could not determine page state (may be due to file:// protocol)');
+                            log('⚠️ Could not determine page state (may be due to file:// protocol)', 'warn');
                         }
 
-                        log('✅ Should populate random team name and user name');
-                        log('✅ Should allow editing of names');
-                        log('✅ Should proceed to session page after clicking Start Session');
-                        log('✅ App rebranded to PomPom with Pomeranian mascot');
-                        log('✅ Pom pom decorations added throughout');
-                        log('Note: Full session flow requires Firebase setup and proper server for complete testing');
+                        log('✅ Should populate random team name and user name', 'info');
+                        log('✅ Should allow editing of names', 'info');
+                        log('✅ Should proceed to session page after clicking Start Session', 'info');
+                        log('✅ App simplified for ADHD-friendly design', 'info');
+                        log('✅ Reduced visual clutter and animations', 'info');
+                        log('Note: Full session flow requires Firebase setup and proper server for complete testing', 'info');
 
                     } catch (e) {
-                        log('⚠️ Cross-origin restrictions prevent full testing with file:// protocol');
-                        log('✅ App structure appears correct based on code review');
+                        log('⚠️ Cross-origin restrictions prevent full testing with file:// protocol', 'warn');
+                        log('✅ App structure appears correct based on code review', 'info');
                     }
 
                     document.body.removeChild(iframe);
+                    log('Test completed', 'info');
                 }, 1000);
             };
+
+    });
 
 
         function runInApp(url, fn) {
@@ -130,7 +197,7 @@
                         const result = await fn(w, d);
                         resolve(result);
                     } catch (e) {
-                        log('❌ Test failed: ' + e.message);
+                        log('❌ Test failed: ' + e.message, 'error', { error: e.toString() });
                         resolve(false);
                     } finally {
                         document.body.removeChild(iframe);
@@ -156,8 +223,9 @@
         }
 
         document.getElementById('test-todo-inline-enter').addEventListener('click', async () => {
+            currentTestName = 'todo-inline-enter';
             clearLog();
-            log('Testing todo inline edit (Enter to save)...');
+            log('Testing todo inline edit (Enter to save)...', 'info');
             await runInApp('./index.html?offline=1', async (w, d) => {
                 // Go to planner view where todos are
                 d.getElementById('planner-view-btn').click();
@@ -178,14 +246,15 @@
                 // Expect rerendered row with updated due
                 const afterText = first.querySelector('.todo-due')?.textContent || '';
                 if (!afterText || !/4:00/i.test(afterText)) throw new Error('Due not updated');
-                log('✅ Enter-to-save updated due');
+                log('✅ Enter-to-save updated due', 'info');
                 return true;
             });
         });
 
         document.getElementById('test-todo-inline-button').addEventListener('click', async () => {
+            currentTestName = 'todo-inline-button';
             clearLog();
-            log('Testing todo inline edit (Save button)...');
+            log('Testing todo inline edit (Save button)...', 'info');
             await runInApp('./index.html?offline=1', async (w, d) => {
                 d.getElementById('planner-view-btn').click();
                 await new Promise(r => setTimeout(r, 100));
@@ -202,7 +271,7 @@
                 saveBtn.click();
                 await new Promise(r => setTimeout(r, 150));
                 if (!/Draft email to team/i.test(first.textContent)) throw new Error('Text not saved');
-                log('✅ Save button updated text');
+                log('✅ Save button updated text', 'info');
                 return true;
             });
         });

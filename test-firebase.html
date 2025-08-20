@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PomPom Firebase Test</title>
     <script src="firebase-config.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use built Tailwind styles instead of CDN for production-like runs -->
+    <link href="/styles.css" rel="stylesheet">
+    <!-- Favicon to prevent 404s when developing locally -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50' font-size='48'%3E%E2%98%81%EF%B8%8F%3C/text%3E%3C/svg%3E">
     <style>
         .kawaii-button {
             background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
