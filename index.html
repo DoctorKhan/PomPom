@@ -1082,21 +1082,24 @@
                 }
             } catch {}
             if (createSessionBtn) createSessionBtn.addEventListener('click', () => {
-                let name = sessionNameInput.value.trim().replace(/[^a-zA-Z0-9-]/g, '');
-                if (!name) {
-                    name = generateRandomTeamName();
-                }
-                try { localStorage.setItem('pompom_team_name', toSlug(name)); } catch {}
-                // Update both path and hash for static hosting
-                if (!USE_HASH_ROUTING) {
-
-                    try { window.history.pushState({}, name, `/${name}`); } catch {}
-
-                }
-                window.location.hash = `#/${name}`;
-                handleRouting();
+                let name = (sessionNameInput?.value || '').trim().replace(/[^a-zA-Z0-9-]/g, '');
+                if (!name) name = generateRandomTeamName();
+                const slug = toSlug(name);
+                // Persist team
+                try { localStorage.setItem('pompom_team_name', slug); } catch {}
+                // Update URL (prefer hash routing to avoid 404)
+                if (!USE_HASH_ROUTING) { try { window.history.pushState({}, slug, `/${slug}`); } catch {} }
+                window.location.hash = `#/${slug}`;
+                // Immediately show name input page so tests see navigation without waiting on router
+                try {
+                    showNameInputPage();
+                    if (teamNameInput) teamNameInput.value = slug; // keep the landing input in sync
+                    if (userNameSetupInput && !userNameSetupInput.value) userNameSetupInput.value = generateRandomUserName();
+                    updateTeamLinkPreview();
+                    validateStartCta();
+                } catch {}
             });
-            if (sessionNameInput) {
+            if (sessionNameInput && createSessionBtn) {
                 sessionNameInput.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
@@ -1415,13 +1418,13 @@
                 const tag = (e.target && e.target.tagName) || '';
                 const typing = tag === 'INPUT' || tag === 'TEXTAREA';
                 // If on the name input page and not actively typing elsewhere, submit
-                if (!nameInputPage.classList.contains('hidden') && !typing) {
+                if (nameInputPage && !nameInputPage.classList.contains('hidden') && !typing && startSessionBtn) {
                     e.preventDefault();
                     startSessionBtn.click();
                     return;
                 }
                 // If on landing page and not typing, go to next screen
-                if (!landingPage.classList.contains('hidden') && !typing) {
+                if (landingPage && !landingPage.classList.contains('hidden') && !typing && createSessionBtn) {
                     e.preventDefault();
                     createSessionBtn.click();
                 }
@@ -1521,6 +1524,12 @@
             const nouns = ["Clouds", "Pomeranians", "Squad", "Team", "Pack", "Fluffs", "Angels", "Cottons"];
             return `${adjectives[Math.floor(Math.random() * adjectives.length)]}-${nouns[Math.floor(Math.random() * nouns.length)]}`;
         }
+
+        // Expose for tests and external scripts
+        try {
+            window.generateRandomUserName = generateRandomUserName;
+            window.generateRandomTeamName = generateRandomTeamName;
+        } catch {}
 
 
         function populateRandomNames() {
