@@ -1081,7 +1081,7 @@
                     });
                 }
             } catch {}
-            createSessionBtn.addEventListener('click', () => {
+            if (createSessionBtn) createSessionBtn.addEventListener('click', () => {
                 let name = sessionNameInput.value.trim().replace(/[^a-zA-Z0-9-]/g, '');
                 if (!name) {
                     name = generateRandomTeamName();
@@ -1195,7 +1195,7 @@
             // Live link preview handled above with validation
 
             // User avatar click to open name edit modal
-            userAvatar.addEventListener('click', () => {
+            if (userAvatar) userAvatar.addEventListener('click', () => {
                 userNameModalInput.value = userName || '';
                 userNameModal.classList.remove('hidden');
                 userNameModal.classList.add('flex');
@@ -1204,17 +1204,17 @@
             });
 
             // User name modal handlers
-            closeUserNameModal.addEventListener('click', () => {
+            if (closeUserNameModal) closeUserNameModal.addEventListener('click', () => {
                 userNameModal.classList.add('hidden');
                 userNameModal.classList.remove('flex');
             });
 
-            cancelUserName.addEventListener('click', () => {
+            if (cancelUserName) cancelUserName.addEventListener('click', () => {
                 userNameModal.classList.add('hidden');
                 userNameModal.classList.remove('flex');
             });
 
-            saveUserName.addEventListener('click', () => {
+            if (saveUserName) saveUserName.addEventListener('click', () => {
                 const newName = userNameModalInput.value.trim();
                 if (newName) {
                     userName = newName;
@@ -1225,7 +1225,7 @@
                 userNameModal.classList.remove('flex');
             });
 
-            userNameModalInput.addEventListener('keypress', (e) => {
+            if (userNameModalInput) userNameModalInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     saveUserName.click();
                 } else if (e.key === 'Escape') {
@@ -1233,10 +1233,10 @@
                 }
             });
 
-            startPauseBtn.addEventListener('click', toggleTimer);
-            resetBtn.addEventListener('click', resetTimer);
+            if (startPauseBtn) startPauseBtn.addEventListener('click', toggleTimer);
+            if (resetBtn) resetBtn.addEventListener('click', resetTimer);
 
-            modeControls.addEventListener('click', (e) => {
+            if (modeControls) modeControls.addEventListener('click', (e) => {
                 if (e.target.matches('.mode-btn')) {
                     const mode = e.target.dataset.mode;
                     setMode(mode);
@@ -1294,15 +1294,15 @@
                 }
             });
 
-            viewTimerBtn.addEventListener('click', () => switchView('timer'));
-            viewPlannerBtn.addEventListener('click', () => switchView('planner'));
-            viewParticipantsBtn.addEventListener('click', () => switchView('participants'));
-            viewChatBtn.addEventListener('click', () => switchView('chat'));
+            if (viewTimerBtn) viewTimerBtn.addEventListener('click', () => switchView('timer'));
+            if (viewPlannerBtn) viewPlannerBtn.addEventListener('click', () => switchView('planner'));
+            if (viewParticipantsBtn) viewParticipantsBtn.addEventListener('click', () => switchView('participants'));
+            if (viewChatBtn) viewChatBtn.addEventListener('click', () => switchView('chat'));
 
-            scheduleAddBtn.addEventListener('click', scheduleNewPomodoro);
-            scheduleDescInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') scheduleNewPomodoro(); });
+            if (scheduleAddBtn) scheduleAddBtn.addEventListener('click', scheduleNewPomodoro);
+            if (scheduleDescInput) scheduleDescInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') scheduleNewPomodoro(); });
             // Planner: Google Calendar + Meet
-            calendarCreateBtn.addEventListener('click', () => {
+            if (calendarCreateBtn) calendarCreateBtn.addEventListener('click', () => {
                 const title = encodeURIComponent(scheduleDescInput.value.trim() || 'PomPom Focus Session');
                 // Build start/end from last parsed date or today + selected time; default 30m
                 const base = __lastParsedDate__ ? new Date(__lastParsedDate__) : new Date();
@@ -1315,10 +1315,10 @@
                 const url = `https://calendar.google.com/calendar/u/0/r/eventedit?text=${title}&dates=${dates}&details=${details}`;
                 window.open(url, '_blank');
             });
-            meetNowBtn.addEventListener('click', () => { handleStartMeet(); });
-            calendarEventBtn.addEventListener('click', handleCreateCalendarEvent);
-            sendChatBtn.addEventListener('click', sendChatMessage);
-            chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
+            if (meetNowBtn) meetNowBtn.addEventListener('click', () => { handleStartMeet(); });
+            if (calendarEventBtn) calendarEventBtn.addEventListener('click', handleCreateCalendarEvent);
+            if (sendChatBtn) sendChatBtn.addEventListener('click', sendChatMessage);
+            if (chatInput) chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
 
                         // Natural language parse binding
                         if (nlParseBtn) nlParseBtn.addEventListener('click', async () => {
@@ -1355,7 +1355,7 @@
                         });
                         if (nlEventInput) nlEventInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') nlParseBtn.click(); });
 
-            soundToggleBtn.addEventListener('click', toggleSound);
+            if (soundToggleBtn) soundToggleBtn.addEventListener('click', toggleSound);
             if (testAlarmBtn) {
                 testAlarmBtn.addEventListener('click', () => {
                     initAudioAndNotifications();
@@ -1363,12 +1363,19 @@
                     showNotification({ description: 'Test alarm' });
                 });
             }
-            endSessionDismissBtn.addEventListener('click', () => endSessionModal.classList.add('hidden'));
+            if (endSessionDismissBtn) endSessionDismissBtn.addEventListener('click', () => endSessionModal.classList.add('hidden'));
 
-            leaveBtn.addEventListener('click', async () => {
+        if (leaveBtn) leaveBtn.addEventListener('click', async () => {
                 const sure = confirm('Are you sure you want to leave this fluffy cloud team? ☁️💔');
                 if (!sure) return;
                 try {
+            // Mark one-time leave intent so we don't auto-redirect back to saved team
+            try { localStorage.setItem('pompom_leave_intent', '1'); } catch {}
+
+            // Clear team name but keep user name for convenience
+            try { localStorage.removeItem('pompom_team_name'); } catch {}
+            // Keep pompom_username so user doesn't have to re-enter it
+
                     // Clean up timers and listeners
                     clearInterval(timerInterval);
                     clearInterval(alarmCheckInterval);
@@ -1391,16 +1398,16 @@
             });
 
             // Settings modal
-            settingsBtn.addEventListener('click', () => { updateSettingsStatusUI(); settingsModal.classList.remove('hidden'); settingsModal.classList.add('flex'); });
-            closeSettingsBtn.addEventListener('click', () => { settingsModal.classList.add('hidden'); settingsModal.classList.remove('flex'); });
+            if (settingsBtn) settingsBtn.addEventListener('click', () => { updateSettingsStatusUI(); settingsModal.classList.remove('hidden'); settingsModal.classList.add('flex'); });
+            if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', () => { settingsModal.classList.add('hidden'); settingsModal.classList.remove('flex'); });
 
             // GitHub source link
             if (githubBtn) githubBtn.addEventListener('click', () => { window.open('https://github.com/DoctorKhan/PomPom', '_blank'); });
             // AI features are now server-side - no user key management needed
 
             // Todos
-            todoAddBtn.addEventListener('click', async () => { await addTodo(); });
-            todoIdeaInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTodo(); });
+            if (todoAddBtn) todoAddBtn.addEventListener('click', async () => { await addTodo(); });
+            if (todoIdeaInput) todoIdeaInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTodo(); });
 
             // Global Enter key: advance from visible screen (avoid when typing)
             document.addEventListener('keydown', (e) => {
