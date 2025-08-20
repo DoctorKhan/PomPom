@@ -48,7 +48,7 @@
 
         /* Clean, simple design */
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #e0f7fa 0%, #b3e0ff 100%);
             min-height: 100vh;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
@@ -61,40 +61,47 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            background: rgba(255,255,255,0.92);
+            border-radius: 32px;
+            box-shadow: 0 12px 48px 0 rgba(173,216,230,0.18), 0 1.5px 0 rgba(255,255,255,0.7);
         }
 
         .card {
-            background: white;
-            border-radius: 16px;
+            background: linear-gradient(135deg, #ffffff 60%, #e3f6fd 100%);
+            border-radius: 24px;
             padding: 2rem;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 32px rgba(173,216,230,0.12);
             width: 100%;
         }
 
         .logo {
-            width: 60px;
-            height: 60px;
-            background: #667eea;
-            border-radius: 12px;
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #e3f6fd 0%, #ffffff 100%);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 1.5rem;
-            font-size: 24px;
+            font-size: 32px;
+            box-shadow: 0 4px 16px rgba(173,216,230,0.18);
+            border: 2px solid #b3e0ff;
         }
 
         h1 {
             text-align: center;
-            font-size: 2rem;
-            font-weight: bold;
-            color: #1a1a1a;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #3a7ca5;
             margin-bottom: 0.5rem;
+            text-shadow: 0 1px 0 #fff, 0 2px 8px #b3e0ff44;
         }
 
         .subtitle {
             text-align: center;
-            color: #666;
+            color: #5dade2;
             margin-bottom: 2rem;
+            font-weight: 500;
         }
 
         .form-group {
@@ -109,15 +116,16 @@
         }
 
         .input-group {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #e3f6fd 0%, #fafdff 100%);
+            border: 2px solid #b3e0ff;
+            border-radius: 16px;
             overflow: hidden;
             transition: border-color 0.2s;
         }
 
         .input-group:focus-within {
-            border-color: #667eea;
+            border-color: #5dade2;
+            box-shadow: 0 0 0 2px #e0f7fa;
         }
 
         .input-prefix {
@@ -141,28 +149,29 @@
         .btn {
             width: 100%;
             padding: 12px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
+            background: #fafdff;
+            color: #3a7ca5;
+            border: 1.5px solid #b3e0ff;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 500;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s, color 0.2s;
         }
 
         .btn:hover {
-            background: #5a6fd8;
+            background: #e0f7fa;
+            color: #256fa1;
         }
 
         .btn:focus {
-            outline: 2px solid #667eea;
+            outline: 2px solid #b3e0ff;
             outline-offset: 2px;
         }
 
         .help-text {
             font-size: 12px;
-            color: #666;
+            color: #5dade2;
             text-align: center;
             margin-top: 0.5rem;
         }
