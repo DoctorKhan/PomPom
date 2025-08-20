@@ -1106,6 +1106,12 @@
                         createSessionBtn.click();
                     }
                 });
+                sessionNameInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        createSessionBtn.click();
+                    }
+                });
             }
 
             if (startSessionBtn) {
@@ -1142,19 +1148,19 @@
                 });
             }
 
-            // Allow pressing Enter to start
-            if (teamNameInput && startSessionBtn) {
+            // Allow pressing Enter on landing team input to continue to name page
+            if (teamNameInput && createSessionBtn) {
                 teamNameInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
-                        startSessionBtn.click();
+                        createSessionBtn.click();
                     }
                 });
                 // Also support keydown to ensure consistent behavior across browsers
                 teamNameInput.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
-                        startSessionBtn.click();
+                        createSessionBtn.click();
                     }
                 });
             }
