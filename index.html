@@ -236,21 +236,6 @@
         .btn {
             padding: 8px 16px;
             border-radius: 8px;
-            .input-group {
-                display: flex;
-                border: 2px solid #cbd5e1;
-                border-radius: 8px;
-                overflow: hidden;
-                transition: border-color 0.2s;
-                background: #f1f5f9;
-            }
-            .input-group:focus-within {
-                border-color: #60a5fa;
-            }
-            .btn-primary { border: 1px solid #cbd5e1 !important; background: #e2eafc !important; color: #2d3748 !important; box-shadow: 0 4px 12px rgba(60,72,88,0.08) !important; }
-            .btn-primary:hover { background: #c3cfe2 !important; color: #1a202c !important; }
-            .btn-secondary { background: #60a5fa !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(60,72,88,0.10) !important; }
-            .btn-secondary:hover { background: #2563eb !important; }
             border: none;
             cursor: pointer;
             font-weight: 500;
@@ -1373,11 +1358,11 @@
                                 } catch {
                                         parsed = __parseEventLocal__(raw);
                                 }
-                                // Fill the UI
-                                scheduleDescInput.value = parsed.summary;
+                                // Fill the UI (guard if optional fields are not present)
+                                if (scheduleDescInput) scheduleDescInput.value = parsed.summary;
                                 try {
                                     const [datePart, timePart] = String(parsed.startLocal||'').split('T');
-                                    if (timePart) scheduleTimeInput.value = timePart.slice(0,5);
+                                    if (timePart && scheduleTimeInput) scheduleTimeInput.value = timePart.slice(0,5);
                                     __lastParsedDate__ = parsed.startLocal || null;
                                 } catch { __lastParsedDate__ = null; }
                                 if (parsed.recurrenceRRule) {
@@ -2243,11 +2228,11 @@
         function updateSettingsStatusUI() {
             // Check if server-side AI is available
             fetch('/api/health').then(res => res.json()).then(data => {
-                apiKeyStatusText.textContent = data.groqConfigured ? 'Server-side configured' : 'Not configured';
-                aiFeaturesStatus.textContent = data.groqConfigured ? 'Enabled (shared)' : 'Disabled';
+                if (apiKeyStatusText) apiKeyStatusText.textContent = data.groqConfigured ? 'Server-side configured' : 'Not configured';
+                if (aiFeaturesStatus) aiFeaturesStatus.textContent = data.groqConfigured ? 'Enabled (shared)' : 'Disabled';
             }).catch(() => {
-                apiKeyStatusText.textContent = 'Server unavailable';
-                aiFeaturesStatus.textContent = 'Disabled';
+                if (apiKeyStatusText) apiKeyStatusText.textContent = 'Server unavailable';
+                if (aiFeaturesStatus) aiFeaturesStatus.textContent = 'Disabled';
             });
             applyAdvancedVisibility();
         }
