@@ -2320,9 +2320,6 @@
         async function suggestTodo(idea) {
             const members = getTeamMembersForAI();
             const nowISO = new Date().toISOString();
-            const prompt = `You are an assistant helping a remote team manage todos. Improve the task text, pick an owner from this list: ${JSON.stringify(members)} (must be exactly one of these names), and suggest a due datetime within the next 7 days. Respond ONLY as compact JSON with keys: improvedText, owner, due. due should be ISO like 2025-08-13T17:00.\nTask: ${idea}\nCurrent time: ${nowISO}`;
-            const res = await callGroqAPI(prompt);
-            const obj = extractJSON(res) || {};
             // Fallback due: next day at 17:00 local
             const fallbackDue = (() => {
                 const d = new Date();
@@ -2335,6 +2332,25 @@
                 const min = String(d.getMinutes()).padStart(2,'0');
                 return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
             })();
+
+            // Short-circuit in offline mode to avoid AI dependency
+            if (OFFLINE_MODE) {
+                return {
+                    text: idea,
+                    ownerName: (userName || getUserNameFromStorage()),
+                    due: fallbackDue
+                };
+            }
+
+            const prompt = `You are an assistant helping a remote team manage todos. Improve the task text, pick an owner from this list: ${JSON.stringify(members)} (must be exactly one of these names), and suggest a due datetime within the next 7 days. Respond ONLY as compact JSON with keys: improvedText, owner, due. due should be ISO like 2025-08-13T17:00.\nTask: ${idea}\nCurrent time: ${nowISO}`;
+            let obj = {};
+            try {
+                const res = await callGroqAPI(prompt);
+                obj = extractJSON(res) || {};
+            } catch (e) {
+                // AI unavailable; fall back locally
+                obj = {};
+            }
             return {
                 text: obj.improvedText || idea,
                 ownerName: obj.owner || (userName || getUserNameFromStorage()),
@@ -2346,7 +2362,7 @@
             if (!todoIdeaInput) return;
             const idea = (todoIdeaInput.value || '').trim();
             if (!idea) { if (todoStatus) todoStatus.textContent = 'Task text required.'; return; }
-            if (todoStatus) todoStatus.textContent = 'Asking AI...';
+            if (todoStatus) todoStatus.textContent = OFFLINE_MODE ? 'Adding...' : 'Asking AI...';
             const suggestion = await suggestTodo(idea);
             // Prefer a due parsed from the user's idea text if present (e.g., "today", "in 2 days")
             const dueFromText = parseDueOrNull(idea) || parseDueOrNull(suggestion.text);
