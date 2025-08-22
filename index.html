@@ -1785,7 +1785,16 @@ if (typeof timerModeDisplay !== 'undefined') {
         function generateRandomTeamName() {
             const adjectives = ["Fluffy", "Cloud", "Dreamy", "Soft", "Puffy", "Cotton", "Misty", "Snowy"];
             const nouns = ["Clouds", "Pomeranians", "Squad", "Team", "Pack", "Fluffs", "Angels", "Cottons"];
-            return `${adjectives[Math.floor(Math.random() * adjectives.length)]}-${nouns[Math.floor(Math.random() * nouns.length)]}`;
+            // Ensure different name from last call
+            if (!window.__LAST_TEAM_NAME__) window.__LAST_TEAM_NAME__ = '';
+            let name = '';
+            let tries = 0;
+            do {
+                name = `${adjectives[Math.floor(Math.random() * adjectives.length)]}-${nouns[Math.floor(Math.random() * nouns.length)]}`;
+                tries++;
+            } while (name === window.__LAST_TEAM_NAME__ && tries < 5);
+            window.__LAST_TEAM_NAME__ = name;
+            return name;
         }
 
         // Expose for tests and external scripts
@@ -3377,21 +3386,6 @@ try {
             const hash = (s.match(/#[a-z0-9_-]+/gi) || []).map(t => t.slice(1).toLowerCase());
             const words = s
                 .split(/[\s,]+/)
-                .map(w => w.replace(/^#/, ''))
-                .map(w => w.trim().toLowerCase())
-                .filter(Boolean);
-            return Array.from(new Set([...hash, ...words]));
-        }
-        function extractTagsFromText(text) {
-            const tags = Array.from(new Set((text.match(/#[a-z0-9_-]+/gi) || []).map(t => t.slice(1).toLowerCase())));
-            const cleanText = text.replace(/#[a-z0-9_-]+/gi, '').replace(/\s{2,}/g, ' ').trim();
-            return { cleanText, tags };
-        }
-        function escapeHtml(s) {
-            return String(s || '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
                 .map(w => w.replace(/^#/, ''))
                 .map(w => w.trim().toLowerCase())
                 .filter(Boolean);
