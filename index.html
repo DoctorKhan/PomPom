@@ -461,39 +461,46 @@
                 <div id="planner-view" class="hidden flex-1 flex flex-col max-w-2xl mx-auto p-4">
                     <h2 class="text-2xl font-bold mb-8 text-center">Day Planner</h2>
 
-                    <!-- Simplified schedule section -->
-                    <div class="mb-8 p-6 bg-white/20 rounded-lg border border-white/30">
-                        <h3 class="font-medium mb-4 text-lg">Quick Schedule</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <input id="nl-event-input" type="text" placeholder="e.g., Team meeting at 2pm" class="w-full bg-white/30 p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-white/60 text-sm">
-                                <div id="nl-recurrence-hint" class="text-xs text-sky-700 mt-2 hidden"></div>
-                            </div>
-                            <div class="flex gap-3">
-                                <button id="nl-parse-btn" class="btn btn-primary px-6 py-3">Add Event</button>
-                                <button id="calendar-create-btn" class="btn btn-secondary px-6 py-3">Calendar</button>
-                            </div>
-                        </div>
-                    </div>
+                <div class="mb-4 flex justify-center">
+                    <button id="meet-now-btn" class="btn btn-accent px-6 py-3 flex items-center gap-2" title="Start a Google Meet">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M21 7.5V6c0-1.1-.9-2-2-2H5C3.9 4 3 4.9 3 6v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-1.5l-4-4v-3l4-4zM5 6h14v1.5l-4 4v3l4 4V18H5V6zm7 7.5c0 .83-.67 1.5-1.5 1.5S9 14.33 9 13.5 9.67 12 10.5 12s1.5.67 1.5 1.5z"/></svg>
+                        Start Meeting
+                    </button>
+                    <span id="meet-link-container" class="ml-4 text-sky-700 text-sm"></span>
+                </div>
 
-                    <!-- Simplified todos section -->
-                    <div class="mb-8 p-6 bg-white/20 rounded-lg border border-white/30">
-                        <h3 class="font-medium mb-4 text-lg">Team Tasks</h3>
-                        <div class="space-y-4">
-                            <div class="flex gap-3">
-                                <input id="todo-idea-input" type="text" placeholder="Add a task..." class="flex-1 bg-white/30 p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-white/60 text-sm">
-                                <button id="todo-add-btn" class="btn btn-primary px-6 py-3">Add</button>
-                            </div>
-                            <div id="todo-status" class="text-xs text-sky-700"></div>
+                <div class="mb-4 p-6 bg-white/20 rounded-lg border border-white/30">
+                    <h3 class="font-medium mb-4 text-lg">Quick Schedule</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <input id="nl-event-input" type="text" placeholder="e.g., Team meeting at 2pm" class="w-full bg-white/30 p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-white/60 text-sm">
+                            <div id="nl-recurrence-hint" class="text-xs text-sky-700 mt-2 hidden"></div>
                         </div>
-                    </div>
-
-                    <!-- Clean lists -->
-                    <div class="flex-1 space-y-4 overflow-y-auto">
-                        <div id="planner-list" class="space-y-2"></div>
-                        <div id="todo-list" class="space-y-2"></div>
+                        <div class="flex gap-3">
+                            <button id="nl-parse-btn" class="btn btn-primary px-6 py-3">Add Event</button>
+                            <button id="calendar-create-btn" class="btn btn-secondary px-6 py-3">Calendar</button>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Simplified todos section -->
+                <div class="mb-8 p-6 bg-white/20 rounded-lg border border-white/30">
+                    <h3 class="font-medium mb-4 text-lg">Team Tasks</h3>
+                    <div class="space-y-4">
+                        <div class="flex gap-3">
+                            <input id="todo-idea-input" type="text" placeholder="Add a task..." class="flex-1 bg-white/30 p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-white/60 text-sm">
+                            <button id="todo-add-btn" class="btn btn-primary px-6 py-3">Add</button>
+                        </div>
+                        <div id="todo-status" class="text-xs text-sky-700"></div>
+                    </div>
+                </div>
+
+                <!-- Clean lists -->
+                <div class="flex-1 space-y-4 overflow-y-auto">
+                    <div id="planner-list" class="space-y-2"></div>
+                    <div id="todo-list" class="space-y-2"></div>
+                </div>
+            </div>
                 <div id="participants-view" class="hidden flex-1 flex flex-col max-w-2xl mx-auto">
                     <h2 class="text-2xl font-bold mb-6 text-center">Team Members (<span id="participant-count">0</span>)</h2>
                     <div id="participants-list" class="flex-1 overflow-y-auto space-y-3 p-4 bg-white/20 rounded-lg border border-white/30"></div>
@@ -628,6 +635,67 @@
             try { window.__CONSOLE_LOGS.push({ level: 'error', message: (e.reason && (e.reason.message || String(e.reason))) || 'unhandledrejection pre-module' }); } catch {}
           });
         } catch {}
+      })();
+
+      // Expose random-name helpers early for real-browser tests/content-scripts
+      try {
+        if (!window.generateRandomUserName) window.generateRandomUserName = function() {
+          const adjectives = ["Fluffy", "Cloud", "Puffy", "Soft", "Bouncy", "Cheerful", "Sparkly", "Dreamy"];
+          const nouns = ["Cloud", "Pomeranian", "Puff", "Buddy", "Angel", "Star", "Fluff", "Cotton"];
+          return `${adjectives[Math.floor(Math.random() * adjectives.length)]} ${nouns[Math.floor(Math.random() * nouns.length)]}`;
+        };
+        if (!window.generateRandomTeamName) window.generateRandomTeamName = function() {
+          const adjectives = ["Fluffy", "Cloud", "Dreamy", "Soft", "Puffy", "Cotton", "Misty", "Snowy"];
+          const nouns = ["Clouds", "Pomeranians", "Squad", "Team", "Pack", "Fluffs", "Angels", "Cottons"];
+          return `${adjectives[Math.floor(Math.random() * adjectives.length)]}-${nouns[Math.floor(Math.random() * nouns.length)]}`;
+        };
+      } catch {}
+
+      // Minimal fallback wiring so early clicks/keys navigate before app init
+      (function(){
+        const $ = (id) => document.getElementById(id);
+        const landing = $('landing-page');
+        const namePage = $('name-input-page');
+        const sessionPage = $('session-page');
+        const createBtn = $('create-session-btn');
+        const teamInput = $('session-name-input');
+        const shuffleUserBtn = $('shuffle-user-name-btn');
+        const userSetupInput = $('user-name-setup-input');
+        const startBtn = $('start-session-btn');
+
+        const notReady = () => !window.__APP_READY__;
+        const show = (el) => { if (el) el.classList.remove('hidden'); };
+        const hide = (el) => { if (el) el.classList.add('hidden'); };
+        const makeFlex = (el) => { if (el) el.classList.add('flex'); };
+
+        if (createBtn) createBtn.addEventListener('click', () => {
+          if (!notReady()) return; // let main app handler take over
+          hide(landing);
+          show(namePage);
+        });
+        if (teamInput && createBtn) {
+          const submit = () => createBtn.click();
+          teamInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
+          teamInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
+        }
+        if (shuffleUserBtn && userSetupInput) {
+          shuffleUserBtn.addEventListener('click', () => {
+            if (!notReady()) return;
+            try { userSetupInput.value = (window.generateRandomUserName && window.generateRandomUserName()) || userSetupInput.value || ''; } catch {}
+          });
+        }
+        if (userSetupInput && startBtn) {
+          const go = () => {
+            if (!notReady()) return;
+            hide(landing);
+            hide(namePage);
+            show(sessionPage);
+            makeFlex(sessionPage);
+          };
+          userSetupInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+          userSetupInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+          startBtn.addEventListener('click', go);
+        }
       })();
     </script>
 
@@ -772,7 +840,7 @@
         // In tests we rely on Node require; here we duplicate tiny helpers
         const __WEEKDAYS__ = { sun:0,sunday:0, mon:1,monday:1, tue:2,tues:2,tuesday:2, wed:3,wednesday:3, thu:4,thur:4,thurs:4,thursday:4, fri:5,friday:5, sat:6,saturday:6 };
         function __inferSummary__(text){
-            return String(text||'').replace(/\b(today|tomorrow|at|on)\b/gi,' ').replace(/\b(mon|monday|tue|tues|tuesday|wed|wednesday|thu|thur|thurs|thursday|fri|friday|sat|saturday|sun|sunday)\b/gi,' ').replace(/\b(\d{1,2})(?::\d{2})?\s*(am|pm)?\b/gi,' ').replace(/\s{2,}/g,' ').trim() || 'New Event';
+            return String(text||'').replace(/\b(today|tomorrow|at|on)\b/gi,' ').replace(/\b(mon|monday|tue|tues|tuesday|wed|wednesday|thu|thur|thurs|thursday|fri|friday|sat|saturday)\b/gi,' ').replace(/\b(\d{1,2})(?::\d{2})?\s*(am|pm)?\b/gi,' ').replace(/\s{2,}/g,' ').trim() || 'New Event';
         }
         function __parseTime__(text){
             const t=String(text||'').toLowerCase();
@@ -1282,8 +1350,12 @@
             if (shuffleTeamNameBtn) {
                 shuffleTeamNameBtn.addEventListener('click', () => { teamNameInput.value = generateRandomTeamName().replace('-', ' '); updateTeamLinkPreview(); validateStartCta(); teamNameInput.focus(); });
             }
-            if (shuffleUserNameBtn) {
-                shuffleUserNameBtn.addEventListener('click', () => { userNameSetupInput.value = generateRandomUserName(); userNameSetupInput.focus(); });
+            if (shuffleUserNameBtn && userNameSetupInput) {
+                shuffleUserNameBtn.addEventListener('click', () => {
+                    userNameSetupInput.value = generateRandomUserName();
+                    userNameSetupInput.focus();
+                    if (typeof validateStartCta === 'function') validateStartCta();
+                });
             }
             // Live link preview handled above with validation
 
@@ -1388,6 +1460,49 @@
             });
 
             if (viewTimerBtn) viewTimerBtn.addEventListener('click', () => switchView('timer'));
+
+// Break interval ding logic
+let breakIntervalTimer = null;
+function startBreakIntervalDing() {
+    if (breakIntervalTimer) clearInterval(breakIntervalTimer);
+    if (!isMeditationEnabled) return;
+    const intervalMin = Math.max(1, meditationIntervalMin || 1);
+    breakIntervalTimer = setInterval(() => {
+        playGong && playGong();
+        showNotification && showNotification({ description: `Break interval: ${intervalMin} min` });
+    }, intervalMin * 60 * 1000);
+}
+
+function stopBreakIntervalDing() {
+    if (breakIntervalTimer) clearInterval(breakIntervalTimer);
+    breakIntervalTimer = null;
+}
+
+// Hook into break start/end
+function onBreakStart() {
+    if (isMeditationEnabled) {
+        playGong && playGong();
+        startBreakIntervalDing();
+    }
+}
+function onBreakEnd() {
+    stopBreakIntervalDing();
+    if (isMeditationEnabled) playGong && playGong();
+}
+
+// Example: wire to timer mode change (replace with your break logic)
+if (typeof timerModeDisplay !== 'undefined') {
+    // Listen for break mode changes
+    try {
+        timerModeDisplay.addEventListener('change', (e) => {
+            if (e.target.value === 'shortBreak' || e.target.value === 'longBreak') {
+                onBreakStart();
+            } else {
+                onBreakEnd();
+            }
+        });
+    } catch {}
+}
             if (viewPlannerBtn) viewPlannerBtn.addEventListener('click', () => switchView('planner'));
             if (viewParticipantsBtn) viewParticipantsBtn.addEventListener('click', () => switchView('participants'));
             if (viewChatBtn) viewChatBtn.addEventListener('click', () => switchView('chat'));
@@ -1412,8 +1527,39 @@
                 const url = `https://calendar.google.com/calendar/u/0/r/eventedit?text=${title}&dates=${dates}&details=${details}`;
                 window.open(url, '_blank');
             });
-            if (meetNowBtn) meetNowBtn.addEventListener('click', () => { handleStartMeet(); });
-            if (calendarEventBtn) calendarEventBtn.addEventListener('click', handleCreateCalendarEvent);
+            if (meetNowBtn) meetNowBtn.addEventListener('click', async () => {
+                try {
+                    // Prefer unified handler if available
+                    if (typeof handleStartMeet === 'function') {
+                        await handleStartMeet();
+                        // Also reflect link in planner if we can detect it from chat messages
+                        const lastAnchor = Array.from((chatMessages||{}).querySelectorAll ? chatMessages.querySelectorAll('a') : []).filter(a => /meet\.google\.com\/new/.test(a.href)).pop();
+                        if (lastAnchor) {
+                            const container = document.getElementById('meet-link-container');
+                            if (container) container.innerHTML = `<a href="${lastAnchor.href}" target="_blank" class="underline text-sky-700">Google Meet</a> started!`;
+                        }
+                        return;
+                    }
+                } catch {}
+                // Fallback: open new Meet and inject correct link format
+                const meetUrl = 'https://meet.google.com/new';
+                try { window.open(meetUrl, '_blank'); } catch {}
+                const meetLinkContainer = document.getElementById('meet-link-container');
+                if (meetLinkContainer) {
+                    meetLinkContainer.innerHTML = `<a href="${meetUrl}" target="_blank" class="underline text-sky-700">Google Meet</a> started!`;
+                }
+                const chatMsg = `Started a meeting: <a href='${meetUrl}' target='_blank'>Google Meet</a>`;
+                try {
+                    if (typeof localChat !== 'undefined') {
+                        localChat.push({ userId: 'local', userName: userName || getUserNameFromStorage(), text: chatMsg, createdAt: new Date() });
+                        if (typeof renderLocalChat === 'function') renderLocalChat();
+                    }
+                    if (typeof getChatRef === 'function' && typeof addDoc === 'function') {
+                        await addDoc(getChatRef(), { userId, userName: userName || getUserNameFromStorage(), text: chatMsg, createdAt: serverTimestamp() });
+                    }
+                } catch (e) { console.warn('Failed to post meet link to chat', e); }
+                showToast('Google Meet started! Link posted to chat.');
+            });
             if (sendChatBtn) sendChatBtn.addEventListener('click', sendChatMessage);
             if (chatInput) chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
 
@@ -1715,8 +1861,12 @@
                         if (!hasActive && TIMER_MODES[data.mode].type === 'focus') {
                             const lastIncomplete = [...docs].reverse().find(g => g.status === 'partial' || g.status === 'failed');
                             if (lastIncomplete) {
-                    }
+                                await addDoc(getGoalsRef(), { text: lastIncomplete.text, status: 'active', startedAt: serverTimestamp(), carried: true, createdBy: userName || getUserNameFromStorage() });
+                            }
+                        }
+                    } catch (e) { console.warn('Carry-over check failed', e); }
                 }
+                updateActiveModeButton(data.mode);
             })();
 
             // If meditation enabled and currently running break, ensure ticking continues after UI re-render
@@ -1741,15 +1891,6 @@
                     meditationTickInterval = null;
                 }
             } catch {}
-
-            const updateDisplay = () => {
-                                await addDoc(getGoalsRef(), { text: lastIncomplete.text, status: 'active', startedAt: serverTimestamp(), carried: true, createdBy: userName || getUserNameFromStorage() });
-                            }
-                        }
-                    } catch (e) { console.warn('Carry-over check failed', e); }
-                }
-                updateActiveModeButton(data.mode);
-            })();
 
             const updateDisplay = () => {
                 const start = data.startTime || Date.now();
@@ -1941,7 +2082,13 @@
                 }
                 const p = document.createElement('div');
                 p.className = 'p-3 bg-white/10 rounded-lg flex items-center gap-3';
-                p.innerHTML = `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-white to-sky-100 flex items-center justify-center font-bold text-sm relative text-sky-600 shadow-lg border-2 border-white/50"><div class="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-br from-blue-200 to-blue-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs">☁️</div><div class="absolute -bottom-1 -left-1 w-3 h-3 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs" style="animation-delay: 0.5s">✨</div>${user.name.split(' ').map(n=>n[0]).join('').toUpperCase()}</div><span class="font-semibold text-sky-800">${user.name}</span>`;
+                p.innerHTML = `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-white to-sky-100 flex items-center justify-center font-bold text-sm mb-1 mx-auto relative text-sky-600 cursor-pointer hover:scale-105 transition-transform" id="user-avatar" title="Click to edit name">
+                        <!-- Cloud Pomeranian decorations -->
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-br from-blue-200 to-blue-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs">☁️</div>
+                        <div class="absolute -bottom-1 -left-1 w-3 h-3 bg-gradient-to-br from-pink-200 to-pink-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs" style="animation-delay: 0.7s">💖</div>
+                        <div class="absolute -top-1 -left-1 w-3 h-3 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs" style="animation-delay: 1.2s">✨</div>
+                    </div>
+                    <span class="font-semibold text-sky-800">${user.name}</span>`;
                 participantsList.appendChild(p);
             });
             // Refresh owner dropdown
@@ -1957,7 +2104,13 @@
             const name = userName || getUserNameFromStorage();
             participantsTZByName = { [name]: getLocalTimeZone() };
             p.className = 'p-3 bg-white/10 rounded-lg flex items-center gap-3';
-            p.innerHTML = `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-white to-sky-100 flex items-center justify-center font-bold text-sm relative text-sky-600 shadow-lg border-2 border-white/50"><div class="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-br from-blue-200 to-blue-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs">☁️</div><div class="absolute -bottom-1 -left-1 w-3 h-3 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs" style="animation-delay: 0.5s">✨</div>${name.split(' ').map(n=>n[0]).join('').toUpperCase()}</div><span class="font-semibold text-sky-800">${name}</span>`;
+            p.innerHTML = `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-white to-sky-100 flex items-center justify-center font-bold text-sm mb-1 mx-auto relative text-sky-600 cursor-pointer hover:scale-105 transition-transform" id="user-avatar" title="Click to edit name">
+                        <!-- Cloud Pomeranian decorations -->
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-br from-blue-200 to-blue-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs">☁️</div>
+                        <div class="absolute -bottom-1 -left-1 w-3 h-3 bg-gradient-to-br from-pink-200 to-pink-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs" style="animation-delay: 0.7s">💖</div>
+                        <div class="absolute -top-1 -left-1 w-3 h-3 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-full kawaii-float shadow-sm flex items-center justify-center text-xs" style="animation-delay: 1.2s">✨</div>
+                    </div>
+                    <span class="font-semibold text-sky-800">${name}</span>`;
             participantsList.appendChild(p);
             refreshOwnerSelect([name]);
             // Rerender todos to reflect local time zone
@@ -2241,43 +2394,41 @@
                 osc.start(t0);
 
             function playGong() {
-                if (!isSoundEnabled || !audioCtx) return;
-                // Deep, soft gong using filtered noise + low sine sweep
-                const t0 = audioCtx.currentTime;
-                const gain = audioCtx.createGain();
-                gain.gain.setValueAtTime(0.0001, t0);
-                gain.gain.exponentialRampToValueAtTime(0.2, t0 + 0.02);
-                gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.2);
-
-                // Sine sweep
-                const osc = audioCtx.createOscillator();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(220, t0);
-                osc.frequency.exponentialRampToValueAtTime(110, t0 + 1.2);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start(t0);
-                osc.stop(t0 + 2.3);
-            }
-
-            function playDing() {
-                if (!isSoundEnabled || !audioCtx) return;
-                const t = audioCtx.currentTime;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(1500, t);
-                gain.gain.setValueAtTime(0.0001, t);
-                gain.gain.exponentialRampToValueAtTime(0.12, t + 0.02);
-                gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start(t);
-                osc.stop(t + 0.35);
-            }
+    try {
+        const audio = new Audio('https://cdn.jsdelivr.net/gh/DoctorKhan/pompom-assets/gong.mp3');
+        audio.play();
+        window.__LAST_GONG_PLAYED = Date.now();
+    } catch (e) { console.warn('Gong sound failed', e); }
+}
+function playDing() {
+    try {
+        const audio = new Audio('https://cdn.jsdelivr.net/gh/DoctorKhan/pompom-assets/ding.mp3');
+        audio.play();
+        window.__LAST_DING_PLAYED = Date.now();
+    } catch (e) { console.warn('Ding sound failed', e); }
+}
+try {
+    window.playGong = playGong;
+    window.playDing = playDing;
+} catch {}
 
                 osc.stop(t0 + noteDur + 0.02);
             });
+            try {
+                // Attach sound helpers early so browser tests can access them
+                if (window && !window.playGong) {
+                    window.playGong = function () {
+                        try { const a = new Audio('https://cdn.jsdelivr.net/gh/DoctorKhan/pompom-assets/gong.mp3'); const p = a.play(); if (p && p.catch) p.catch(()=>{}); } catch {}
+                        try { window.__LAST_GONG_PLAYED = Date.now(); } catch {}
+                    };
+                }
+                if (window && !window.playDing) {
+                    window.playDing = function () {
+                        try { const a = new Audio('https://cdn.jsdelivr.net/gh/DoctorKhan/pompom-assets/ding.mp3'); const p = a.play(); if (p && p.catch) p.catch(()=>{}); } catch {}
+                        try { window.__LAST_DING_PLAYED = Date.now(); } catch {}
+                    };
+                }
+            } catch {}
         }
 
         function showNotification(event) {
@@ -2949,8 +3100,6 @@
                     return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
                 } catch { return ''; }
             };
-            const dueISOForInput = original.due ? toLocalNoSeconds(original.due) : '';
-
             const wrapper = document.createElement('div');
             wrapper.className = 'w-full grid grid-cols-1 md:grid-cols-4 gap-2 items-start';
 
@@ -3228,6 +3377,21 @@
             const hash = (s.match(/#[a-z0-9_-]+/gi) || []).map(t => t.slice(1).toLowerCase());
             const words = s
                 .split(/[\s,]+/)
+                .map(w => w.replace(/^#/, ''))
+                .map(w => w.trim().toLowerCase())
+                .filter(Boolean);
+            return Array.from(new Set([...hash, ...words]));
+        }
+        function extractTagsFromText(text) {
+            const tags = Array.from(new Set((text.match(/#[a-z0-9_-]+/gi) || []).map(t => t.slice(1).toLowerCase())));
+            const cleanText = text.replace(/#[a-z0-9_-]+/gi, '').replace(/\s{2,}/g, ' ').trim();
+            return { cleanText, tags };
+        }
+        function escapeHtml(s) {
+            return String(s || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
                 .map(w => w.replace(/^#/, ''))
                 .map(w => w.trim().toLowerCase())
                 .filter(Boolean);

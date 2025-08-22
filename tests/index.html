@@ -97,7 +97,7 @@
         <button onclick="runBasicTests()">🔧 Basic Tests (28 tests)</button>
         <button onclick="runIntegrationTests()">🔗 Integration Tests (25 tests)</button>
         <button onclick="runUserFlowTests()">👤 User Flow Tests (35 tests)</button>
-        <button onclick="runBrowserTests()">🌐 Browser Tests (22 tests)</button>
+        <button onclick="runBrowserTests()">🌐 Browser Tests (25 tests)</button>
         <button onclick="clearResults()">🧹 Clear Results</button>
         <button onclick="loadApp()">📱 Load App in Frame</button>
     </div>
@@ -514,7 +514,7 @@
         }
 
         async function runBrowserTests() {
-            log('🌐 Running Browser Tests (22 tests)...');
+            log('🌐 Running Browser Tests (25 tests)...');
 
             // Run original browser tests
             await testRandomTeamNameGeneration();
@@ -530,6 +530,11 @@
             // New tests for Quick Schedule and API health fallback
             await testQuickScheduleParsesAndFills();
             await testHealthEndpointFallback();
+
+            // Added tests for Meet link and sounds
+            await testMeetLinkDropsProperAnchor();
+            await testGongSoundWorks();
+            await testDingSoundWorks();
 
             log('✅ Browser tests completed');
         }
