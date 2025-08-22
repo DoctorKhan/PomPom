@@ -572,6 +572,25 @@
                             </div>
                         </div>
 
+	                <!-- Meditation Settings -->
+	                <div class="p-4 bg-gradient-to-r from-emerald-200/30 to-green-200/30 rounded-lg border border-white/40 mt-4">
+	                    <div class="flex items-start justify-between gap-4">
+	                        <div>
+	                            <div class="font-semibold text-sky-900">Meditation breaks</div>
+	                            <div class="text-xs text-sky-700">Breaks start/end with a gong with optional interval dings</div>
+	                            <div class="mt-2 flex items-center gap-2 text-xs text-sky-800">
+	                                <label for="meditation-interval-input">Interval (min)</label>
+	                                <input id="meditation-interval-input" type="number" min="1" max="60" value="1" class="w-16 bg-white/70 border border-sky-200 rounded px-2 py-1">
+	                            </div>
+	                        </div>
+	                        <label class="flex items-center gap-3 text-sm font-medium cursor-pointer select-none">
+	                            <input id="meditation-toggle" type="checkbox" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
+	                            <span class="text-sky-900">Enable</span>
+	                        </label>
+	                    </div>
+	                </div>
+
+
             </div>
         </div>
     </div>
@@ -703,6 +722,11 @@
         const calendarCreateBtn = document.getElementById('calendar-create-btn');
         const meetNowBtn = document.getElementById('meet-now-btn');
         const plannerList = document.getElementById('planner-list');
+    const meditationToggle = document.getElementById('meditation-toggle');
+    const meditationIntervalInput = document.getElementById('meditation-interval-input');
+    let isMeditationEnabled = (localStorage.getItem('pompom_meditation_enabled') === 'true');
+    let meditationIntervalMin = parseInt(localStorage.getItem('pompom_meditation_interval') || '1', 10) || 1;
+
     const toggleApiKeyVisibilityBtn = document.getElementById('toggle-api-key-visibility');
         const endSessionModal = document.getElementById('end-session-modal');
     const basicModeBtn = document.getElementById('basic-mode-btn');
@@ -817,6 +841,9 @@
                     throw new Error('Invalid AI response');
                 }
                 return obj;
+        let meditationTickInterval = null;
+        let nextDingAtMs = 0;
+
             } catch (e) {
                 showToast('AI parse failed. Try again or use a simpler event.');
                 throw new Error('AI parse failed');
@@ -1076,6 +1103,14 @@
             endSessionMessage.textContent = `Time for a ${nextModeInfo.label.toLowerCase()} (◕‿◕)♡`;
             endSessionModal.classList.remove('hidden');
             playAlarm();
+            // Meditation end gong for breaks
+            try {
+                if (isMeditationEnabled && currentModeInfo.type === 'break') {
+                    initAudioAndNotifications();
+                    playGong();
+                }
+            } catch {}
+
         }
 
         function updateActiveModeButton(activeMode) {
@@ -1418,6 +1453,29 @@
                         if (nlEventInput) nlEventInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') nlParseBtn.click(); });
 
             if (soundToggleBtn) soundToggleBtn.addEventListener('click', toggleSound);
+            // Meditation controls bindings
+            if (meditationToggle) {
+                meditationToggle.checked = isMeditationEnabled;
+                meditationToggle.addEventListener('change', () => {
+                    isMeditationEnabled = meditationToggle.checked;
+                    localStorage.setItem('pompom_meditation_enabled', isMeditationEnabled);
+                });
+            }
+            if (meditationIntervalInput) {
+                meditationIntervalInput.value = meditationIntervalMin;
+                meditationIntervalInput.addEventListener('change', () => {
+                    const v = parseInt(meditationIntervalInput.value || '1', 10);
+                    meditationIntervalMin = Math.min(60, Math.max(1, v || 1));
+                    localStorage.setItem('pompom_meditation_interval', String(meditationIntervalMin));
+                });
+            }
+            // Also wire meditation gong to test button while sound is enabled
+            if (testAlarmBtn) {
+                testAlarmBtn.addEventListener('click', () => {
+                    try { if (isMeditationEnabled) playGong(); } catch {}
+                });
+            }
+
             if (testAlarmBtn) {
                 testAlarmBtn.addEventListener('click', () => {
                     initAudioAndNotifications();
@@ -1657,6 +1715,34 @@
                         if (!hasActive && TIMER_MODES[data.mode].type === 'focus') {
                             const lastIncomplete = [...docs].reverse().find(g => g.status === 'partial' || g.status === 'failed');
                             if (lastIncomplete) {
+                    }
+                }
+            })();
+
+            // If meditation enabled and currently running break, ensure ticking continues after UI re-render
+            try {
+                const modeInfo = TIMER_MODES[data.mode];
+                if (isMeditationEnabled && data.isRunning && modeInfo.type === 'break') {
+                    if (!meditationTickInterval) {
+                        nextDingAtMs = Date.now() + meditationIntervalMin * 60 * 1000;
+                        meditationTickInterval = setInterval(() => {
+                            const now = Date.now();
+                            if (!localSessionState.isRunning) return;
+                            const modeInfo = TIMER_MODES[localSessionState.mode];
+                            if (modeInfo.type !== 'break') return;
+                            if (now >= nextDingAtMs) {
+                                playDing();
+                                nextDingAtMs += meditationIntervalMin * 60 * 1000;
+                            }
+                        }, 500);
+                    }
+                } else {
+                    clearInterval(meditationTickInterval);
+                    meditationTickInterval = null;
+                }
+            } catch {}
+
+            const updateDisplay = () => {
                                 await addDoc(getGoalsRef(), { text: lastIncomplete.text, status: 'active', startedAt: serverTimestamp(), carried: true, createdBy: userName || getUserNameFromStorage() });
                             }
                         }
@@ -1672,6 +1758,7 @@
 
                 if (wasRunning && remaining === 0) {
                     clearInterval(timerInterval);
+                    try { clearInterval(meditationTickInterval); } catch {}
                     if (data.isRunning) {
                         showEndOfSessionModal(data.mode, data.lastFocusMode);
                         data.isRunning = false;
@@ -1696,6 +1783,29 @@
             timerModeDisplay.textContent = TIMER_MODES[data.mode].label;
             startPauseBtn.textContent = data.isRunning ? 'Pause ⏸️' : 'Start ✨';
             updateActiveModeButton(data.mode);
+
+            // Meditation ticking for online mode
+            try {
+                const modeInfo = TIMER_MODES[data.mode];
+                if (isMeditationEnabled && data.isRunning && modeInfo.type === 'break') {
+                    if (!meditationTickInterval) {
+                        const serverStartTime = data.startTime ? data.startTime.toDate().getTime() : Date.now();
+                        const elapsedMs = Date.now() - serverStartTime;
+                        const msUntilNext = meditationIntervalMin * 60 * 1000 - (elapsedMs % (meditationIntervalMin * 60 * 1000));
+                        nextDingAtMs = Date.now() + Math.max(0, msUntilNext);
+                        meditationTickInterval = setInterval(() => {
+                            const now = Date.now();
+                            if (now >= nextDingAtMs) {
+                                playDing();
+                                nextDingAtMs += meditationIntervalMin * 60 * 1000;
+                            }
+                        }, 500);
+                    }
+                } else {
+                    clearInterval(meditationTickInterval);
+                    meditationTickInterval = null;
+                }
+            } catch {}
 
             const updateDisplay = () => {
                 const serverStartTime = data.startTime ? data.startTime.toDate().getTime() : Date.now();
@@ -1731,10 +1841,35 @@
                     localSessionState.duration = remaining;
                     localSessionState.isRunning = false;
                     localSessionState.startTime = null;
+                    // Stop meditation ticks
+                    try { clearInterval(meditationTickInterval); } catch {}
                 } else {
                     // Resume: keep current duration as remaining and start ticking
                     localSessionState.isRunning = true;
                     localSessionState.startTime = Date.now();
+                    // Meditation start gong if starting a break
+                    try {
+                        const modeInfo = TIMER_MODES[localSessionState.mode];
+                        if (isMeditationEnabled && modeInfo.type === 'break') {
+                            initAudioAndNotifications();
+                            playGong();
+                            // Schedule interval dings
+                            clearInterval(meditationTickInterval);
+                            nextDingAtMs = Date.now() + meditationIntervalMin * 60 * 1000;
+                            meditationTickInterval = setInterval(() => {
+                                const now = Date.now();
+                                if (!localSessionState.isRunning) return;
+                                const modeInfo = TIMER_MODES[localSessionState.mode];
+                                if (modeInfo.type !== 'break') return;
+                                if (now >= nextDingAtMs) {
+                                    playDing();
+                                    nextDingAtMs += meditationIntervalMin * 60 * 1000;
+                                }
+                            }, 500);
+                        } else {
+                            clearInterval(meditationTickInterval);
+                        }
+                    } catch {}
                 }
                 renderTimerFromLocalState();
                 return;
@@ -2104,6 +2239,43 @@
                 gain.gain.exponentialRampToValueAtTime(baseGain, t0 + 0.02);
                 gain.gain.exponentialRampToValueAtTime(0.0001, t0 + noteDur);
                 osc.start(t0);
+
+            function playGong() {
+                if (!isSoundEnabled || !audioCtx) return;
+                // Deep, soft gong using filtered noise + low sine sweep
+                const t0 = audioCtx.currentTime;
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.0001, t0);
+                gain.gain.exponentialRampToValueAtTime(0.2, t0 + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.2);
+
+                // Sine sweep
+                const osc = audioCtx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(220, t0);
+                osc.frequency.exponentialRampToValueAtTime(110, t0 + 1.2);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(t0);
+                osc.stop(t0 + 2.3);
+            }
+
+            function playDing() {
+                if (!isSoundEnabled || !audioCtx) return;
+                const t = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1500, t);
+                gain.gain.setValueAtTime(0.0001, t);
+                gain.gain.exponentialRampToValueAtTime(0.12, t + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(t);
+                osc.stop(t + 0.35);
+            }
+
                 osc.stop(t0 + noteDur + 0.02);
             });
         }

@@ -14,7 +14,7 @@ describe('PomPom Integration Tests', () => {
     beforeEach(() => {
         // Set up DOM
         document.documentElement.innerHTML = html;
-        
+
         // Mock localStorage
         mockLocalStorage = {
             store: {},
@@ -24,11 +24,11 @@ describe('PomPom Integration Tests', () => {
             clear: jest.fn(() => { mockLocalStorage.store = {}; }),
         };
         global.localStorage = mockLocalStorage;
-        
+
         // Mock other globals
         global.confirm = jest.fn(() => true);
         global.alert = jest.fn();
-        
+
         // Mock window.location
         delete window.location;
         window.location = {
@@ -45,26 +45,26 @@ describe('PomPom Integration Tests', () => {
             // Try to extract and execute the function from script tags
             const scripts = document.querySelectorAll('script');
             let hasFunction = false;
-            
+
             scripts.forEach(script => {
                 if (script.textContent && script.textContent.includes('generateRandomTeamName')) {
                     hasFunction = true;
                 }
             });
-            
+
             expect(hasFunction).toBeTruthy();
         });
 
         test('should have generateRandomUserName function available', () => {
             const scripts = document.querySelectorAll('script');
             let hasFunction = false;
-            
+
             scripts.forEach(script => {
                 if (script.textContent && script.textContent.includes('generateRandomUserName')) {
                     hasFunction = true;
                 }
             });
-            
+
             expect(hasFunction).toBeTruthy();
         });
     });
@@ -95,7 +95,7 @@ describe('PomPom Integration Tests', () => {
     describe('Form Input Validation', () => {
         test('should accept valid team names', () => {
             const sessionInput = document.querySelector('#session-name-input');
-            
+
             const validNames = [
                 'my-team',
                 'awesome-project',
@@ -111,7 +111,7 @@ describe('PomPom Integration Tests', () => {
 
         test('should accept valid user names', () => {
             const userNameInput = document.querySelector('#user-name-setup-input');
-            
+
             const validNames = [
                 'John Doe',
                 'Alice Smith',
@@ -187,7 +187,7 @@ describe('PomPom Integration Tests', () => {
         test('should have all timer mode buttons', () => {
             const modes = [
                 'pomodoro25',
-                'pomodoro30', 
+                'pomodoro30',
                 'pomodoro45',
                 'shortBreak',
                 'longBreak'
@@ -274,7 +274,7 @@ describe('PomPom Integration Tests', () => {
             // Check that we have main headings
             const h1Elements = document.querySelectorAll('h1');
             const h2Elements = document.querySelectorAll('h2');
-            
+
             expect(h1Elements.length).toBeGreaterThan(0);
             expect(h2Elements.length).toBeGreaterThan(0);
         });
@@ -303,7 +303,7 @@ describe('PomPom Integration Tests', () => {
 
         test('should have proper color scheme', () => {
             const styles = document.querySelector('style').textContent;
-            
+
             // Check for blue/sky theme colors
             expect(styles).toContain('#0ea5e9');
             expect(styles).toContain('gradient');
@@ -332,3 +332,18 @@ describe('PomPom Integration Tests', () => {
         });
     });
 });
+
+    describe('Meditation Mode', () => {
+        test('should have meditation settings toggle in the settings modal', () => {
+            const settingsHtml = document.querySelector('#settings-modal').textContent;
+            expect(settingsHtml).toContain('Meditation');
+        });
+
+        test('should declare meditation sound functions in scripts', () => {
+            const scripts = Array.from(document.querySelectorAll('script'))
+                .map(s => s.textContent || '').join('\n');
+            expect(scripts).toContain('playGong');
+            expect(scripts).toContain('playDing');
+        });
+    });
+
