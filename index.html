@@ -1035,6 +1035,7 @@
         };
 
         // --- INITIALIZATION ---
+   
     function init() {
             try {
                 if (!OFFLINE_MODE) {
@@ -3416,7 +3417,6 @@ try {
             return Array.from(new Set([...hash, ...words]));
         }
         function extractTagsFromText(text) {
-            const tags = Array.from(new Set((text.match(/#[a-z0-9_-]+/gi) || []).map(t => t.slice(1).toLowerCase())));
             const cleanText = text.replace(/#[a-z0-9_-]+/gi, '').replace(/\s{2,}/g, ' ').trim();
             return { cleanText, tags };
         }
