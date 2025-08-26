@@ -505,12 +505,12 @@
                     <h2 class="text-2xl font-bold mb-6 text-center">Team Members (<span id="participant-count">0</span>)</h2>
                     <div id="participants-list" class="flex-1 overflow-y-auto space-y-3 p-4 bg-white/20 rounded-lg border border-white/30"></div>
                 </div>
-                <div id="chat-view" class="hidden flex-1 flex flex-col h-full max-w-2xl mx-auto">
+                <div id="chat-view" class="hidden flex-1 flex flex-col h-full w-full px-8 mx-auto">
                     <h2 class="text-2xl font-bold mb-4 text-center">Team Chat</h2>
                     <div id="chat-messages" class="flex-1 overflow-y-auto mb-4 p-4 bg-white/20 rounded-lg border border-white/30"></div>
                     <div class="flex gap-2">
                         <input id="chat-input" type="text" placeholder="Type a message..." class="flex-1 bg-white/30 text-sky-800 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-white/60">
-                        <button id="send-chat-btn" class="btn btn-primary">Send</button>
+                        <button id="send-chat-btn" class="btn btn-primary" style="max-width: 120px; min-width: 80px; width: auto;">Send</button>
                     </div>
                 </div>
             </main>
@@ -1568,36 +1568,12 @@ if (typeof timerModeDisplay !== 'undefined') {
                 window.open(url, '_blank');
             });
             if (meetNowBtn) meetNowBtn.addEventListener('click', async () => {
-                try {
-                    // Prefer unified handler if available
-                    if (typeof handleStartMeet === 'function') {
-                        await handleStartMeet();
-                        // Also reflect link in planner if we can detect it from chat messages
-                        const lastAnchor = Array.from((chatMessages||{}).querySelectorAll ? chatMessages.querySelectorAll('a') : []).filter(a => /meet\.google\.com\/new/.test(a.href)).pop();
-                        if (lastAnchor) {
-                            const container = document.getElementById('meet-link-container');
-                            if (container) container.innerHTML = `<a href="${lastAnchor.href}" target="_blank" class="underline text-sky-700">Google Meet</a> started!`;
-                        }
-                        return;
-                    }
-                } catch {}
-                // Fallback: open new Meet and inject correct link format
                 const meetUrl = 'https://meet.google.com/new';
                 try { window.open(meetUrl, '_blank'); } catch {}
                 const meetLinkContainer = document.getElementById('meet-link-container');
                 if (meetLinkContainer) {
                     meetLinkContainer.innerHTML = `<a href="${meetUrl}" target="_blank" class="underline text-sky-700">Google Meet</a> started!`;
                 }
-                const chatMsg = `Started a meeting: <a href='${meetUrl}' target='_blank'>Google Meet</a>`;
-                try {
-                    if (typeof localChat !== 'undefined') {
-                        localChat.push({ userId: 'local', userName: userName || getUserNameFromStorage(), text: chatMsg, createdAt: new Date() });
-                        if (typeof renderLocalChat === 'function') renderLocalChat();
-                    }
-                    if (typeof getChatRef === 'function' && typeof addDoc === 'function') {
-                        await addDoc(getChatRef(), { userId, userName: userName || getUserNameFromStorage(), text: chatMsg, createdAt: serverTimestamp() });
-                    }
-                } catch (e) { console.warn('Failed to post meet link to chat', e); }
                 showToast('Google Meet started! Link posted to chat.');
             });
             if (sendChatBtn) sendChatBtn.addEventListener('click', sendChatMessage);
