@@ -2931,11 +2931,45 @@ try {
                 deleteBtn.title = 'Delete this task';
                 deleteBtn.addEventListener('click', async (e) => {
                     e.stopPropagation();
-                    if (confirm(`Delete task: "${t.text}"?\n\nThis will also delete all subtasks.`)) {
-                        await deleteTodo(t);
-                        // Remove the todo's DOM element from the UI
-                        if (div && div.parentNode) div.parentNode.removeChild(div);
-                    }
+                    // Store for undo
+                    const deletedTodo = { ...t };
+                    const deletedDiv = div;
+                    await deleteTodo(t);
+                    if (div && div.parentNode) div.parentNode.removeChild(div);
+                    // Show toast with Undo button
+                    showUndoToast(`Task deleted: "${t.text}"`, async () => {
+                        await restoreTodo(deletedTodo);
+                        // Re-render todos to restore UI
+                        renderTodosLocal && renderTodosLocal();
+                    });
+    // Show toast with Undo button
+    function showUndoToast(msg, onUndo, ms = 4000) {
+        const el = toastEl || document.getElementById('toast');
+        if (!el) return;
+        el.innerHTML = `${msg} <button id="undo-btn" class="ml-2 px-2 py-1 bg-sky-600 text-white rounded">Undo</button>`;
+        el.classList.remove('hidden');
+        clearTimeout(el._t);
+        el._t = setTimeout(() => el.classList.add('hidden'), ms);
+        const undoBtn = document.getElementById('undo-btn');
+        if (undoBtn) {
+            undoBtn.onclick = () => {
+                el.classList.add('hidden');
+                if (onUndo) onUndo();
+            };
+        }
+    }
+    // Restore deleted todo (local only)
+    async function restoreTodo(todo) {
+        if (OFFLINE_MODE) {
+            localTodos.push(todo);
+        } else {
+            // Restore to Firestore
+            if (todo.id) {
+                const todoRef = doc(db, 'artifacts', appId, 'public/data/pompom_sessions', sessionId, 'todos', todo.id);
+                await setDoc(todoRef, todo);
+            }
+        }
+    }
                 });
                 // Enable click-to-edit on the main content area
                 content.addEventListener('click', (e) => {
