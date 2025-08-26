@@ -2933,6 +2933,8 @@ try {
                     e.stopPropagation();
                     if (confirm(`Delete task: "${t.text}"?\n\nThis will also delete all subtasks.`)) {
                         await deleteTodo(t);
+                        // Remove the todo's DOM element from the UI
+                        if (div && div.parentNode) div.parentNode.removeChild(div);
                     }
                 });
                 // Enable click-to-edit on the main content area
