@@ -898,49 +898,64 @@
                 throw new Error('Event text too short');
             }
             try {
-                const body = {
-                    model: 'llama-3.1-8b-instant',
-                    temperature: 0.1,
-                    response_format: { type: 'json_object' },
-                    messages: [
-                        { role: 'system', content: 'Return only JSON with keys: summary, startLocal, endLocal, recurrenceRRule' },
-                        { role: 'user', content: text }
-                    ]
-                };
-                const r = await fetch('/api/groq', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-                if (!r.ok) {
-                    let msg = 'AI not available';
-                    try {
-                        const err = await r.json();
-                        if (r.status === 400) msg = err.error || 'Bad request to AI. Try rephrasing.';
-                        else if (err.error) msg = err.error;
-                    } catch {}
-                    showToast(msg);
-                    throw new Error(msg);
+                let obj = null;
+                let attempts = 0;
+                const today = new Date();
+                const todayStr = today.toISOString().slice(0, 10);
+                let lastError = '';
+                while (attempts < 3) {
+                    const body = {
+                        model: 'llama-3.1-8b-instant',
+                        temperature: 0.1,
+                        response_format: { type: 'json_object' },
+                        messages: [
+                            { role: 'system', content: `Today is ${todayStr}. The user may enter natural language like 'tomorrow at 2pm', 'next Friday', or 'meeting at 10'. Parse versatile event descriptions and return only JSON with keys: summary, startLocal, endLocal, recurrenceRRule. If the date in the input is ambiguous or in the past, use a sensible future date/time. If the input is unclear, ask for clarification.` },
+                            { role: 'user', content: text }
+                        ]
+                    };
+                    const r = await fetch('/api/groq', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                    if (!r.ok) {
+                        let msg = 'AI not available';
+                        try {
+                            const err = await r.json();
+                            if (r.status === 400) msg = err.error || 'Bad request to AI. Try rephrasing.';
+                            else if (err.error) msg = err.error;
+                        } catch {}
+                        showToast(msg);
+                        throw new Error(msg);
+                    }
+                    const data = await r.json();
+                    const content = data?.choices?.[0]?.message?.content;
+                    if (typeof content === 'string') {
+                        const m = content.match(/```(?:json)?\n([\s\S]*?)```/i);
+                        const raw = m ? m[1] : content;
+                        try { obj = JSON.parse(raw); } catch (e) { lastError = e.message; obj = null; }
+                    } else if (content && typeof content === 'object') {
+                        obj = content;
+                    } else {
+                        lastError = 'Invalid AI response';
+                        obj = null;
+                    }
+                    // Check if the date is sensible (not in the past, not ambiguous)
+                    if (obj && obj.startLocal) {
+                        const startDate = new Date(obj.startLocal);
+                        if (isNaN(startDate.getTime()) || startDate < today) {
+                            lastError = 'AI returned a past or invalid date';
+                            obj = null;
+                        }
+                    }
+                    if (obj) return obj;
+                    attempts++;
                 }
-                const data = await r.json();
-                const content = data?.choices?.[0]?.message?.content;
-                let obj;
-                if (typeof content === 'string') {
-                    const m = content.match(/```(?:json)?\n([\s\S]*?)```/i);
-                    const raw = m ? m[1] : content;
-                    obj = JSON.parse(raw);
-                } else if (content && typeof content === 'object') {
-                    obj = content;
-                } else {
-                    throw new Error('Invalid AI response');
-                }
-                return obj;
-        let meditationTickInterval = null;
-        let nextDingAtMs = 0;
-
+                showToast('AI event parse failed: ' + lastError);
+                throw new Error('AI event parse failed: ' + lastError);
             } catch (e) {
-                showToast('AI parse failed. Try again or use a simpler event.');
-                throw new Error('AI parse failed');
+                showToast('AI event parse failed');
+                throw e;
             }
         }
         let __lastParsedDate__ = null; // Persist preferred start for calendar
@@ -1590,36 +1605,64 @@ if (typeof timerModeDisplay !== 'undefined') {
 
                         // Natural language parse binding
                         if (nlParseBtn) nlParseBtn.addEventListener('click', async () => {
-                                const raw = (nlEventInput?.value || '').trim();
-                                if (!raw) { showToast('Type an event'); return; }
-                                // Try AI first if server has it enabled, else local
-                                let parsed;
-                                try {
-                                        const health = await fetch('/api/health').then(r => r.json()).catch(() => ({ groqConfigured: false }));
-                                        if (health.groqConfigured) {
-                                                const obj = await __aiParseEvent__(raw);
-                                                parsed = { summary: obj.summary || __inferSummary__(raw), startLocal: obj.startLocal, endLocal: obj.endLocal, recurrenceRRule: obj.recurrenceRRule || '' };
-                                        } else {
-                                                parsed = __parseEventLocal__(raw);
-                                        }
-                                } catch {
-                                        parsed = __parseEventLocal__(raw);
-                                }
-                                // Fill the UI (guard if optional fields are not present)
-                                if (scheduleDescInput) scheduleDescInput.value = parsed.summary;
-                                try {
-                                    const [datePart, timePart] = String(parsed.startLocal||'').split('T');
-                                    if (timePart && scheduleTimeInput) scheduleTimeInput.value = timePart.slice(0,5);
-                                    __lastParsedDate__ = parsed.startLocal || null;
-                                } catch { __lastParsedDate__ = null; }
-                                if (parsed.recurrenceRRule) {
-                                    nlRecurrenceHint.classList.remove('hidden');
-                                    nlRecurrenceHint.textContent = `Recurs: ${parsed.recurrenceRRule}`;
+                const raw = (nlEventInput?.value || '').trim();
+                if (!raw) { showToast('Type an event'); return; }
+                // Try AI first if server has it enabled, else local
+                let parsed;
+                try {
+                    const health = await fetch('/api/health').then(r => r.json()).catch(() => ({ groqConfigured: false }));
+                    if (health.groqConfigured) {
+                        const obj = await __aiParseEvent__(raw);
+                        parsed = { summary: obj.summary || __inferSummary__(raw), startLocal: obj.startLocal, endLocal: obj.endLocal, recurrenceRRule: obj.recurrenceRRule || '' };
+                    } else {
+                        parsed = __parseEventLocal__(raw);
+                    }
+                } catch {
+                    parsed = __parseEventLocal__(raw);
+                }
+                // Fill the UI (guard if optional fields are not present)
+                if (scheduleDescInput) scheduleDescInput.value = parsed.summary;
+                try {
+                    const [datePart, timePart] = String(parsed.startLocal||'').split('T');
+                    if (timePart && scheduleTimeInput) scheduleTimeInput.value = timePart.slice(0,5);
+                    __lastParsedDate__ = parsed.startLocal || null;
+                } catch { __lastParsedDate__ = null; }
+                if (parsed.recurrenceRRule) {
+                    nlRecurrenceHint.classList.remove('hidden');
+                    nlRecurrenceHint.textContent = `Recurs: ${parsed.recurrenceRRule}`;
+                } else {
+                    nlRecurrenceHint.classList.add('hidden');
+                    nlRecurrenceHint.textContent = '';
+                }
+                showToast('Filled from text');
+
+                                // Open Google Calendar event with AI-filled options
+                                const title = encodeURIComponent(parsed.summary || 'PomPom Event');
+                                let start, end;
+                                if (parsed.startLocal) {
+                                    start = new Date(parsed.startLocal);
                                 } else {
-                                    nlRecurrenceHint.classList.add('hidden');
-                                    nlRecurrenceHint.textContent = '';
+                                    // If no AI date, use today at 9am local time
+                                    start = new Date();
+                                    start.setHours(9, 0, 0, 0);
                                 }
-                                showToast('Filled from text');
+                                if (parsed.endLocal) {
+                                    end = new Date(parsed.endLocal);
+                                } else {
+                                    // Default to 1 hour after start
+                                    end = new Date(start.getTime() + 60*60*1000);
+                                }
+                                // Use local time for calendar
+                                const fmt = (d) => `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}T${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}00`;
+                                const dates = `${fmt(start)}/${fmt(end)}`;
+                                // Add Google Meet video link by default
+                                const meetLink = 'https://meet.google.com/new';
+                                const details = encodeURIComponent('Created by PomPom\nGoogle Meet: ' + meetLink);
+                                // Default to Appointments calendar, fallback to Planner
+                                let calId = 'appointments';
+                                if (!calId) calId = 'planner';
+                                const url = `https://calendar.google.com/calendar/u/0/r/eventedit?text=${title}&dates=${dates}&details=${details}&calendar=${calId}`;
+                                window.open(url, '_blank');
                         });
                         if (nlEventInput) nlEventInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') nlParseBtn.click(); });
 
@@ -3120,7 +3163,7 @@ try {
             container.dataset.editing = 'true';
 
             const original = { text: todo.text || '', ownerName: todo.ownerName || (userName || getUserNameFromStorage()), due: todo.due || '', tags: Array.isArray(todo.tags) ? todo.tags : [] };
-            const dueDisplay = original.due ? formatDateTimeForOwner(original.due, original.ownerName) : ''; // human readable
+            const dueDisplay = original.due ? formatDateTimeForOwner(original.due, original.ownerName) : '';
             // Prefer a stable, editable local ISO without seconds for selection UX
             const toLocalNoSeconds = (iso) => {
                 try {
@@ -3134,6 +3177,8 @@ try {
                     return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
                 } catch { return ''; }
             };
+            // Fix: define dueISOForInput for use in edit field
+            const dueISOForInput = original.due ? toLocalNoSeconds(original.due) : '';
             const wrapper = document.createElement('div');
             wrapper.className = 'w-full grid grid-cols-1 md:grid-cols-4 gap-2 items-start';
 
@@ -3417,6 +3462,7 @@ try {
             return Array.from(new Set([...hash, ...words]));
         }
         function extractTagsFromText(text) {
+            const tags = Array.from(new Set((text.match(/#[a-z0-9_-]+/gi) || []).map(t => t.slice(1).toLowerCase())));
             const cleanText = text.replace(/#[a-z0-9_-]+/gi, '').replace(/\s{2,}/g, ' ').trim();
             return { cleanText, tags };
         }
