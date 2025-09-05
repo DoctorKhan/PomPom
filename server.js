@@ -88,6 +88,11 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Pretty route for calendar page (serves src/calendar.html)
+app.get('/calendar', (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'calendar.html'));
+});
+
 app.listen(PORT, () => {
   console.log(`🐕 PomPom Server running on http://localhost:${PORT}`);
   console.log(`🚀 Groq API configured: ${!!process.env.GROQ_API_KEY}`);

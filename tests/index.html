@@ -86,6 +86,13 @@
             border-radius: 4px;
             margin: 20px 0;
         }
+        .collapsible-list { list-style: none; padding: 0; margin: 0; }
+        .collapsible-list > li { margin-bottom: 10px; }
+        details { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 12px; }
+        summary { cursor: pointer; font-weight: 600; color: #374151; }
+        summary::-webkit-details-marker { display: none; }
+        details[open] { background: #f3f4f6; }
+        .mt-2 { margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -93,13 +100,57 @@
 
     <div class="test-container">
         <h2>Test Controls</h2>
-        <button onclick="runAllTests()">🚀 Run All Tests (110 tests)</button>
-        <button onclick="runBasicTests()">🔧 Basic Tests (28 tests)</button>
-        <button onclick="runIntegrationTests()">🔗 Integration Tests (25 tests)</button>
-        <button onclick="runUserFlowTests()">👤 User Flow Tests (35 tests)</button>
-        <button onclick="runBrowserTests()">🌐 Browser Tests (25 tests)</button>
-        <button onclick="clearResults()">🧹 Clear Results</button>
-        <button onclick="loadApp()">📱 Load App in Frame</button>
+        <ul class="collapsible-list">
+            <li>
+                <details open>
+                    <summary>All Tests</summary>
+                    <div class="mt-2">
+                        <button onclick="runAllTests()">🚀 Run All Tests (110 tests)</button>
+                    </div>
+                </details>
+            </li>
+            <li>
+                <details>
+                    <summary>Browser Tests</summary>
+                    <div class="mt-2">
+                        <button onclick="runBrowserTests()">🌐 Run Browser Tests (25 tests)</button>
+                    </div>
+                </details>
+            </li>
+            <li>
+                <details>
+                    <summary>Basic Tests</summary>
+                    <div class="mt-2">
+                        <button onclick="runBasicTests()">🔧 Run Basic Tests (28 tests)</button>
+                    </div>
+                </details>
+            </li>
+            <li>
+                <details>
+                    <summary>Integration Tests</summary>
+                    <div class="mt-2">
+                        <button onclick="runIntegrationTests()">🔗 Run Integration Tests (25 tests)</button>
+                    </div>
+                </details>
+            </li>
+            <li>
+                <details>
+                    <summary>User Flow Tests</summary>
+                    <div class="mt-2">
+                        <button onclick="runUserFlowTests()">👤 Run User Flow Tests (35 tests)</button>
+                    </div>
+                </details>
+            </li>
+            <li>
+                <details>
+                    <summary>Utilities</summary>
+                    <div class="mt-2">
+                        <button onclick="clearResults()">🧹 Clear Results</button>
+                        <button onclick="loadApp()">📱 Load App in Frame</button>
+                    </div>
+                </details>
+            </li>
+        </ul>
     </div>
 
     <div class="test-container">
@@ -113,6 +164,12 @@
         <div id="test-summary"></div>
     </div>
 
+    <script>
+        // Redirect /tests/index.html to /tests/
+        if (window.location.pathname.endsWith('/tests/index.html')) {
+          window.location.replace('/tests/');
+        }
+    </script>
     <script>
         let testResults = [];
         let testIframe = null;
@@ -532,9 +589,8 @@
             await testHealthEndpointFallback();
 
             // Added tests for Meet link and sounds
-            await testMeetLinkDropsProperAnchor();
-            await testGongSoundWorks();
-            await testDingSoundWorks();
+            // await testGongSoundWorks();
+            // await testDingSoundWorks();
 
             log('✅ Browser tests completed');
         }

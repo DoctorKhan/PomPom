@@ -3,7 +3,7 @@
 
 function createMeditationController({
   isEnabled,
-  intervalMin,
+  intervalSec,
   initAudioAndNotifications,
   playGong,
   playDing,
@@ -22,11 +22,11 @@ function createMeditationController({
   function scheduleNextDing() {
     try { if (intervalId) clearIntervalFn(intervalId); } catch {}
     if (!isEnabled()) return;
-    const min = Math.max(1, Number(intervalMin()) || 1);
+    const sec = Math.max(1, Number(intervalSec()) || 60);
     intervalId = setIntervalFn(() => {
       if (!isEnabled()) return;
       try { playDing && playDing(); } catch {}
-    }, min * 60 * 1000);
+    }, sec * 1000);
   }
 
   function onBreakEnd() {
