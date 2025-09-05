@@ -87,7 +87,7 @@
             padding-bottom: 8px;
             border-bottom: 1px solid var(--bg-interactive);
         }
-        
+
         /* --- Status Overview Card --- */
         .status-overview-card {
             padding: 20px;
@@ -111,7 +111,7 @@
             font-size: 14px;
             color: var(--text-secondary);
         }
-        
+
         /* Variants for the status card to provide clear visual feedback */
         .status-idle { background-color: var(--status-idle-bg); }
         .status-running { background-color: var(--status-running-bg); }
@@ -241,7 +241,7 @@
             flex-shrink: 0;
         }
         .card-header h3 { font-size: 16px; font-weight: 600; }
-        
+
         .card-body {
             padding: 24px;
             flex-grow: 1;
@@ -268,7 +268,7 @@
             border: 1px solid var(--border-color);
             border-radius: 6px;
         }
-        
+
         /* --- Test Results Card & Progress Bar --- */
         #test-progress-bar-container {
             width: 200px;
@@ -284,7 +284,7 @@
             border-radius: 4px;
             transition: width 0.3s ease-in-out, background-color 0.3s ease;
         }
-        
+
         /* Log container and entries */
         #test-log {
             height: 100%;
@@ -302,11 +302,11 @@
             margin-bottom: 4px;
             animation: fadeIn 0.3s ease;
         }
-        
+
         /* Animation for new log entries */
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(5px); } 
-            to { opacity: 1; transform: translateY(0); } 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .log-entry .log-icon { font-weight: bold; }
@@ -331,7 +331,7 @@
             text-align: center;
         }
         .log-placeholder i { font-size: 48px; margin-bottom: 16px;}
-        
+
     </style>
 </head>
 <body>
@@ -425,10 +425,14 @@
         </main>
     </div>
 
+        <!-- Hidden iframe that runs legacy tests from tests-old.html -->
+        <iframe id="old-tests-iframe" src="about:blank" style="display:none; width:0; height:0; border:0;"></iframe>
+
+
     <script>
         // --- STATE MANAGEMENT ---
         let testResults = [];
-        const TOTAL_TESTS = 113; // Sum of all suite counts
+        const TOTAL_TESTS = 110; // Aligned with tests-old.html
         let isRunning = false;
         let testIframe = null;
 
@@ -448,7 +452,7 @@
             // This path is relative to the test runner's location.
             // You may need to adjust it based on your file structure.
             iframe.src = 'about:blank'; // Clear first
-            setTimeout(() => { 
+            setTimeout(() => {
                 iframe.src = 'https://example.com'; // Placeholder URL
                 log('App reloaded in preview frame.', 'info');
             }, 100);
@@ -463,7 +467,7 @@
             testResults = [];
             updateUI();
         }
-        
+
         /**
          * Toggles the disabled state of all buttons to prevent user action during a test run.
          * @param {boolean} shouldDisable - True to disable buttons, false to enable.
@@ -522,7 +526,7 @@
                 <div class="status-text">${text}</div>
                 <div class="status-summary">${summary}</div>
             `;
-            
+
             // Update Log Container (show placeholder if empty)
             if (testResults.length === 0) {
                 logContainer.innerHTML = `
@@ -543,7 +547,7 @@
             if (testResults.length === 0) {
                 logContainer.innerHTML = '';
             }
-            
+
             let statusType = status === true ? 'pass' : (status === false ? 'fail' : 'info');
             let icon = status === true ? '✔' : (status === false ? '✖' : 'ℹ');
 
@@ -562,9 +566,9 @@
 
             updateUI();
         }
-        
+
         // --- TEST SIMULATION & RUNNERS ---
-        
+
         /** A helper function to simulate async operations */
         function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
@@ -581,9 +585,9 @@
             }
             log(`✅ ${suiteName} completed.`, 'info');
         }
-        
+
         // --- Test Suite Definitions ---
-        
+
         // Browser Tests (25)
         const browserTests = [
             () => log('Random team name generation works correctly'),
@@ -612,7 +616,7 @@
             () => log('Accessibility: All images have alt tags'),
             () => log('Accessibility: Contrast ratios meet WCAG AA'),
         ];
-        
+
         // Basic Tests (28)
         const basicTests = [
             () => log('Session name input exists with placeholder'),
@@ -648,19 +652,19 @@
         // ... (stubs for other suites to reach total count)
         const integrationTests = Array(25).fill(() => log('Integration test passed'));
         const userFlowTests = Array(35).fill(() => log('User flow test passed'));
-        
+
 
         // --- Test Runner Triggers ---
         async function runAllTests() {
             if (isRunning) return;
             setButtonsDisabled(true);
             clearResults();
-            
+
             await runTestSuite("Browser Tests", browserTests);
             await runTestSuite("Basic Tests", basicTests);
             await runTestSuite("Integration Tests", integrationTests);
             await runTestSuite("User Flow Tests", userFlowTests);
-            
+
             setButtonsDisabled(false);
         }
 
@@ -671,7 +675,7 @@
             await runTestSuite("Browser Tests", browserTests);
             setButtonsDisabled(false);
         }
-        
+
         async function runBasicTests() {
             if (isRunning) return;
             setButtonsDisabled(true);
@@ -694,6 +698,112 @@
             clearResults();
             await runTestSuite("User Flow Tests", userFlowTests);
             setButtonsDisabled(false);
+
+            // --- Legacy tests bridge (runs tests-old.html inside hidden iframe) ---
+            async function runLegacyTests() {
+                try {
+                    log('🔁 Loading legacy tests (tests-old.html)...', 'info');
+                    const iframe = document.getElementById('old-tests-iframe');
+                    iframe.src = 'tests-old.html';
+
+                    // Wait for load
+                    await new Promise((resolve, reject) => {
+                        const to = setTimeout(() => reject(new Error('Legacy tests iframe load timeout')), 10000);
+                        iframe.onload = () => { clearTimeout(to); resolve(); };
+                    });
+
+                    const w = iframe.contentWindow;
+                    const d = iframe.contentDocument;
+
+                    // Hook into legacy log to mirror in dashboard
+                    const mirror = (msg, isPass = true) => {
+                        // Also echo to console for debugging
+                        try { console.log('[legacy]', msg, isPass); } catch {}
+                        log(msg, isPass === true ? true : (isPass === false ? false : 'info'));
+                    };
+
+                    // Replace legacy log with bridge
+                    if (typeof w.log === 'function') {
+                        w.log = mirror;
+                    } else {
+                        // Fallback: polyfill legacy logger
+                        w.log = mirror;
+                    }
+
+                    // Ensure app is loaded in legacy runner
+                    if (typeof w.loadApp === 'function') {
+                        w.loadApp();
+                    }
+
+                    // Kick off all legacy tests
+                    if (typeof w.runAllTests === 'function') {
+                        log('▶️ Starting legacy test run...', 'info');
+                        await w.runAllTests();
+                        log('✅ Legacy tests completed', 'info');
+                    } else {
+                        // If no runAllTests, try individual suites
+                        const runners = ['runBrowserTests','runBasicTests','runIntegrationTests','runUserFlowTests'];
+                        for (const r of runners) {
+                            if (typeof w[r] === 'function') {
+                                log(`▶️ Running legacy: ${r}...`, 'info');
+                                await w[r]();
+                            }
+                        }
+                        log('✅ Legacy tests completed (by suites)', 'info');
+                    }
+                } catch (err) {
+                    console.error('[tests/index bridge] error:', err);
+                    log(`Legacy tests failed to run: ${err.message}`, false);
+                }
+            }
+
+            // Wire Run All to prefer legacy tests for now
+            const originalRunAll = runAllTests;
+            runAllTests = async function() {
+                if (isRunning) return;
+                setButtonsDisabled(true);
+                clearResults();
+                // First run legacy tests for parity
+                await runLegacyTests();
+                setButtonsDisabled(false);
+            };
+
+            // Also expose a sidebar button to run legacy directly if needed
+
+            async function runLegacySuite(suiteName) {
+                try {
+                    log(`🔁 Loading legacy tests for ${suiteName}...`, 'info');
+                    const iframe = document.getElementById('old-tests-iframe');
+                    iframe.src = 'tests-old.html';
+                    await new Promise((resolve, reject) => {
+                        const to = setTimeout(() => reject(new Error('Legacy tests iframe load timeout')), 10000);
+                        iframe.onload = () => { clearTimeout(to); resolve(); };
+                    });
+                    const w = iframe.contentWindow;
+                    const mirror = (msg, isPass = true) => { try { console.log('[legacy]', msg, isPass); } catch {}; log(msg, isPass === true ? true : (isPass === false ? false : 'info')); };
+                    w.log = mirror;
+                    if (typeof w.loadApp === 'function') w.loadApp();
+                    if (typeof w[suiteName] === 'function') {
+                        log(`▶️ Running legacy suite: ${suiteName}`, 'info');
+                        await w[suiteName]();
+                        log(`✅ Legacy suite finished: ${suiteName}`, 'info');
+                    } else {
+                        log(`Legacy suite function not found: ${suiteName}`, false);
+                    }
+                } catch (err) {
+                    console.error('[tests/index bridge] suite error:', err);
+                    log(`Legacy suite ${suiteName} failed: ${err.message}`, false);
+                }
+            }
+
+            // Bridge individual suite buttons
+            runBrowserTests = async function() { if (isRunning) return; setButtonsDisabled(true); clearResults(); await runLegacySuite('runBrowserTests'); setButtonsDisabled(false); };
+            runBasicTests = async function() { if (isRunning) return; setButtonsDisabled(true); clearResults(); await runLegacySuite('runBasicTests'); setButtonsDisabled(false); };
+            runIntegrationTests = async function() { if (isRunning) return; setButtonsDisabled(true); clearResults(); await runLegacySuite('runIntegrationTests'); setButtonsDisabled(false); };
+            runUserFlowTests = async function() { if (isRunning) return; setButtonsDisabled(true); clearResults(); await runLegacySuite('runUserFlowTests'); setButtonsDisabled(false); };
+
+            window.runLegacyTests = runLegacyTests;
+
         }
 
         // --- INITIALIZATION ---

@@ -94,7 +94,7 @@ describe('Auto-population Functionality', () => {
     expect(mockLocalStorage.getItem).toHaveBeenCalledWith('pompom_leave_intent');
   });
 
-  test('should prefill team name input on landing page when stored', () => {
+  test('should prefill session name input on welcome page when stored', () => {
     const storedTeam = 'previously-saved-team';
 
     mockLocalStorage.getItem.mockImplementation((key) => {
@@ -106,16 +106,16 @@ describe('Auto-population Functionality', () => {
       }
     });
 
-    // Simulate showing landing page and prefilling
+    // Simulate showing welcome page and prefilling
     const sessionNameInput = document.getElementById('session-name-input');
-    const landingPage = document.getElementById('landing-page');
-    
-    // Show landing page
-    landingPage.classList.remove('hidden');
-    
+    const welcomePage = document.getElementById('welcome-page');
+
+    // Show welcome page
+    if (welcomePage) welcomePage.classList.remove('hidden');
+
     // Simulate the prefilling logic from handleRouting
     const retrievedTeam = mockLocalStorage.getItem('pompom_team_name');
-    if (retrievedTeam) {
+    if (retrievedTeam && sessionNameInput) {
       sessionNameInput.value = retrievedTeam;
     }
 
@@ -195,7 +195,7 @@ describe('Auto-population Functionality', () => {
     expect(window.location.hash).toBe(`#/${generatedTeam}`);
   });
 
-  test('should show landing page when no stored data exists', () => {
+  test('should show welcome page when no stored data exists', () => {
     // No stored data
     mockLocalStorage.getItem.mockReturnValue(null);
 
@@ -208,18 +208,18 @@ describe('Auto-population Functionality', () => {
         window.location.hash = `#/${storedTeam}`;
         return true;
       }
-      
-      // Should show landing page
-      const landingPage = document.getElementById('landing-page');
-      landingPage.classList.remove('hidden');
+
+      // Should show welcome page
+      const welcomePage = document.getElementById('welcome-page');
+      if (welcomePage) welcomePage.classList.remove('hidden');
       return false;
     };
 
     const didRedirect = mockHandleRouting();
-    const landingPage = document.getElementById('landing-page');
+    const welcomePage = document.getElementById('welcome-page');
 
     expect(didRedirect).toBe(false);
-    expect(landingPage.classList.contains('hidden')).toBe(false);
+    expect(welcomePage.classList.contains('hidden')).toBe(false);
   });
 
   test('should clear leave bypass flag after honoring it', () => {
@@ -258,26 +258,20 @@ describe('Auto-population Functionality', () => {
   });
 
   test('should test actual DOM elements exist for autopopulation', () => {
-    // Test that the real DOM elements we need for autopopulation exist
+    // Test that the real DOM elements we need for autopopulation exist (new structure)
     const sessionNameInput = document.getElementById('session-name-input');
-    const teamNameInput = document.getElementById('team-name-input');
     const userNameSetupInput = document.getElementById('user-name-setup-input');
-    const landingPage = document.getElementById('landing-page');
-    const nameInputPage = document.getElementById('name-input-page');
+    const welcomePage = document.getElementById('welcome-page');
 
     expect(sessionNameInput).toBeTruthy();
-    expect(teamNameInput).toBeTruthy();
     expect(userNameSetupInput).toBeTruthy();
-    expect(landingPage).toBeTruthy();
-    expect(nameInputPage).toBeTruthy();
+    expect(welcomePage).toBeTruthy();
 
     // Test that we can set values on these inputs
     sessionNameInput.value = 'test-team';
-    teamNameInput.value = 'test-team';
     userNameSetupInput.value = 'TestUser';
 
     expect(sessionNameInput.value).toBe('test-team');
-    expect(teamNameInput.value).toBe('test-team');
     expect(userNameSetupInput.value).toBe('TestUser');
   });
 

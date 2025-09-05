@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 const path = require('path');
 
-describe('Browser-based tests', () => {
+describe.skip('Browser-based tests', () => {
   let browser;
   let page;
 

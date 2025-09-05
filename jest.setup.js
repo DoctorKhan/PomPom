@@ -63,6 +63,7 @@ global.fetch = jest.fn(() =>
   Promise.resolve({
     ok: true,
     json: () => Promise.resolve({}),
+    text: () => Promise.resolve(''), // Add a default text method
   })
 );
 

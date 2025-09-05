@@ -26,7 +26,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #00A6A6, #007A7A);
             transition: all 0.3s ease;
@@ -50,7 +50,7 @@
         .btn-secondary:hover {
             background-color: rgba(255, 255, 255, 0.2);
         }
-        
+
         .form-input {
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -78,7 +78,7 @@
              background-color: rgba(255, 255, 255, 0.1);
              color: #fff;
         }
-        
+
         .participant-avatar {
              background: linear-gradient(135deg, #007A7A, #1A2942);
         }
@@ -91,11 +91,11 @@
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-6px); }
         }
-        
+
         .hidden {
             display: none !important;
         }
-        
+
         /* Spinner for loading states */
         .spinner {
             border: 2px solid rgba(255,255,255,0.3);
@@ -149,7 +149,7 @@
                 </button>
             </div>
         </div>
-        
+
         <!-- Session Page -->
         <div id="session-page" class="hidden h-full w-full max-w-6xl mx-auto glass-card rounded-3xl flex flex-col overflow-hidden">
             <!-- Header -->
@@ -178,18 +178,18 @@
             <!-- Main Content -->
             <main class="flex-1 flex overflow-hidden">
                 <!-- Main View -->
-                <div class="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto">
+                                <!-- Main View -->
+                <div id="timer-view" class="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto">
                     <div id="timer-display" class="text-8xl md:text-9xl font-bold text-white tracking-tighter kawaii-float">25:00</div>
                     <div id="timer-mode-display" class="text-xl text-teal-300 mt-2 mb-6">Focus Time</div>
-                    
+
                     <div class="w-full max-w-md mb-6">
                         <div class="flex gap-2">
-                            <input id="goal-input" type="text" placeholder="What is your focus for this session?" class="form-input flex-1 rounded-lg text-sm px-4 py-3">
-                            <button id="suggest-goal-btn" class="btn-secondary flex-shrink-0 px-4 rounded-lg font-semibold text-white text-sm" title="Suggest a goal with AI">✨ Suggest</button>
-                            <button id="save-goal-btn" class="btn-primary flex-shrink-0 px-6 rounded-lg font-semibold text-white">Set</button>
+                            <input id="goal-input" type="text" placeholder="Current task (top of list)" class="form-input flex-1 rounded-lg text-sm px-4 py-3" readonly>
+                            <button id="breakdown-task-btn" class="btn-secondary flex-shrink-0 px-4 rounded-lg font-semibold text-white text-sm" title="Break down top task with AI">✨ Break down</button>
                         </div>
                     </div>
-                    
+
                     <div class="flex items-center gap-4 mb-8">
                         <button id="start-pause-btn" class="btn-primary text-xl px-10 py-4 rounded-xl font-bold">Start</button>
                         <button id="reset-btn" class="btn-secondary text-gray-300 px-6 py-4 rounded-xl font-semibold">Reset</button>
@@ -205,17 +205,12 @@
                 <!-- Right Sidebar (Team/Tasks/Chat) -->
                 <aside class="w-96 border-l border-white/10 flex flex-col bg-black/10">
                     <nav class="flex-shrink-0 border-b border-white/10">
-                         <button data-view="participants" class="nav-btn w-1/3 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent active">Team</button>
                          <button data-view="tasks" class="nav-btn w-1/3 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent">Tasks</button>
-                         <button data-view="chat" class="nav-btn w-1/3 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent">Chat</button>
+                         <button data-view="participants" class="nav-btn w-1/3 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent active">Team</button>
+                         <button data-view="planner" class="nav-btn w-1/3 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent">Planner</button>
                     </nav>
 
                     <div class="flex-1 overflow-y-auto p-4">
-                        <!-- Participants View -->
-                        <div id="participants-view" class="">
-                             <h3 class="font-semibold text-white mb-3">Team Members (<span id="participant-count">0</span>)</h3>
-                             <div id="participants-list" class="space-y-3"></div>
-                        </div>
 
                         <!-- Tasks View -->
                         <div id="tasks-view" class="hidden">
@@ -229,21 +224,58 @@
                             </div>
                         </div>
 
-                        <!-- Chat View -->
-                        <div id="chat-view" class="hidden h-full flex flex-col">
-                             <div class="flex-shrink-0 mb-3 flex gap-2">
-                                <button id="summarize-chat-btn" class="btn-secondary text-xs w-full py-2 rounded-lg">✨ Summarize</button>
-                                <button id="icebreaker-btn" class="btn-secondary text-xs w-full py-2 rounded-lg">✨ Icebreaker</button>
-                             </div>
-                             <div id="chat-messages" class="flex-1 space-y-3 text-sm mb-3 overflow-y-auto p-2 bg-black/10 rounded-lg"></div>
-                             <div class="flex gap-2">
-                                <input id="chat-input" type="text" placeholder="Send a message..." class="form-input flex-1 rounded-lg text-sm px-3 py-2">
-                                <button id="send-chat-btn" class="btn-primary flex-shrink-0 px-4 rounded-lg font-semibold text-white text-sm">Send</button>
-                            </div>
+                        <!-- Participants View -->
+                        <div id="participants-view" class="">
+                             <h3 class="font-semibold text-white mb-3">Team Members (<span id="participant-count">0</span>)</h3>
+                             <div id="participants-list" class="space-y-3"></div>
+                        </div>
+
+                        <!-- Planner View -->
+                        <div id="planner-view" class="hidden">
+                            <h3 class="font-semibold text-white mb-3">Planner</h3>
+                            <div id="calendar-container"></div>
                         </div>
                     </div>
                 </aside>
             </main>
+        </div>
+
+        <!-- Chat Popup -->
+        <div id="chat-popup-container" class="fixed bottom-6 right-6 z-20">
+            <div id="chat-popup" class="hidden absolute bottom-20 right-0 w-80 h-96 glass-card rounded-2xl flex flex-col overflow-hidden">
+                <header class="p-4 border-b border-white/10 flex-shrink-0 flex justify-between items-center">
+                    <h3 class="font-semibold text-white">Team Chat</h3>
+                    <div class="flex gap-2">
+                        <button id="summarize-chat-btn" class="btn-secondary text-xs px-2 py-1 rounded-lg">✨ Sum</button>
+                        <button id="icebreaker-btn" class="btn-secondary text-xs px-2 py-1 rounded-lg">🧊</button>
+                    </div>
+                </header>
+                <div id="chat-messages" class="flex-1 space-y-3 text-sm p-4 overflow-y-auto bg-black/10"></div>
+                <div class="p-4 border-t border-white/10">
+                    <div class="flex gap-2">
+                        <input id="chat-input" type="text" placeholder="Send a message..." class="form-input flex-1 rounded-lg text-sm px-3 py-2">
+                        <button id="send-chat-btn" class="btn-primary flex-shrink-0 px-4 rounded-lg font-semibold text-white text-sm">Send</button>
+                    </div>
+                </div>
+            </div>
+            <button id="chat-popup-btn" class="bg-teal-500 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+            </button>
+            <div id="ai-agent-popup" class="hidden absolute bottom-20 right-20 w-80 h-96 glass-card rounded-2xl flex flex-col overflow-hidden z-10">
+                <header class="p-4 border-b border-white/10 flex-shrink-0 flex justify-between items-center">
+                    <h3 class="font-semibold text-white">AI Agent</h3>
+                </header>
+                <div id="ai-agent-messages" class="flex-1 space-y-3 text-sm p-4 overflow-y-auto bg-black/10"></div>
+                <div class="p-4 border-t border-white/10">
+                    <div class="flex gap-2">
+                        <input id="ai-agent-input" type="text" placeholder="Ask to add task, start timer, reorder..." class="form-input flex-1 rounded-lg text-sm px-3 py-2">
+                        <button id="ai-agent-send" class="btn-primary flex-shrink-0 px-4 rounded-lg font-semibold text-white text-sm">Run</button>
+                    </div>
+                </div>
+            </div>
+            <button id="ai-agent-btn" class="bg-purple-500 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center mr-2">
+                <span class="text-2xl">🤖</span>
+            </button>
         </div>
 
         <!-- Modals would go here, simplified for brevity -->
@@ -262,17 +294,27 @@
         const shuffleUserNameBtn = document.getElementById('shuffle-user-name-btn');
         const startSessionBtn = document.getElementById('start-session-btn');
         const sessionHeaderName = document.getElementById('session-header-name');
-        const timerDisplay = document.getElementById('timer-display');
-        const participantCount = document.getElementById('participant-count');
-        const participantsList = document.getElementById('participants-list');
+        const copyLinkBtn = document.getElementById('copy-link-btn');
         const goalInput = document.getElementById('goal-input');
-        const suggestGoalBtn = document.getElementById('suggest-goal-btn');
+        const breakdownTaskBtn = document.getElementById('breakdown-task-btn');
+        const viewButtons = document.querySelectorAll('.nav-btn');
+        const participantsView = document.getElementById('participants-view');
+        const tasksView = document.getElementById('tasks-view');
+        const plannerView = document.getElementById('planner-view');
         const todoIdeaInput = document.getElementById('todo-idea-input');
         const todoAddBtn = document.getElementById('todo-add-btn');
         const todoList = document.getElementById('todo-list');
+        const chatPopupBtn = document.getElementById('chat-popup-btn');
+        const chatPopup = document.getElementById('chat-popup');
         const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
         const summarizeChatBtn = document.getElementById('summarize-chat-btn');
         const icebreakerBtn = document.getElementById('icebreaker-btn');
+        const aiAgentBtn = document.getElementById('ai-agent-btn');
+        const aiAgentPopup = document.getElementById('ai-agent-popup');
+        const aiAgentInput = document.getElementById('ai-agent-input');
+        const aiAgentSend = document.getElementById('ai-agent-send');
+        const aiAgentMessages = document.getElementById('ai-agent-messages');
         const toastEl = document.getElementById('toast');
 
 
@@ -281,43 +323,601 @@
         let userName = '';
         let tasks = []; // In-memory task list for this example
 
-        // --- Gemini API Helper ---
-        const API_KEY = ""; // Provided by environment
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
-        
-        async function callGeminiAPI(prompt, retries = 3, delay = 1000) {
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-            };
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (!response.ok) {
-                        throw new Error(`API Error: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-                } catch (error) {
-                    console.error(`Attempt ${i + 1} failed:`, error);
-                    if (i < retries - 1) {
-                        await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
-                    } else {
-                        showToast("AI is unavailable right now. Please try again later.");
-                        return null; // Return null on final failure
-                    }
-                }
+        // --- Groq API Helper (via backend proxy) ---
+        async function callGroqAPI(prompt) {
+            try {
+                const body = {
+                    model: 'llama-3.1-8b-instant',
+                    messages: [
+                        { role: 'system', content: 'Respond ONLY with compact JSON. No prose.' },
+                        { role: 'user', content: prompt }
+                    ],
+                    temperature: 0.3,
+                    max_tokens: 200
+                };
+                const response = await fetch('/api/groq', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                if (!response.ok) throw new Error(`Groq API error ${response.status}`);
+                const data = await response.json();
+                return data?.choices?.[0]?.message?.content || '';
+            } catch (error) {
+                console.error('Groq call failed:', error);
+                showToast('AI is unavailable right now. Please try again later.');
+                return null;
             }
         }
-        
+
         /**
          * Robustly extracts a JSON object from a string that may contain Markdown fences.
          */
         function extractJSON(text) {
             if (!text) return null;
             // Match the JSON content inside the Markdown code block
-            const match = text.match(/
+            const match = text.match(/```json\s*([\s\S]*?)\s*```/);
+            if (match && match[1]) {
+                try {
+                    return JSON.parse(match[1]);
+                } catch (e) {
+                    console.error("Failed to parse extracted JSON:", e);
+                    return null;
+                }
+            }
+            // If no Markdown block, try parsing the whole string
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                // Not a raw JSON string
+            }
+            return null;
+        }
+
+        // --- UI Logic ---
+        function showToast(message) {
+            toastEl.textContent = message;
+            toastEl.classList.remove('hidden');
+            setTimeout(() => {
+                toastEl.classList.add('hidden');
+            }, 3000);
+        }
+
+        function renderTasks() {
+            todoList.innerHTML = '';
+            if (tasks.length === 0) {
+                todoList.innerHTML = `<p class="text-gray-400 text-sm">No tasks yet. Add one!</p>`;
+                return;
+            }
+            tasks.forEach((task, index) => {
+                const taskEl = document.createElement('div');
+                taskEl.className = `p-2 rounded-lg flex justify-between items-center ${task.completed ? 'bg-white/5 text-gray-500' : 'bg-white/10'}`;
+                taskEl.innerHTML = `
+                    <span class="${task.completed ? 'line-through' : ''}">${task.text}</span>
+                    <div class="flex gap-2">
+                        <button data-index="${index}" class="toggle-task-btn text-xs">${task.completed ? 'Undo' : 'Done'}</button>
+                        <button data-index="${index}" class="delete-task-btn text-xs text-red-400">Del</button>
+                    </div>
+                `;
+                todoList.appendChild(taskEl);
+            });
+        }
+
+        function switchView(view) {
+            [participantsView, tasksView, plannerView].forEach(v => v.classList.add('hidden'));
+            viewButtons.forEach(b => b.classList.remove('active'));
+
+            document.querySelector(`[data-view="${view}"]`).classList.add('active');
+            document.getElementById(`${view}-view`).classList.remove('hidden');
+
+            if (view === 'planner' && !plannerView.dataset.loaded) {
+                fetch('src/calendar.html')
+                    .then(response => response.text())
+                    .then(html => {
+                        const container = document.getElementById('calendar-container');
+                        if (container) container.innerHTML = html;
+                        plannerView.dataset.loaded = true;
+                    })
+                    .catch(error => {
+                        console.error('Failed to load calendar:', error);
+                        document.getElementById('calendar-container').innerHTML = '<p class="text-red-400">Could not load planner. Please try again later.</p>';
+                    });
+            }
+        }
+
+        // --- Event Listeners ---
+        copyLinkBtn.addEventListener('click', () => {
+            const shareUrl = `${window.location.origin}${window.location.pathname}?session=${sessionId}`;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    showToast('Share link copied to clipboard!');
+                }).catch(err => {
+                    console.error('Failed to copy link: ', err);
+                    showToast('Could not copy link.');
+                });
+            } else {
+                showToast('Clipboard access is not available.');
+            }
+        });
+
+        startSessionBtn.addEventListener('click', () => {
+            sessionId = sessionNameInput.value.trim() || generateRandomTeamName();
+            userName = userNameSetupInput.value.trim() || generateRandomUserName();
+
+            if (!userName) {
+                showToast("Please enter your name to start.");
+                return;
+            }
+        // AI Agent toggle
+        aiAgentBtn.addEventListener('click', () => {
+            aiAgentPopup.classList.toggle('hidden');
+        });
+
+        // Simple message helper for agent panel
+        function aiAgentAppend(role, text) {
+            const row = document.createElement('div');
+            row.className = role === 'user' ? 'text-right' : 'text-left';
+            const bubble = document.createElement('div');
+            bubble.className = 'inline-block px-3 py-2 rounded-lg ' + (role === 'user' ? 'bg-purple-600 text-white' : 'bg-white/10 text-white');
+            bubble.textContent = text;
+            row.appendChild(bubble);
+            aiAgentMessages.appendChild(row);
+            aiAgentMessages.scrollTop = aiAgentMessages.scrollHeight;
+        }
+
+        // Agent command executor: parse intent then act on UI
+        async function aiAgentHandle(inputText) {
+            aiAgentAppend('user', inputText);
+            // Ask Groq to classify intent to minimal JSON
+            const prompt = `You are a UI assistant. Given a natural language instruction, output ONLY compact JSON with fields: action, text, index, mode. Actions: add_task, start_timer, pause_timer, reset_timer, reorder_tasks, delete_task, suggest_task. index is zero-based for reorder/delete; mode is one of pomodoro25, shortBreak, longBreak for switching modes. Example: {"action":"add_task","text":"Implement login"}. Instruction: ${inputText}`;
+            let content = await callGroqAPI(prompt);
+            const cmd = extractJSON(content) || {};
+            let resultMsg = '';
+            try {
+        // Add task on Enter in ideas input
+        if (todoIdeaInput) {
+            todoIdeaInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const idea = (todoIdeaInput.value || '').trim();
+                    if (!idea) return;
+                    tasks.push({ text: idea, completed: false });
+                    renderTasks();
+                    todoIdeaInput.value = '';
+                }
+            });
+        }
+                switch ((cmd.action || '').toLowerCase()) {
+                    case 'add_task': {
+                        const t = (cmd.text || '').trim();
+                        if (t) { tasks.unshift({ text: t, completed: false }); renderTasks(); }
+                        resultMsg = t ? `Added task: ${t}` : 'No task text provided';
+                        break;
+                    }
+                    case 'suggest_task': {
+                        const idea = (cmd.text || '').trim() || (aiAgentInput.value || '').trim();
+                        if (idea) {
+                            const result = await callGroqAPI(`Break this into 2-4 subtasks as a JSON array of short strings: ${idea}`);
+                            const arr = extractJSON(result);
+                            if (Array.isArray(arr) && arr.length) {
+                                arr.reverse().forEach(txt => tasks.unshift({ text: String(txt), completed: false }));
+                                renderTasks();
+                                resultMsg = `Added ${arr.length} subtasks.`;
+                            } else {
+                                tasks.unshift({ text: idea, completed: false });
+                                renderTasks();
+                                resultMsg = 'Added as a single task.';
+                            }
+                        } else resultMsg = 'No idea provided';
+                        break;
+                    }
+                    case 'start_timer': startTimer(); resultMsg = 'Timer started'; break;
+                    case 'pause_timer': pauseTimer(); resultMsg = 'Timer paused'; break;
+                    case 'reset_timer': resetTimer(); resultMsg = 'Timer reset'; break;
+                    case 'reorder_tasks': {
+                        const i = Number(cmd.index), j = Number(cmd.to);
+                        if (Number.isInteger(i) && Number.isInteger(j) && i>=0 && j>=0 && i<tasks.length && j<tasks.length) {
+                            const [moved] = tasks.splice(i, 1);
+                            tasks.splice(j, 0, moved);
+                            renderTasks();
+                            resultMsg = `Moved task from ${i} to ${j}`;
+                        } else resultMsg = 'Invalid indexes';
+                        break;
+                    }
+                    case 'delete_task': {
+                        const i = Number(cmd.index);
+                        if (Number.isInteger(i) && i>=0 && i<tasks.length) {
+                            const [del] = tasks.splice(i,1);
+                            renderTasks();
+                            resultMsg = `Deleted task: ${del.text}`;
+                        } else resultMsg = 'Invalid index';
+                        break;
+                    }
+                    case 'set_mode': {
+                        const m = String(cmd.mode||'');
+                        if (['pomodoro25','shortBreak','longBreak'].includes(m)) { setMode(m); resultMsg = `Mode set to ${m}`; }
+                        else resultMsg = 'Invalid mode';
+                        break;
+                    }
+                    default:
+                        // Unknown action: treat as a normal chat dialog.
+                        // Ask the model to respond conversationally and show the reply.
+                        const reply = await callGroqAPI(`You are a helpful teammate. Respond conversationally to: ${JSON.stringify(inputText)}`);
+                        resultMsg = reply || '…';
+                }
+            } catch (e) {
+                console.error('Agent error', e);
+                resultMsg = 'Action failed.';
+            }
+            aiAgentAppend('assistant', resultMsg);
+        }
+
+        aiAgentSend.addEventListener('click', async () => {
+            const txt = (aiAgentInput.value || '').trim();
+            if (!txt) return;
+            aiAgentInput.value = '';
+            await aiAgentHandle(txt);
+        });
+        aiAgentInput.addEventListener('keypress', async (e) => { if (e.key==='Enter') { e.preventDefault(); aiAgentSend.click(); }});
+
+
+            welcomePage.classList.add('hidden');
+            sessionPage.classList.remove('hidden');
+            sessionHeaderName.textContent = `Team: ${sessionId}`;
+        });
+
+        shuffleUserNameBtn.addEventListener('click', () => {
+            userNameSetupInput.value = generateRandomUserName();
+        });
+
+        viewButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const view = button.dataset.view;
+                switchView(view);
+            });
+        });
+
+        chatPopupBtn.addEventListener('click', () => {
+            chatPopup.classList.toggle('hidden');
+        });
+
+        breakdownTaskBtn.addEventListener('click', async () => {
+            const topTask = tasks.find(t => !t.completed);
+            if (!topTask) {
+                showToast("No task to break down.");
+                return;
+            }
+
+            breakdownTaskBtn.innerHTML = `<div class="spinner"></div>`;
+            breakdownTaskBtn.disabled = true;
+
+            const prompt = `Based on the user's task "${topTask.text}", break it down into a JSON array of 2-4 specific, actionable sub-tasks. The user is in a team setting. The JSON should be an array of strings. Example: for "build login page", return ["Design UI in Figma", "Develop HTML/CSS structure", "Implement form validation", "Connect to authentication API"]. Return ONLY the JSON array.`;
+            const result = await callGroqAPI(prompt);
+            const subtasks = extractJSON(result);
+
+            if (subtasks && Array.isArray(subtasks)) {
+                const topTaskIndex = tasks.findIndex(t => t === topTask);
+                if (topTaskIndex > -1) {
+                    const newTasks = subtasks.map(t => ({ text: t, completed: false }));
+                    tasks.splice(topTaskIndex, 1, ...newTasks);
+                    showToast("Task broken down by AI.");
+                }
+            } else {
+                showToast("AI couldn't break down the task.");
+            }
+
+            renderTasks();
+            breakdownTaskBtn.innerHTML = `✨ Break down`;
+            breakdownTaskBtn.disabled = false;
+        });
+
+        todoAddBtn.addEventListener('click', () => {
+            const idea = todoIdeaInput.value.trim();
+            if (!idea) return;
+            tasks.push({ text: idea, completed: false });
+            renderTasks();
+            todoIdeaInput.value = '';
+        });
+
+        todoIdeaInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                todoAddBtn.click();
+            }
+        });
+
+        todoList.addEventListener('click', (e) => {
+            const index = e.target.dataset.index;
+            if (e.target.classList.contains('toggle-task-btn')) {
+                tasks[index].completed = !tasks[index].completed;
+            }
+            if (e.target.classList.contains('delete-task-btn')) {
+                tasks.splice(index, 1);
+            }
+            renderTasks();
+        });
+
+        summarizeChatBtn.addEventListener('click', async () => {
+            const messages = Array.from(chatMessages.children).map(el => el.textContent).join('\\n');
+            if (messages.length < 50) {
+                showToast("Not enough chat history to summarize.");
+                return;
+            }
+            summarizeChatBtn.disabled = true;
+            summarizeChatBtn.innerHTML = `<div class="spinner"></div>`;
+            const prompt = `Summarize the key decisions, action items, and overall sentiment of the following chat conversation. Present it in a few bullet points. \\n\\nChat History:\\n${messages}`;
+            const summary = await callGroqAPI(prompt);
+            if (summary) {
+                const summaryEl = document.createElement('div');
+                summaryEl.className = 'p-2 bg-teal-900/50 rounded-lg text-xs italic mt-2';
+                summaryEl.textContent = `✨ Summary: ${summary}`;
+                chatMessages.appendChild(summaryEl);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            summarizeChatBtn.disabled = false;
+            summarizeChatBtn.textContent = '✨ Sum';
+        });
+
+        icebreakerBtn.addEventListener('click', async () => {
+            icebreakerBtn.disabled = true;
+            icebreakerBtn.innerHTML = `<div class="spinner"></div>`;
+            const prompt = "Generate a fun, safe-for-work icebreaker question for a remote team to discuss.";
+            const question = await callGroqAPI(prompt);
+            if (question) {
+                chatInput.value = question.replace(/"/g, '');
+            }
+            icebreakerBtn.disabled = false;
+            icebreakerBtn.textContent = '🧊';
+        });
+
+        // --- Timer Logic ---
+        const startPauseBtn = document.getElementById('start-pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const timerDisplay = document.getElementById('timer-display');
+        const timerModeDisplay = document.getElementById('timer-mode-display');
+        const modeControls = document.getElementById('mode-controls');
+
+        const MODE_DURATIONS = {
+            pomodoro25: { seconds: 25 * 60, label: 'Focus Time' },
+            shortBreak: { seconds: 5 * 60, label: 'Short Break' },
+            longBreak: { seconds: 15 * 60, label: 'Long Break' },
+        };
+
+        // Allow tests to override duration (window.__TIMER_SECONDS_OVERRIDE)
+        function getModeSeconds() {
+            try {
+                const o = typeof window !== 'undefined' && window.__TIMER_SECONDS_OVERRIDE;
+                const n = Number(o);
+                if (Number.isFinite(n) && n > 0) return n;
+            } catch {}
+            return MODE_DURATIONS[currentMode].seconds;
+        }
+
+        let currentMode = 'pomodoro25';
+        let remainingSeconds = getModeSeconds();
+        let timerInterval = null;
+        let running = false;
+        let targetEndTs = 0;
+
+        function fmtTime(totalSeconds) {
+            const m = Math.floor(totalSeconds / 60);
+            const s = Math.floor(totalSeconds % 60);
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function renderTimer() {
+            timerDisplay.textContent = fmtTime(remainingSeconds);
+            timerModeDisplay.textContent = MODE_DURATIONS[currentMode].label;
+            startPauseBtn.textContent = running ? 'Pause' : 'Start';
+        }
+
+        function tick() {
+            const now = Date.now();
+            const leftMs = Math.max(0, targetEndTs - now);
+            remainingSeconds = Math.ceil(leftMs / 1000);
+            renderTimer();
+            if (remainingSeconds <= 0) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                running = false;
+                try { if (typeof window !== 'undefined' && typeof window.playGong === 'function') window.playGong(); } catch {}
+                remainingSeconds = getModeSeconds();
+                renderTimer();
+            }
+        }
+
+        function startTimer() {
+            if (running) return;
+            // Snap to test override if present
+            try {
+                const o = typeof window !== 'undefined' && Number(window.__TIMER_SECONDS_OVERRIDE);
+                if (Number.isFinite(o) && o > 0) remainingSeconds = o;
+            } catch {}
+            running = true;
+            targetEndTs = Date.now() + remainingSeconds * 1000;
+            renderTimer();
+            timerInterval = setInterval(tick, 250);
+        }
+
+        function pauseTimer() {
+            if (!running) return;
+            running = false;
+            clearInterval(timerInterval);
+            timerInterval = null;
+            // Recompute remaining based on now
+            const now = Date.now();
+            remainingSeconds = Math.max(0, Math.ceil((targetEndTs - now) / 1000));
+            renderTimer();
+        }
+
+        function resetTimer() {
+            running = false;
+            clearInterval(timerInterval);
+            timerInterval = null;
+            remainingSeconds = MODE_DURATIONS[currentMode].seconds;
+            renderTimer();
+        }
+
+        function setMode(mode) {
+            if (!MODE_DURATIONS[mode]) return;
+            currentMode = mode;
+            resetTimer();
+        }
+
+        if (startPauseBtn) {
+            startPauseBtn.addEventListener('click', () => {
+                if (running) pauseTimer(); else startTimer();
+            });
+        }
+        if (resetBtn) {
+            resetBtn.addEventListener('click', resetTimer);
+        }
+        if (modeControls) {
+            modeControls.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-mode]');
+                if (!btn) return;
+                setMode(btn.dataset.mode);
+            });
+        }
+
+        // --- Goal Set / Auto-top behavior and Drag & Drop ---
+        const saveGoalBtn = null; // removed button; we auto-show top task
+
+        function topTaskText() {
+            const firstOpen = tasks.find(t => !t.completed);
+            return firstOpen ? firstOpen.text : (tasks[0] ? tasks[0].text : '');
+        }
+
+        function renderTasksWithDnD() {
+            // Re-render tasks and attach drag handlers
+            todoList.innerHTML = '';
+            if (tasks.length === 0) {
+                todoList.innerHTML = `<p class="text-gray-400 text-sm">No tasks yet. Add one!</p>`;
+            } else {
+                tasks.forEach((task, index) => {
+                    const taskEl = document.createElement('div');
+                    taskEl.className = `p-2 rounded-lg flex justify-between items-center ${task.completed ? 'bg-white/5 text-gray-500' : 'bg-white/10'}`;
+                    taskEl.setAttribute('draggable', 'true');
+                    taskEl.dataset.index = String(index);
+                    taskEl.innerHTML = `
+                        <span class="task-text ${task.completed ? 'line-through' : ''}">${task.text}</span>
+                        <div class="flex gap-2">
+                            <button data-index="${index}" class="toggle-task-btn text-xs">${task.completed ? 'Undo' : 'Done'}</button>
+                            <button data-index="${index}" class="delete-task-btn text-xs text-red-400">Del</button>
+                        </div>
+                    `;
+                    taskEl.addEventListener('dragstart', (ev) => {
+                        ev.dataTransfer.setData('text/plain', String(index));
+                        taskEl.classList.add('opacity-50');
+                    });
+                    taskEl.addEventListener('dragend', () => {
+                        taskEl.classList.remove('opacity-50');
+                    });
+                    taskEl.addEventListener('dragover', (ev) => ev.preventDefault());
+                    taskEl.addEventListener('drop', (ev) => {
+                        ev.preventDefault();
+                        const fromStr = ev.dataTransfer.getData('text/plain');
+                        const from = parseInt(fromStr, 10);
+                        const to = index;
+                        if (!Number.isInteger(from) || from === to) return;
+                        const moved = tasks.splice(from, 1)[0];
+                        tasks.splice(to, 0, moved);
+                        renderTasksWithDnD();
+                        // Auto-show top task as goal
+                        const top = topTaskText();
+                        if (top) goalInput.value = top;
+                    });
+                    todoList.appendChild(taskEl);
+                });
+            // Click-to-edit task text (basic inline editor like original)
+            todoList.addEventListener('click', (e) => {
+                const txtEl = e.target.closest('.task-text');
+                if (!txtEl) return;
+                const taskEl = txtEl.closest('[data-index]')?.parentElement || txtEl.closest('div');
+                const idxAttr = (txtEl.closest('[data-index]') || e.target).dataset.index;
+                const index = parseInt(idxAttr, 10);
+                if (!Number.isInteger(index)) return;
+
+                // Build simple inline editor
+                const wrap = document.createElement('div');
+                wrap.className = 'flex items-center gap-2 w-full';
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = tasks[index].text;
+                input.className = 'flex-1 bg-white text-black rounded px-2 py-1';
+                const save = document.createElement('button');
+                save.className = 'btn-primary px-3 py-1 rounded text-white';
+                save.textContent = 'Save';
+                const cancel = document.createElement('button');
+                cancel.className = 'btn-secondary px-3 py-1 rounded text-white';
+                cancel.textContent = 'Cancel';
+
+                const originalHTML = taskEl.innerHTML;
+                taskEl.innerHTML = '';
+                wrap.appendChild(input);
+                wrap.appendChild(save);
+                wrap.appendChild(cancel);
+                taskEl.appendChild(wrap);
+                input.focus(); input.select();
+
+                const commit = () => {
+                    const v = (input.value || '').trim();
+                    if (v) tasks[index].text = v;
+                    renderTasksWithDnD();
+                };
+                const revert = () => { taskEl.innerHTML = originalHTML; };
+                save.addEventListener('click', commit);
+                cancel.addEventListener('click', () => renderTasksWithDnD());
+                input.addEventListener('keydown', (ev) => {
+                    if (ev.key === 'Enter') { ev.preventDefault(); commit(); }
+                    if (ev.key === 'Escape') { ev.preventDefault(); renderTasksWithDnD(); }
+                });
+            });
+            }
+            // Auto-set goal input to top task
+            const top = topTaskText();
+            if (top) goalInput.value = top; else if (!goalInput.value) goalInput.value = '';
+        }
+
+        if (saveGoalBtn) {
+            saveGoalBtn.addEventListener('click', () => {
+                const txt = (goalInput.value || '').trim();
+                if (!txt) return;
+                // Insert as top task
+                tasks.unshift({ text: txt, completed: false });
+                renderTasksWithDnD();
+                showToast('Goal set as top task');
+            });
+        }
+
+        // Replace plain renderTasks with DnD-enabled renderer
+        renderTasks = renderTasksWithDnD;
+        renderTasks();
+
+        // Keep existing click handling for toggle/delete
+        // (already attached below; works with re-render because of delegation)
+
+
+
+        // --- Utility Functions ---
+        function generateRandomUserName() {
+            const adjectives = ["Cozy", "Brave", "Clever", "Dandy", "Eager", "Fancy", "Gentle", "Happy", "Jolly", "Kind", "Lucky", "Merry", "Nice", "Proud", "Silly", "Witty"];
+            const nouns = ["Panda", "Penguin", "Dragon", "Unicorn", "Fox", "Bear", "Lion", "Tiger", "Bunny", "Puppy", "Kitten", "Chipmunk"];
+            return `${adjectives[Math.floor(Math.random() * adjectives.length)]} ${nouns[Math.floor(Math.random() * nouns.length)]}`;
+        }
+
+        function generateRandomTeamName() {
+            const nouns = ["Galaxy", "Comet", "Nova", "Orion", "Pegasus", "Phoenix", "Andromeda", "Draco", "Lyra", "Cygnus"];
+            const verbs = ["Quest", "Voyage", "Mission", "Journey", "Expedition", "Odyssey", "Venture", "Trek"];
+            return `${verbs[Math.floor(Math.random() * verbs.length)]}${nouns[Math.floor(Math.random() * nouns.length)]}${Math.floor(Math.random() * 900) + 100}`;
+        }
+
+        // --- Initial Load ---
+        userNameSetupInput.value = generateRandomUserName();
+        renderTasks();
+        switchView('participants'); // Start with participants view active
+
+    </script>
+</body>
+</html>
 
