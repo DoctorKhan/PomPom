@@ -228,6 +228,11 @@
                         <div id="participants-view" class="">
                              <h3 class="font-semibold text-white mb-3">Team Members (<span id="participant-count">0</span>)</h3>
                              <div id="participants-list" class="space-y-3"></div>
+                             <div class="mt-4">
+                                <button id="start-meet-btn" class="btn-primary w-full py-2 rounded-lg font-semibold text-white text-sm flex items-center justify-center gap-2">
+                                    📹 Start Meeting
+                                </button>
+                             </div>
                         </div>
 
                         <!-- Planner View -->
@@ -285,7 +290,28 @@
 
     </div>
 
+    <!-- Load sound functions -->
+    <script src="src/sound.js"></script>
+
     <script type="module">
+        // Load meet functionality
+        try {
+            const { createHandleStartMeet } = await import('./src/meet.js');
+            window.__createHandleStartMeet = createHandleStartMeet;
+        } catch (e) {
+            console.error('Could not load meet.js:', e);
+        }
+
+        // --- Sound Settings ---
+        let isSoundEnabled = localStorage.getItem('pompom_sound_enabled') === 'true';
+        // Default sound ON for first-time users
+        if (localStorage.getItem('pompom_sound_enabled') === null) {
+            isSoundEnabled = true;
+            localStorage.setItem('pompom_sound_enabled', 'true');
+        }
+        // Make sound settings available globally for sound.js
+        window.isSoundEnabled = isSoundEnabled;
+
         // --- DOM Elements ---
         const welcomePage = document.getElementById('welcome-page');
         const sessionPage = document.getElementById('session-page');
@@ -315,6 +341,7 @@
         const aiAgentInput = document.getElementById('ai-agent-input');
         const aiAgentSend = document.getElementById('ai-agent-send');
         const aiAgentMessages = document.getElementById('ai-agent-messages');
+        const startMeetBtn = document.getElementById('start-meet-btn');
         const toastEl = document.getElementById('toast');
 
 
@@ -668,6 +695,48 @@
             }
             icebreakerBtn.disabled = false;
             icebreakerBtn.textContent = '🧊';
+        });
+
+        // Start Meeting functionality
+        startMeetBtn.addEventListener('click', async () => {
+            try {
+                // Play ringing sound for all users (if available)
+                if (typeof playMeetingRing === 'function') {
+                    playMeetingRing();
+                }
+
+                // Open Google Meet in new tab
+                window.open('https://meet.google.com/new', '_blank');
+                showToast('Opening Google Meet...');
+
+                // Add message to chat indicating meeting started
+                const meetMessage = `${userName || 'Someone'} started a Google Meet. Check the new tab for the meeting link.`;
+
+                // Simple local chat message for now
+                const chatMessagesDiv = document.getElementById('chat-messages');
+                if (chatMessagesDiv) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'flex items-start gap-3';
+                    messageDiv.innerHTML = `
+                        <div class="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white text-xs font-bold">
+                            ${(userName || 'U')[0].toUpperCase()}
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-xs text-gray-400 mb-1">${userName || 'You'} • now</div>
+                            <div class="text-white">${meetMessage}</div>
+                        </div>
+                    `;
+                    chatMessagesDiv.appendChild(messageDiv);
+                    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+                }
+
+                // Switch to participants view to show the meeting was started
+                switchView('participants');
+
+            } catch (error) {
+                console.error('Error starting meeting:', error);
+                showToast('Could not start meeting');
+            }
         });
 
         // --- Timer Logic ---

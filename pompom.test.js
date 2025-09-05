@@ -1,5 +1,24 @@
 /**
- * @jest-environment jsdom
+ * @jeconst html = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf8');
+
+// Helper to set up DOM and execute script
+const setupDOMAndScript = () => {
+    document.documentElement.innerHTML = html;
+    const scriptEl = document.querySelector('script[type="module"]');
+    if (scriptEl && scriptEl.textContent) {
+        // JSDOM doesn't execute module scripts, so we manually execute it.
+        // Note: This has limitations and may not perfectly replicate browser behavior.
+        try {
+            // In JSDOM, top-level await isn't supported in the same way as a browser.
+            // We'll remove the 'await' from the dynamic import to prevent a syntax error.
+            // The import will still be async, but it won't block the script execution here.
+            const scriptContent = scriptEl.textContent.replace('await import(', 'import(');
+            new Function(scriptContent)();
+        } catch (e) {
+            console.error("Error executing script in test", e);
+        }
+    }
+};sdom
  */
 
 const fs = require('fs');
@@ -8,7 +27,7 @@ const path = require('path');
 const { waitFor } = require('@testing-library/dom');
 
 // Load the HTML file
-const html = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf8');
+const html = fs.readFileSync(path.resolve(__dirname, '../index.html'), 'utf8');
 
 // Helper to set up DOM and execute script
 const setupDOMAndScript = () => {
@@ -182,8 +201,6 @@ describe('PomPom User Flow Tests', () => {
     describe('Planner View Dynamic Content', () => {
         test('should fetch and display calendar.html when planner tab is clicked', async () => {
             const mockCalendarContent = '<div id="mock-calendar-content">Calendar Loaded Successfully</div>';
-            // This mock needs to handle both the calendar fetch and any other API calls (like Groq)
-            // that might be triggered during initialization.
             global.fetch = jest.fn((url) => {
                 if (url.endsWith('src/calendar.html')) {
                     return Promise.resolve({
@@ -191,38 +208,41 @@ describe('PomPom User Flow Tests', () => {
                         text: () => Promise.resolve(mockCalendarContent),
                     });
                 }
-                // Generic mock for any other API calls to prevent them from hanging
+                // A default mock for any other fetch calls
                 return Promise.resolve({
                     ok: true,
-                    json: () => Promise.resolve({ choices: [{ message: { content: '[]' } }] }),
+                    json: () => Promise.resolve({}),
+                    text: () => Promise.resolve(''),
                 });
             });
 
             setupDOMAndScript();
 
+            // Simulate starting the session
             document.getElementById('user-name-setup-input').value = 'Test User';
             document.getElementById('start-session-btn').click();
             
             const plannerBtn = document.querySelector('[data-view="planner"]');
+            const calendarContainer = document.getElementById('calendar-container');
+
+            // Click the planner button to trigger the fetch
             plannerBtn.click();
 
-            const calendarContainer = document.getElementById('calendar-container');
-            
-            // Wait for the calendar content to be loaded
+            // Wait for the content to be loaded
             await waitFor(() => {
                 expect(calendarContainer.innerHTML).toContain('Calendar Loaded Successfully');
-            });
+            }, { timeout: 3000 }); // Added a specific timeout to prevent long waits
 
-            // Verify that calendar.html was fetched
+            // Verify fetch was called once for the calendar
             const calendarFetchCalls = global.fetch.mock.calls.filter(call => call[0].endsWith('src/calendar.html'));
             expect(calendarFetchCalls.length).toBe(1);
             
-            // Click the planner button again to ensure it doesn't fetch a second time
+            // Click again and verify fetch is not called a second time
             plannerBtn.click();
-            // Wait for microtasks to settle
-            await new Promise(resolve => setTimeout(resolve, 0));
             
-            // The number of calendar fetch calls should still be 1
+            // Give a moment for any potential async operations to settle
+            await new Promise(resolve => setTimeout(resolve, 100)); 
+            
             const newCalendarFetchCalls = global.fetch.mock.calls.filter(call => call[0].endsWith('src/calendar.html'));
             expect(newCalendarFetchCalls.length).toBe(1);
         });

@@ -6,9 +6,10 @@ require('../src/sound');
 jest.useRealTimers();
 
 describe('Sound Functions', () => {
-    it('should expose playGong and playDing', () => {
+    it('should expose playGong, playDing, and playMeetingRing', () => {
         expect(typeof window.playGong).toBe('function');
         expect(typeof window.playDing).toBe('function');
+        expect(typeof window.playMeetingRing).toBe('function');
     });
     it('should play gong sound and set __LAST_GONG_PLAYED', () => {
         window.__LAST_GONG_PLAYED = 0;
@@ -19,6 +20,12 @@ describe('Sound Functions', () => {
         window.__LAST_DING_PLAYED = 0;
         window.playDing();
         expect(window.__LAST_DING_PLAYED).toBeGreaterThan(0);
+    });
+
+    it('should play meeting ring sound and set __LAST_MEETING_RING_PLAYED', () => {
+        window.__LAST_MEETING_RING_PLAYED = 0;
+        window.playMeetingRing();
+        expect(window.__LAST_MEETING_RING_PLAYED).toBeGreaterThan(0);
     });
 
     it('prefers WebAudio when audioCtx is available and sound is enabled', () => {

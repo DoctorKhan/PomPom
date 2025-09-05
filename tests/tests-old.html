@@ -589,8 +589,9 @@
             await testHealthEndpointFallback();
 
             // Added tests for Meet link and sounds
-            // await testGongSoundWorks();
-            // await testDingSoundWorks();
+            await testGongSoundWorks();
+            await testDingSoundWorks();
+            await testMeetingRingWorks();
 
             log('✅ Browser tests completed');
         }
@@ -784,6 +785,129 @@
 
             } catch (error) {
                 log(`❌ Integration tests error: ${error.message}`, false);
+            }
+        }
+
+
+        // Sound tests: verify gong and ding by setting short duration and spying
+        async function testGongSoundWorks() {
+            try {
+                const w = testIframe.contentWindow;
+                const d = testIframe.contentDocument;
+                if (!w || !d) { log('Iframe not ready for gong test', false); return; }
+
+                // Ensure we are on session page
+                const sessionInput = d.querySelector('#session-name-input');
+                const continueBtn = d.querySelector('#create-session-btn');
+                if (sessionInput && continueBtn) {
+                    sessionInput.value = 'sound-test';
+                    continueBtn.click();
+                    await sleep(200);
+                }
+                const userNameInput = d.querySelector('#user-name-setup-input');
+                const startBtn = d.querySelector('#start-session-btn');
+                if (userNameInput && startBtn) {
+                    userNameInput.value = 'Tester';
+                    startBtn.click();
+                    await sleep(200);
+                }
+
+                // Shorten timer for test and stub playGong
+                w.__TIMER_SECONDS_OVERRIDE = 1;
+                const original = w.playGong;
+                let called = false;
+                w.playGong = function(){ called = true; try { if (original) original(); } catch(e){} };
+
+                const startPauseBtn = d.querySelector('#start-pause-btn');
+                if (!startPauseBtn) { log('Start button not found for gong test', false); return; }
+                startPauseBtn.click();
+
+                // Wait for a bit more than 1 second for timer to complete
+                await sleep(1500);
+
+                if (called) {
+                    log('Gong sound plays correctly');
+                } else {
+                    log('Gong sound did not trigger on timer completion', false);
+                }
+            } catch (e) {
+                log(`Gong sound test failed: ${e.message}`, false);
+            }
+        }
+
+        async function testDingSoundWorks() {
+            try {
+                const w = testIframe.contentWindow;
+                // Just call playDing to verify wiring; not bound to timer end
+                if (typeof w.playDing === 'function') {
+                    const before = w.__LAST_DING_PLAYED || 0;
+                    w.playDing();
+                    await sleep(10);
+                    if ((w.__LAST_DING_PLAYED || 0) > before) {
+                        log('Ding sound plays correctly');
+                    } else {
+                        log('Ding sound did not update marker', false);
+                    }
+                } else {
+                    log('playDing not found on window', false);
+                }
+            } catch (e) {
+                log(`Ding sound test failed: ${e.message}`, false);
+            }
+        }
+
+        async function testMeetingRingWorks() {
+            try {
+                const w = testIframe.contentWindow;
+                const d = testIframe.contentDocument;
+                if (!w || !d) { log('Iframe not ready for meeting ring test', false); return; }
+
+                // Ensure we are on session page
+                const sessionInput = d.querySelector('#session-name-input');
+                const continueBtn = d.querySelector('#create-session-btn');
+                if (sessionInput && continueBtn) {
+                    sessionInput.value = 'meeting-test';
+                    continueBtn.click();
+                    await sleep(200);
+                }
+                const userNameInput = d.querySelector('#user-name-setup-input');
+                const startBtn = d.querySelector('#start-session-btn');
+                if (userNameInput && startBtn) {
+                    userNameInput.value = 'Meeting Tester';
+                    startBtn.click();
+                    await sleep(200);
+                }
+
+                // Mock window.open to prevent actual popup
+                const originalOpen = w.open;
+                w.open = jest.fn ? jest.fn() : () => {};
+
+                // Test meeting ring sound
+                if (typeof w.playMeetingRing === 'function') {
+                    const before = w.__LAST_MEETING_RING_PLAYED || 0;
+
+                    // Find and click the start meeting button
+                    const startMeetBtn = d.querySelector('#start-meet-btn');
+                    if (startMeetBtn) {
+                        startMeetBtn.click();
+                        await sleep(100);
+
+                        if ((w.__LAST_MEETING_RING_PLAYED || 0) > before) {
+                            log('Meeting ring sound plays correctly');
+                        } else {
+                            log('Meeting ring sound did not trigger', false);
+                        }
+                    } else {
+                        log('Start meeting button not found', false);
+                    }
+                } else {
+                    log('playMeetingRing not found on window', false);
+                }
+
+                // Restore original window.open
+                if (originalOpen) w.open = originalOpen;
+            } catch (e) {
+                log(`Meeting ring test failed: ${e.message}`, false);
             }
         }
 
