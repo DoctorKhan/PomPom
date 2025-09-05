@@ -285,7 +285,55 @@
 
         <!-- Modals would go here, simplified for brevity -->
         <div id="end-session-modal" class="hidden"></div>
-        <div id="settings-modal" class="hidden"></div>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="glass-card rounded-2xl p-6 w-full max-w-md mx-4">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-white">Settings</h2>
+                    <button id="close-settings-btn" class="text-gray-400 hover:text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Sound Settings -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label class="text-white font-medium">Sound Effects</label>
+                            <p class="text-gray-400 text-sm">Enable timer and notification sounds</p>
+                        </div>
+                        <button id="sound-toggle-btn" class="w-12 h-6 bg-gray-600 rounded-full relative transition-colors">
+                            <div id="sound-toggle-slider" class="w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform"></div>
+                        </button>
+                    </div>
+
+                    <!-- Test Sound Button -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label class="text-white font-medium">Test Sounds</label>
+                            <p class="text-gray-400 text-sm">Test your audio settings</p>
+                        </div>
+                        <button id="test-sound-btn" class="btn-secondary px-4 py-2 rounded-lg text-sm">
+                            🔊 Test
+                        </button>
+                    </div>
+
+                    <!-- Audio Diagnostics -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label class="text-white font-medium">Audio Diagnostics</label>
+                            <p class="text-gray-400 text-sm">Check audio system status</p>
+                        </div>
+                        <button id="audio-diagnostics-btn" class="btn-secondary px-4 py-2 rounded-lg text-sm">
+                            🔍 Check
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-teal-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm z-50"></div>
 
     </div>
@@ -312,9 +360,45 @@
         // Make sound settings available globally for sound.js
         window.isSoundEnabled = isSoundEnabled;
 
+        // Initialize audio context for WebAudio sounds
+        let audioCtx = null;
+        function initAudioContext() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    window.audioCtx = audioCtx;
+                }
+                // Resume context if suspended (required by some browsers)
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                return audioCtx;
+            } catch (e) {
+                console.warn('Could not initialize audio context:', e);
+                return null;
+            }
+        }
+
+        // Initialize audio context on first user interaction
+        function initAudioOnInteraction() {
+            initAudioContext();
+            // Remove listeners after first initialization
+            document.removeEventListener('click', initAudioOnInteraction);
+            document.removeEventListener('keydown', initAudioOnInteraction);
+        }
+        document.addEventListener('click', initAudioOnInteraction);
+        document.addEventListener('keydown', initAudioOnInteraction);
+
         // --- DOM Elements ---
         const welcomePage = document.getElementById('welcome-page');
         const sessionPage = document.getElementById('session-page');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsModal = document.getElementById('settings-modal');
+        const closeSettingsBtn = document.getElementById('close-settings-btn');
+        const soundToggleBtn = document.getElementById('sound-toggle-btn');
+        const soundToggleSlider = document.getElementById('sound-toggle-slider');
+        const testSoundBtn = document.getElementById('test-sound-btn');
+        const audioDiagnosticsBtn = document.getElementById('audio-diagnostics-btn');
         const sessionNameInput = document.getElementById('session-name-input');
         const userNameSetupInput = document.getElementById('user-name-setup-input');
         const shuffleUserNameBtn = document.getElementById('shuffle-user-name-btn');
@@ -738,6 +822,149 @@
                 showToast('Could not start meeting');
             }
         });
+
+        // --- Settings Modal Logic ---
+        function updateSoundToggleUI() {
+            if (isSoundEnabled) {
+                soundToggleBtn.classList.add('bg-teal-500');
+                soundToggleBtn.classList.remove('bg-gray-600');
+                soundToggleSlider.style.transform = 'translateX(24px)';
+            } else {
+                soundToggleBtn.classList.remove('bg-teal-500');
+                soundToggleBtn.classList.add('bg-gray-600');
+                soundToggleSlider.style.transform = 'translateX(0px)';
+            }
+        }
+
+        function toggleSound() {
+            isSoundEnabled = !isSoundEnabled;
+            localStorage.setItem('pompom_sound_enabled', isSoundEnabled);
+            window.isSoundEnabled = isSoundEnabled;
+            updateSoundToggleUI();
+
+            // Play confirmation sound if enabled
+            if (isSoundEnabled && typeof playGong === 'function') {
+                setTimeout(() => playGong(), 100);
+            }
+        }
+
+        // Settings button event listeners
+        settingsBtn.addEventListener('click', () => {
+            settingsModal.classList.remove('hidden');
+            updateSoundToggleUI();
+        });
+
+        closeSettingsBtn.addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
+        });
+
+        // Close modal when clicking outside
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                settingsModal.classList.add('hidden');
+            }
+        });
+
+        soundToggleBtn.addEventListener('click', toggleSound);
+
+        testSoundBtn.addEventListener('click', async () => {
+            // Disable button temporarily to prevent spam clicking
+            testSoundBtn.disabled = true;
+            testSoundBtn.textContent = '🔊 Playing...';
+
+            try {
+                // Initialize audio context if needed
+                initAudioContext();
+
+                let soundPlayed = false;
+
+                // Try WebAudio-based sounds first (better quality)
+                if (typeof playGong === 'function' && isSoundEnabled) {
+                    playGong();
+                    soundPlayed = true;
+                    showToast('🔊 Gong sound played!');
+                } else if (typeof playMeetingRing === 'function' && isSoundEnabled) {
+                    playMeetingRing();
+                    soundPlayed = true;
+                    showToast('🔊 Meeting ring played!');
+                } else {
+                    // Fallback to basic audio
+                    try {
+                        const audio = new Audio('https://cdn.jsdelivr.net/gh/DoctorKhan/pompom-assets/gong.mp3');
+                        audio.volume = 0.5; // Set reasonable volume
+
+                        await audio.play();
+                        soundPlayed = true;
+                        showToast('🔊 Fallback audio played!');
+                    } catch (audioError) {
+                        console.warn('Audio play failed:', audioError);
+                        showToast('❌ Could not play sound - check audio permissions or volume');
+                    }
+                }
+
+                // If no sound was played, show appropriate message
+                if (!soundPlayed) {
+                    if (!isSoundEnabled) {
+                        showToast('🔇 Sound is disabled - enable it first');
+                    } else {
+                        showToast('❌ No sound functions available');
+                    }
+                }
+
+            } catch (error) {
+                console.error('Test sound error:', error);
+                showToast('❌ Sound test failed: ' + error.message);
+            }
+
+            // Re-enable button after delay
+            setTimeout(() => {
+                testSoundBtn.disabled = false;
+                testSoundBtn.textContent = '🔊 Test';
+            }, 2000);
+        });
+
+        // Audio diagnostics button
+        audioDiagnosticsBtn.addEventListener('click', () => {
+            const diagnostics = [];
+
+            // Check sound enabled status
+            diagnostics.push(`Sound Enabled: ${isSoundEnabled ? '✅ Yes' : '❌ No'}`);
+
+            // Check audio context
+            if (window.audioCtx) {
+                diagnostics.push(`Audio Context: ✅ Available (${window.audioCtx.state})`);
+            } else {
+                diagnostics.push(`Audio Context: ❌ Not initialized`);
+            }
+
+            // Check sound functions
+            const soundFunctions = ['playGong', 'playDing', 'playMeetingRing'];
+            soundFunctions.forEach(fn => {
+                if (typeof window[fn] === 'function') {
+                    diagnostics.push(`${fn}: ✅ Available`);
+                } else {
+                    diagnostics.push(`${fn}: ❌ Missing`);
+                }
+            });
+
+            // Check browser audio support
+            try {
+                const audio = new Audio();
+                diagnostics.push(`Browser Audio: ✅ Supported`);
+            } catch (e) {
+                diagnostics.push(`Browser Audio: ❌ Not supported`);
+            }
+
+            // Show diagnostics in toast (multiple toasts)
+            diagnostics.forEach((diagnostic, index) => {
+                setTimeout(() => {
+                    showToast(diagnostic);
+                }, index * 1000);
+            });
+        });
+
+        // Initialize sound toggle UI
+        updateSoundToggleUI();
 
         // --- Timer Logic ---
         const startPauseBtn = document.getElementById('start-pause-btn');

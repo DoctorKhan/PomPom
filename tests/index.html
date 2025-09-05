@@ -617,6 +617,68 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
         }
 
         /**
+         * Copies failed tests summary to clipboard
+         */
+        function copyFailedTestsToClipboard() {
+            if (failedTests.length === 0) {
+                showToast('No failed tests to copy');
+                return;
+            }
+
+            const summaryText = `
+=== FAILED TESTS SUMMARY (${failedTests.length} failures) ===
+Copy and paste this to AI for debugging:
+
+${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
+
+=== END FAILED TESTS ===
+            `.trim();
+
+            navigator.clipboard.writeText(summaryText).then(() => {
+                showToast('✅ Failed tests copied to clipboard!');
+                log('Failed tests summary copied to clipboard', 'info');
+            }).catch(err => {
+                console.error('Failed to copy to clipboard:', err);
+                showToast('❌ Failed to copy to clipboard');
+                log('Failed to copy to clipboard: ' + err.message, false);
+                // Fallback: show the summary for manual copying
+                showFailedTestsSummary();
+            });
+        }
+
+        /**
+         * Simple toast notification
+         */
+        function showToast(message) {
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--accent-color);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10000;
+                font-size: 14px;
+                font-weight: 500;
+                max-width: 300px;
+                word-wrap: break-word;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 3000);
+        }
+
+        /**
          * Toggles the disabled state of all buttons to prevent user action during a test run.
          * @param {boolean} shouldDisable - True to disable buttons, false to enable.
          */
