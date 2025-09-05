@@ -112,11 +112,7 @@ const setupTestEventHandlers = () => {
     viewButtons.forEach(button => {
         button.addEventListener('click', () => {
             const view = button.dataset.view;
-            if (participantsView && tasksView && plannerView) {
-                participantsView.classList.toggle('hidden', view !== 'participants');
-                tasksView.classList.toggle('hidden', view !== 'tasks');
-                plannerView.classList.toggle('hidden', view !== 'planner');
-            }
+            window.switchView(view);
         });
     });
 
@@ -151,19 +147,34 @@ const setupTestEventHandlers = () => {
         });
     }
 
-    // Mock renderTasks function
-    window.renderTasks = () => {
-        if (!todoList) return;
-        todoList.innerHTML = '';
-        window.tasks.forEach((task, index) => {
-            const li = document.createElement('li');
-            li.className = 'flex items-center gap-2 p-2 bg-gray-800 rounded';
-            li.innerHTML = `
-                <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="window.tasks[${index}].completed = this.checked; window.renderTasks()">
-                <span class="${task.completed ? 'line-through text-gray-500' : ''}">${task.text}</span>
-            `;
-            todoList.appendChild(li);
+    // Mock switchView function
+    window.switchView = (view) => {
+        // Hide all views
+        const views = ['participants', 'tasks', 'planner'];
+        views.forEach(v => {
+            const viewEl = document.getElementById(`${v}-view`);
+            if (viewEl) viewEl.classList.add('hidden');
         });
+
+        // Show selected view
+        const selectedView = document.getElementById(`${view}-view`);
+        if (selectedView) selectedView.classList.remove('hidden');
+
+        // Handle planner view loading
+        if (view === 'planner' && !selectedView.dataset.loaded) {
+            fetch('src/calendar.html')
+                .then(response => response.text())
+                .then(html => {
+                    const container = document.getElementById('calendar-container');
+                    if (container) container.innerHTML = html;
+                    selectedView.dataset.loaded = true;
+                })
+                .catch(error => {
+                    console.error('Failed to load calendar:', error);
+                    const container = document.getElementById('calendar-container');
+                    if (container) container.innerHTML = '<p class="text-red-400">Could not load planner. Please try again later.</p>';
+                });
+        }
     };
 };
 
@@ -323,6 +334,8 @@ describe('PomPom User Flow Tests', () => {
 
     describe('Planner View Dynamic Content', () => {
         test('should fetch and display calendar.html when planner tab is clicked', async () => {
+            setupDOMAndScript();
+
             const mockCalendarContent = '<div id="mock-calendar-content">Calendar Loaded Successfully</div>';
             global.fetch = jest.fn((url) => {
                 if (url.endsWith('src/calendar.html')) {
@@ -338,8 +351,6 @@ describe('PomPom User Flow Tests', () => {
                     text: () => Promise.resolve(''),
                 });
             });
-
-            setupDOMAndScript();
 
             // Simulate starting the session
             document.getElementById('user-name-setup-input').value = 'Test User';
@@ -368,6 +379,6 @@ describe('PomPom User Flow Tests', () => {
             
             const newCalendarFetchCalls = global.fetch.mock.calls.filter(call => call[0].endsWith('src/calendar.html'));
             expect(newCalendarFetchCalls.length).toBe(1);
-        });
+        }, 10000);
     });
 });

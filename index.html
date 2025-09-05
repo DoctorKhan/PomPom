@@ -784,42 +784,194 @@
         // Start Meeting functionality
         startMeetBtn.addEventListener('click', async () => {
             try {
+                // Disable button to prevent multiple clicks
+                startMeetBtn.disabled = true;
+                startMeetBtn.textContent = '📹 Starting...';
+
                 // Play ringing sound for all users (if available)
                 if (typeof playMeetingRing === 'function') {
                     playMeetingRing();
                 }
 
-                // Open Google Meet in new tab
-                window.open('https://meet.google.com/new', '_blank');
+                // Open Google Meet and let it generate a real meeting room
+                const meetWindow = window.open('https://meet.google.com/new', '_blank');
                 showToast('Opening Google Meet...');
 
-                // Add message to chat indicating meeting started
-                const meetMessage = `${userName || 'Someone'} started a Google Meet. Check the new tab for the meeting link.`;
+                // Try to capture the actual meeting URL after Google creates it
+                let actualMeetUrl = null;
+                let meetingId = null;
 
-                // Simple local chat message for now
-                const chatMessagesDiv = document.getElementById('chat-messages');
-                if (chatMessagesDiv) {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = 'flex items-start gap-3';
-                    messageDiv.innerHTML = `
-                        <div class="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white text-xs font-bold">
-                            ${(userName || 'U')[0].toUpperCase()}
-                        </div>
-                        <div class="flex-1">
-                            <div class="text-xs text-gray-400 mb-1">${userName || 'You'} • now</div>
-                            <div class="text-white">${meetMessage}</div>
-                        </div>
-                    `;
-                    chatMessagesDiv.appendChild(messageDiv);
-                    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+                if (meetWindow) {
+                    // Try to get the real meeting URL (limited by browser security)
+                    const checkForUrl = () => {
+                        try {
+                            if (meetWindow.location && meetWindow.location.href &&
+                                meetWindow.location.href !== 'https://meet.google.com/new' &&
+                                meetWindow.location.href !== 'about:blank' &&
+                                !meetWindow.location.href.includes('accounts.google.com')) {
+
+                                actualMeetUrl = meetWindow.location.href;
+                                const match = actualMeetUrl.match(/meet\.google\.com\/([a-z]{3}-[a-z]{4}-[a-z]{3})/);
+                                if (match) {
+                                    meetingId = match[1];
+                                    updateChatWithMeetingUrl(actualMeetUrl);
+                                    return true;
+                                }
+                            }
+                        } catch (e) {
+                            // Cross-origin restriction - expected
+                        }
+                        return false;
+                    };
+
+                    // Check periodically for the URL
+                    let attempts = 0;
+                    const urlCheckInterval = setInterval(() => {
+                        attempts++;
+                        if (checkForUrl() || attempts > 20) { // Stop after 10 seconds
+                            clearInterval(urlCheckInterval);
+                            if (!actualMeetUrl) {
+                                // Couldn't capture URL, show generic message
+                                showGenericMeetingMessage();
+                            }
+                        }
+                    }, 500);
+                } else {
+                    // Popup was blocked
+                    showToast('❌ Popup blocked - please allow popups and try again');
+                    showGenericMeetingMessage();
                 }
 
-                // Switch to participants view to show the meeting was started
-                switchView('participants');
+                // Helper function to update chat with captured meeting URL
+                function updateChatWithMeetingUrl(meetUrl) {
+                    showToast('✅ Meeting URL captured!');
+
+                    const chatMessagesDiv = document.getElementById('chat-messages');
+                    if (chatMessagesDiv) {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'flex items-start gap-3';
+                        messageDiv.innerHTML = `
+                            <div class="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white text-xs font-bold">
+                                📹
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-xs text-gray-400 mb-1">Meeting • ${new Date().toLocaleTimeString()}</div>
+                                <div class="text-white mb-2">
+                                    ${userName || 'Someone'} started a Google Meet
+                                </div>
+                                <div class="bg-gray-800 p-3 rounded-lg">
+                                    <div class="text-sm text-gray-300 mb-2">📋 Meeting URL (click to join):</div>
+                                    <div class="flex items-center gap-2">
+                                        <a href="${meetUrl}" target="_blank" class="text-blue-400 hover:text-blue-300 underline text-sm break-all">
+                                            ${meetUrl}
+                                        </a>
+                                        <button onclick="copyToClipboard('${meetUrl}')" class="text-xs bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded flex-shrink-0">
+                                            📋 Copy
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        chatMessagesDiv.appendChild(messageDiv);
+                        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+                    }
+                    switchView('chat');
+                }
+
+                // Helper function for generic meeting message when URL can't be captured
+                function showGenericMeetingMessage() {
+                    const chatMessagesDiv = document.getElementById('chat-messages');
+                    if (chatMessagesDiv) {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'flex items-start gap-3';
+                        messageDiv.innerHTML = `
+                            <div class="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white text-xs font-bold">
+                                📹
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-xs text-gray-400 mb-1">Meeting • ${new Date().toLocaleTimeString()}</div>
+                                <div class="text-white mb-2">
+                                    ${userName || 'Someone'} started a Google Meet
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded-lg">
+                                    <div class="text-sm text-gray-300 mb-2">ℹ️ Meeting Instructions:</div>
+                                    <div class="text-sm text-gray-200 mb-3">
+                                        1. Check the opened Google Meet tab<br>
+                                        2. Copy the meeting URL from your browser<br>
+                                        3. Paste it below to share with the team
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="manual-meet-url" placeholder="Paste meeting URL here..."
+                                               class="flex-1 px-3 py-2 bg-gray-800 text-white text-sm rounded border border-gray-600 focus:border-blue-500 focus:outline-none">
+                                        <button onclick="shareMeetingUrl()" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded">
+                                            Share
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        chatMessagesDiv.appendChild(messageDiv);
+                        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+                    }
+                    switchView('chat');
+                }
 
             } catch (error) {
                 console.error('Error starting meeting:', error);
-                showToast('Could not start meeting');
+                showToast('Could not start meeting: ' + error.message);
+            } finally {
+                // Re-enable button after delay
+                setTimeout(() => {
+                    startMeetBtn.disabled = false;
+                    startMeetBtn.textContent = '📹 Start Meeting';
+                }, 2000);
+            }
+        });
+
+        // Simple meeting ID generator
+        function generateSimpleMeetingId() {
+            const chars = 'abcdefghijklmnopqrstuvwxyz';
+            const randomChar = () => chars[Math.floor(Math.random() * chars.length)];
+            return `${randomChar()}${randomChar()}${randomChar()}-${randomChar()}${randomChar()}${randomChar()}${randomChar()}-${randomChar()}${randomChar()}${randomChar()}`;
+        }
+
+        // Copy to clipboard helper
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('📋 Meeting URL copied to clipboard!');
+            }).catch(() => {
+                showToast('❌ Could not copy to clipboard');
+            });
+        }
+
+        // Manual meeting URL sharing
+        function shareMeetingUrl() {
+            const input = document.getElementById('manual-meet-url');
+            const url = input.value.trim();
+
+            if (!url) {
+                showToast('❌ Please enter a meeting URL');
+                return;
+            }
+
+            // Validate that it looks like a Google Meet URL
+            if (!url.includes('meet.google.com/')) {
+                showToast('❌ Please enter a valid Google Meet URL');
+                return;
+            }
+
+            // Clear the input
+            input.value = '';
+
+            // Add the URL to chat
+            updateChatWithMeetingUrl(url);
+            showToast('✅ Meeting URL shared with team!');
+        }
+
+        // Allow Enter key to share URL
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.target.id === 'manual-meet-url') {
+                shareMeetingUrl();
             }
         });
 

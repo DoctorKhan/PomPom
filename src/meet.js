@@ -1,3 +1,24 @@
+// Generate a Google Meet-style meeting ID
+function generateMeetingId() {
+  // Google Meet IDs are typically in format: xxx-xxxx-xxx
+  // Using random characters that are URL-safe
+  const chars = 'abcdefghijklmnopqrstuvwxyz';
+  const randomChar = () => chars[Math.floor(Math.random() * chars.length)];
+
+  return `${randomChar()}${randomChar()}${randomChar()}-${randomChar()}${randomChar()}${randomChar()}${randomChar()}-${randomChar()}${randomChar()}${randomChar()}`;
+}
+
+// Alternative: Generate a more unique meeting room name
+function generateMeetingRoom() {
+  const adjectives = ['quick', 'team', 'daily', 'sync', 'focus', 'sprint', 'standup'];
+  const nouns = ['meeting', 'chat', 'session', 'call', 'huddle', 'sync', 'connect'];
+  const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const noun = nouns[Math.floor(Math.random() * nouns.length)];
+  const num = Math.floor(Math.random() * 1000);
+
+  return `${adj}-${noun}-${num}`;
+}
+
 // Factory to create a Start Google Meet handler with injected dependencies for easy testing
 // deps: {
 //   OFFLINE_MODE, windowOpen, showToast, localChat, getUserNameFromStorage, userName,
@@ -26,68 +47,72 @@ function createHandleStartMeet(deps) {
 
   return async function handleStartMeet() {
     try {
-      windowOpen('https://meet.google.com/new', '_blank');
+      // Strategy 1: Use Google Meet's "new" endpoint to create a real meeting
+      const meetWindow = windowOpen('https://meet.google.com/new', '_blank');
       showToast('Opening Google Meet...');
+
+      // Strategy 2: Try to capture the actual meeting URL
+      let actualMeetUrl = 'https://meet.google.com/new';
+      let meetingId = 'new';
+
+      // Attempt to get the real URL after the redirect (limited by CORS)
+      if (meetWindow && !meetWindow.closed) {
+        // Try to detect when the URL changes from /new to the actual meeting ID
+        const urlCheckInterval = setInterval(() => {
+          try {
+            if (meetWindow.location && meetWindow.location.href &&
+                meetWindow.location.href !== 'https://meet.google.com/new' &&
+                meetWindow.location.href !== 'about:blank') {
+              actualMeetUrl = meetWindow.location.href;
+              // Extract meeting ID from URL
+              const match = actualMeetUrl.match(/meet\.google\.com\/([a-z]{3}-[a-z]{4}-[a-z]{3})/);
+              if (match) {
+                meetingId = match[1];
+              }
+              clearInterval(urlCheckInterval);
+            }
+          } catch (e) {
+            // Cross-origin restriction - can't access the URL
+            // This is expected behavior for security reasons
+            clearInterval(urlCheckInterval);
+          }
+        }, 500);
+
+        // Stop trying after 10 seconds
+        setTimeout(() => {
+          clearInterval(urlCheckInterval);
+        }, 10000);
+      }
 
       if (OFFLINE_MODE) {
         if (localChat) {
-          const msg = `${(userName || getUserNameFromStorage() || 'Someone')} started a Meet. Check the new tab.`;
+          const msg = `${(userName || getUserNameFromStorage() || 'Someone')} started a Meet. Meeting URL will be available in the opened tab.`;
           localChat.push({ userId: 'local', userName: userName || 'You', text: msg, createdAt: new Date() });
         }
         switchView('chat');
-        return;
+        return { success: true, meetingUrl: actualMeetUrl, meetingId: meetingId };
       }
 
-      // Try Google sign-in to obtain Calendar scope
-      let accessToken = null;
-      if (GoogleAuthProvider && signInWithPopup && auth) {
-        try {
-          const provider = new GoogleAuthProvider();
-          provider.addScope('https://www.googleapis.com/auth/calendar.events');
-          provider.addScope('https://www.googleapis.com/auth/userinfo.email');
-          provider.setCustomParameters({ prompt: 'select_account consent' });
-          const result = await signInWithPopup(auth, provider);
-          const credential = GoogleAuthProvider.credentialFromResult(result);
-          accessToken = (credential && credential.accessToken) || null;
-        } catch (e) {
-          // Proceed without token; we'll post a generic message
-        }
-      }
-
-      if (!accessToken) {
-        // Post a generic message to chat
-        if (addDoc && getChatRef && serverTimestamp) {
-          const msg = `${(userName || getUserNameFromStorage() || 'Someone')} started a Google Meet.`;
-          await addDoc(getChatRef(), { userId: 'unknown', userName: userName || getUserNameFromStorage(), text: msg, createdAt: serverTimestamp() });
-        }
-        switchView('chat');
-        return;
-      }
-
-      // Create a quick Calendar event to obtain a Meet link
-      const now = new Date();
-      const start = new Date(now.getTime() + 60 * 1000);
-      const end = new Date(start.getTime() + 30 * 60 * 1000);
-      const event = {
-        summary: `Quick Meet — ${(teamNameInput && teamNameInput.value) || sessionId || 'PomPom'}`,
-        description: `Started from PomPom by ${(userName || 'User')}`,
-        start: { dateTime: start.toISOString() },
-        end: { dateTime: end.toISOString() },
-        conferenceData: { createRequest: { requestId: `${Date.now()}-meet` } },
-      };
-      const resp = await doFetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(event),
-      });
-      if (!resp || !resp.ok) throw new Error(`Calendar API error ${resp && resp.status}`);
-      const data = await resp.json();
-      const meetLink = data.hangoutLink || ((data.conferenceData && data.conferenceData.entryPoints) || []).find(e => e.entryPointType === 'video')?.uri || '';
+      // Post the meeting URL to chat
       if (addDoc && getChatRef && serverTimestamp) {
-        const msg = `${(userName || getUserNameFromStorage() || 'Someone')} started a Meet: ${meetLink || '(open tab to fetch link)'}`;
-        await addDoc(getChatRef(), { userId: 'unknown', userName: userName || getUserNameFromStorage(), text: msg, createdAt: serverTimestamp() });
+        const msg = `${(userName || getUserNameFromStorage() || 'Someone')} started a Google Meet: ${actualMeetUrl}`;
+        await addDoc(getChatRef(), {
+          userId: 'system',
+          userName: userName || getUserNameFromStorage(),
+          text: msg,
+          createdAt: serverTimestamp(),
+          meetingUrl: actualMeetUrl // Store the meeting URL for easy access
+        });
       }
+
       switchView('chat');
+
+      // Return the meeting URL for further use
+      return {
+        success: true,
+        meetingUrl: actualMeetUrl,
+        meetingId: meetingId
+      };
     } catch (e) {
       // Swallow errors and show toast to avoid crashing UI
       showToast('Could not post Meet link');
