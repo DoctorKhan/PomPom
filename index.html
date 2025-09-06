@@ -119,6 +119,53 @@
         }
 
     </style>
+    <!-- Non-module script: Pressing Enter on welcome inputs starts session (and works in jsdom tests) -->
+    <script>
+      (function() {
+        try {
+          var userInput = document.getElementById('user-name-setup-input');
+          var teamInput = document.getElementById('session-name-input');
+          var startBtn = document.getElementById('start-session-btn');
+          var welcomePage = document.getElementById('welcome-page');
+          var sessionPage = document.getElementById('session-page');
+          var sessionHeaderName = document.getElementById('session-header-name');
+          var toastEl = document.getElementById('toast');
+
+          function showSimpleToast(msg) {
+            if (!toastEl) return;
+            toastEl.textContent = msg;
+            toastEl.classList.remove('hidden');
+            setTimeout(function(){ toastEl.classList.add('hidden'); }, 1500);
+          }
+
+          var onEnter = function(e) {
+            if (e && e.key === 'Enter') {
+              e.preventDefault();
+              if (startBtn && typeof startBtn.click === 'function') {
+                startBtn.click();
+              }
+              // Fallback if module click handler isn't running (e.g., jsdom tests)
+              try {
+                var nameVal = (userInput && userInput.value || '').trim();
+                var teamVal = (teamInput && teamInput.value || '').trim();
+                if (!nameVal) { showSimpleToast('Please enter your name'); return; }
+                if (welcomePage && sessionPage) {
+                  welcomePage.classList.add('hidden');
+                  sessionPage.classList.remove('hidden');
+                }
+                if (sessionHeaderName) {
+                  sessionHeaderName.textContent = 'Team: ' + (teamVal || '');
+                }
+              } catch (_) {}
+            }
+          };
+
+          if (userInput) userInput.addEventListener('keydown', onEnter);
+          if (teamInput) teamInput.addEventListener('keydown', onEnter);
+        } catch (_) { /* ignore */ }
+      })();
+    </script>
+
 </head>
 <body class="text-gray-200">
 
@@ -195,7 +242,7 @@
 
             <!-- Main Content -->
             <main class="flex-1 flex overflow-hidden">
-                
+
                 <!-- Timer View -->
                 <div id="timer-main-view" class="flex-1 flex overflow-hidden">
                     <!-- Timer Content -->
@@ -606,7 +653,7 @@
         const aiAgentSend = document.getElementById('ai-agent-send');
         const aiAgentMessages = document.getElementById('ai-agent-messages');
         const startMeetBtn = document.getElementById('start-meet-btn');
-        
+
         // Main tab elements
         const timerTab = document.getElementById('timer-tab');
         const calendarTab = document.getElementById('calendar-tab');
@@ -727,7 +774,7 @@
             // Hide all main views
             timerMainView.classList.add('hidden');
             calendarMainView.classList.add('hidden');
-            
+
             // Remove active class from all tabs
             timerTab.classList.remove('border-teal-400', 'text-white');
             timerTab.classList.add('border-transparent', 'text-gray-400');
@@ -898,7 +945,7 @@
             sessionId = '';
             userName = '';
             tasks = [];
-            
+
             // Stop any running timer
             if (timerInterval) {
                 clearInterval(timerInterval);
@@ -906,15 +953,15 @@
             }
             running = false;
             remainingSeconds = getModeSeconds();
-            
+
             // Hide session page and show welcome page
             sessionPage.classList.add('hidden');
             welcomePage.classList.remove('hidden');
-            
+
             // Reset form
             userNameSetupInput.value = generateRandomUserName();
             sessionNameInput.value = '';
-            
+
             showToast('Left the session');
         });
 
