@@ -100,6 +100,16 @@
         </div>
     </div>
 
+    <!-- AI Quick Schedule (ported from old calendar) -->
+    <div id="ai-quick" class="mb-4 p-4 bg-white/5 rounded-lg border border-white/10">
+        <div class="flex gap-2">
+            <input id="ai-input" type="text" placeholder="e.g., 'Team lunch tomorrow at 1pm'"
+                   class="flex-1 py-2 px-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400">
+            <button id="ai-schedule-btn" class="btn-primary-teal px-4 py-2 rounded-lg text-sm">Schedule with AI</button>
+        </div>
+        <div class="text-xs text-gray-400 mt-2">Tip: Try "Standup tomorrow 9am"</div>
+    </div>
+
     <!-- Simple Weekly Calendar View -->
     <div class="calendar-grid">
         <!-- Day headers -->
@@ -137,11 +147,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevWeekBtn = document.getElementById('prev-week');
     const nextWeekBtn = document.getElementById('next-week');
     const todayBtn = document.getElementById('today-btn');
+
+    // Existing quick add (kept)
     const addEventBtn = document.getElementById('add-event-btn');
     const quickAdd = document.getElementById('quick-add');
     const eventInput = document.getElementById('event-input');
     const saveEventBtn = document.getElementById('save-event-btn');
     const cancelEventBtn = document.getElementById('cancel-event-btn');
+
+    // New AI quick schedule (ported)
+    const aiInput = document.getElementById('ai-input');
+    const aiScheduleBtn = document.getElementById('ai-schedule-btn');
+
     const timeSlotsContainer = document.getElementById('time-slots');
     const eventList = document.getElementById('event-list');
 
@@ -260,19 +277,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event handlers
-    addEventBtn.addEventListener('click', () => {
+    addEventBtn?.addEventListener('click', () => {
         quickAdd.classList.toggle('hidden');
         if (!quickAdd.classList.contains('hidden')) {
             eventInput.focus();
         }
     });
 
-    cancelEventBtn.addEventListener('click', () => {
+    cancelEventBtn?.addEventListener('click', () => {
         quickAdd.classList.add('hidden');
         eventInput.value = '';
     });
 
-    saveEventBtn.addEventListener('click', () => {
+    saveEventBtn?.addEventListener('click', () => {
         const text = eventInput.value.trim();
         if (text) {
             addEvent(text);
@@ -281,11 +298,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    eventInput.addEventListener('keypress', (e) => {
+    eventInput?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             saveEventBtn.click();
         }
     });
+
+    // AI quick schedule
+    function scheduleWithAI() {
+        const text = (aiInput && aiInput.value || '').trim();
+        if (!text) return;
+
+        // very simple parse like old calendar
+        const now = new Date();
+        let startDate = new Date();
+        let title = text;
+
+        const timeMatch = text.match(/(\d{1,2})(:\d{2})?\s*(am|pm)?/i);
+        if (timeMatch) {
+            let hour = parseInt(timeMatch[1], 10);
+            const minutes = timeMatch[2] ? parseInt(timeMatch[2].substring(1), 10) : 0;
+            const ampm = timeMatch[3];
+            if (ampm && ampm.toLowerCase() === 'pm' && hour < 12) hour += 12;
+            if (ampm && ampm.toLowerCase() === 'am' && hour === 12) hour = 0;
+            startDate.setHours(hour, minutes, 0, 0);
+        }
+        if (text.toLowerCase().includes('tomorrow')) {
+            startDate.setDate(now.getDate() + 1);
+        }
+        title = text.replace(/tomorrow/i, '').replace(/at\s*(\d{1,2})(:\d{2})?\s*(am|pm)?/i, '').trim();
+
+        const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+        const newEvent = { id: Date.now(), title: title || 'New Event', start: startDate, end: endDate };
+        events.push(newEvent);
+        if (aiInput) aiInput.value = '';
+        currentDate = startDate;
+        renderCalendar();
+    }
+
+    aiScheduleBtn && aiScheduleBtn.addEventListener('click', scheduleWithAI);
+    aiInput && aiInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') scheduleWithAI(); });
 
     prevWeekBtn.addEventListener('click', () => {
         currentDate.setDate(currentDate.getDate() - 7);
