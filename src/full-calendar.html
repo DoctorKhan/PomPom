@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Calendar - Your Smart Scheduler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Softer background color */
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: 70px repeat(7, minmax(0, 1fr)); /* Wider time column */
+            grid-template-rows: auto repeat(24, minmax(60px, auto));
+            position: relative;
+        }
+        .time-slot {
+            height: 60px;
+        }
+        /* Artistic Event Styling */
+        .event-container {
+            position: absolute;
+            display: flex;
+            align-items: flex-start; /* Align to the top */
+            gap: 0; /* Remove gap for seamless look */
+            transition: all 0.2s ease-in-out;
+            cursor: grab;
+            z-index: 10;
+            border-radius: 8px;
+            overflow: visible; /* Allow resize handle to be visible */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        .duration-bar {
+            width: 8px; /* Slightly thicker bar */
+            flex-shrink: 0;
+            border-radius: 4px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            /* Height is now set dynamically in JS */
+        }
+        .event-content {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 8px 12px;
+            flex-grow: 1;
+            min-height: 48px;
+            height: 48px; /* Fixed height for content */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-radius: 8px;
+            margin-left: 12px; /* Space from the duration bar */
+            width: calc(100% - 12px);
+        }
+        .resize-handle {
+            position: absolute;
+            bottom: -5px; /* Position below the duration bar */
+            left: -2px;
+            width: 12px;
+            height: 12px;
+            background-color: white;
+            border: 2px solid #4f46e5;
+            border-radius: 50%;
+            cursor: ns-resize;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 12; /* Above event content */
+        }
+        .event-container:hover .resize-handle {
+            opacity: 1;
+        }
+        .dragging {
+            opacity: 0.6;
+            transform: scale(1.02);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+            z-index: 20;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-white to-blue-50 text-gray-800">
+
+    <div id="app" class="flex h-screen w-screen p-6 gap-6">
+
+        <!-- Sidebar -->
+        <aside class="w-1/4 max-w-sm flex flex-col gap-6">
+            <div class="glassmorphism p-6 rounded-3xl shadow-lg flex-1 flex flex-col">
+                <h2 class="text-xl font-bold mb-6 text-indigo-800">Smart Schedule</h2>
+                <div class="mb-6">
+                    <input id="ai-input" type="text" placeholder="e.g., 'Team lunch tomorrow at 1pm'" class="w-full py-3 px-4 rounded-lg border-2 border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition">
+                    <button id="ai-schedule-btn" class="w-full mt-3 bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition shadow-md hover:shadow-lg">Schedule with AI</button>
+                </div>
+
+                <div class="mb-6">
+                     <div id="mini-calendar" class="p-4 bg-white/50 rounded-xl">
+                        <div class="flex justify-between items-center mb-3">
+                            <button id="mini-prev-month" class="text-indigo-600 hover:text-indigo-800 p-2 rounded-full transition">&lt;</button>
+                            <h3 id="mini-month-year" class="font-bold text-indigo-800"></h3>
+                            <button id="mini-next-month" class="text-indigo-600 hover:text-indigo-800 p-2 rounded-full transition">&gt;</button>
+                        </div>
+                        <div id="mini-calendar-days" class="grid grid-cols-7 text-center text-sm gap-1 pb-2">
+                           <!-- Day names will be populated here -->
+                        </div>
+                         <div id="mini-calendar-body" class="grid grid-cols-7 text-center text-sm gap-2">
+                           <!-- Calendar dates will be populated here -->
+                         </div>
+                     </div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto">
+                    <h3 class="text-lg font-semibold mb-4 text-indigo-800">Upcoming Tasks</h3>
+                    <ul id="task-list" class="space-y-3">
+                        <!-- Tasks will be populated here -->
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Calendar -->
+        <main class="flex-1 glassmorphism rounded-3xl shadow-lg flex flex-col">
+            <header class="p-6 border-b border-white/50 flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <h1 id="current-month-year" class="text-2xl font-bold text-indigo-900"></h1>
+                    <button id="prev-week" class="p-3 rounded-lg bg-white/50 hover:bg-white/80 transition">&lt;</button>
+                    <button id="next-week" class="p-3 rounded-lg bg-white/50 hover:bg-white/80 transition">&gt;</button>
+                     <button id="today-btn" class="py-3 px-5 rounded-lg bg-white/50 hover:bg-white/80 transition font-semibold">Today</button>
+                </div>
+            </header>
+            <div id="calendar-container" class="flex-1 overflow-auto p-2">
+                <div class="calendar-grid">
+                    <!-- Time labels -->
+                    <div class="col-start-1 row-start-1"></div>
+                    <!-- Day headers -->
+                    <!-- JS will populate these -->
+
+                    <!-- Time slots -->
+                    <!-- JS will populate these -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const calendarGrid = document.querySelector('.calendar-grid');
+            const currentMonthYear = document.getElementById('current-month-year');
+            const prevWeekBtn = document.getElementById('prev-week');
+            const nextWeekBtn = document.getElementById('next-week');
+            const todayBtn = document.getElementById('today-btn');
+            const aiInput = document.getElementById('ai-input');
+            const aiScheduleBtn = document.getElementById('ai-schedule-btn');
+            const taskList = document.getElementById('task-list');
+            const miniMonthYear = document.getElementById('mini-month-year');
+            const miniPrevMonthBtn = document.getElementById('mini-prev-month');
+            const miniNextMonthBtn = document.getElementById('mini-next-month');
+            const miniCalendarBody = document.getElementById('mini-calendar-body');
+            const miniCalendarDays = document.getElementById('mini-calendar-days');
+
+            let currentDate = new Date();
+            let events = [];
+            let draggedEvent = null;
+            const slotHeight = 60; // Define slot height as a constant
+            const headerHeight = 70; // Approximate height of the day headers
+
+            function renderCalendar() {
+                calendarGrid.innerHTML = ''; // Clear calendar
+                
+                // Add corner block
+                const corner = document.createElement('div');
+                corner.className = 'sticky top-0 z-20 bg-opacity-70 bg-clip-padding backdrop-filter backdrop-blur-xl';
+                calendarGrid.appendChild(corner);
+                
+                const weekStart = new Date(currentDate);
+                weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                weekStart.setHours(0,0,0,0);
+
+
+                // Create day headers
+                for (let i = 0; i < 7; i++) {
+                    const day = new Date(weekStart);
+                    day.setDate(day.getDate() + i);
+                    const dayHeader = document.createElement('div');
+                    dayHeader.className = 'text-center py-4 sticky top-0 z-20 bg-opacity-70 bg-clip-padding backdrop-filter backdrop-blur-xl border-b border-white/50';
+                    dayHeader.innerHTML = `<div class="font-semibold text-gray-600 text-sm mb-1">${day.toLocaleDateString('en-US', { weekday: 'short' })}</div><div class="text-2xl font-bold">${day.getDate()}</div>`;
+                    if(isToday(day)) {
+                        dayHeader.querySelector('div:last-child').classList.add('bg-indigo-600', 'text-white', 'rounded-full', 'w-10', 'h-10', 'mx-auto', 'flex', 'items-center', 'justify-center');
+                    }
+                    calendarGrid.appendChild(dayHeader);
+                }
+
+                // Create time slots and time labels
+                for (let hour = 0; hour < 24; hour++) {
+                    const timeLabel = document.createElement('div');
+                    timeLabel.className = 'text-sm text-right pr-4 text-gray-500 -translate-y-2.5';
+                    timeLabel.textContent = `${hour === 0 ? 12 : hour > 12 ? hour - 12 : hour}:00 ${hour < 12 || hour === 24 ? 'AM' : 'PM'}`;
+                    timeLabel.style.gridRow = `${hour + 2}`;
+
+                    const timeLabelCell = document.createElement('div');
+                    timeLabelCell.style.gridColumn = '1';
+                    timeLabelCell.style.gridRow = `${hour + 2}`;
+                    timeLabelCell.appendChild(timeLabel);
+                    calendarGrid.appendChild(timeLabelCell);
+
+                    for (let day = 0; day < 7; day++) {
+                        const timeSlot = document.createElement('div');
+                        timeSlot.className = 'time-slot border-r border-t border-gray-200/50';
+                        timeSlot.style.gridColumn = `${day + 2}`;
+                        timeSlot.style.gridRow = `${hour + 2}`;
+                        timeSlot.dataset.day = day;
+                        timeSlot.dataset.hour = hour;
+                        calendarGrid.appendChild(timeSlot);
+                    }
+                }
+                
+                currentMonthYear.textContent = weekStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                renderEvents();
+                renderTaskList();
+                renderMiniCalendar();
+            }
+            
+            function isToday(date) {
+                const today = new Date();
+                return date.getDate() === today.getDate() &&
+                    date.getMonth() === today.getMonth() &&
+                    date.getFullYear() === today.getFullYear();
+            }
+
+            function renderEvents() {
+                 document.querySelectorAll('.event-container').forEach(el => el.remove());
+
+                const weekStart = new Date(currentDate);
+                weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                weekStart.setHours(0,0,0,0);
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 7);
+
+                const weekEvents = events.filter(event => event.start >= weekStart && event.start < weekEnd);
+
+                // --- Lane Calculation Logic ---
+                const eventsByDay = {};
+                for(let i=0; i<7; i++){
+                    eventsByDay[i] = [];
+                }
+
+                weekEvents.forEach(event => {
+                    const dayIndex = (event.start.getDay() + 7 - weekStart.getDay()) % 7;
+                    eventsByDay[dayIndex].push(event);
+                });
+
+                for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+                    const dayEvents = eventsByDay[dayIndex].sort((a,b) => a.start - b.start);
+                    const lanes = [];
+
+                    dayEvents.forEach(event => {
+                        let placed = false;
+                        for (let i = 0; i < lanes.length; i++) {
+                            const lastEventInLane = lanes[i][lanes[i].length - 1];
+                            if (event.start >= lastEventInLane.end) {
+                                lanes[i].push(event);
+                                event.lane = i;
+                                placed = true;
+                                break;
+                            }
+                        }
+                        if (!placed) {
+                            event.lane = lanes.length;
+                            lanes.push([event]);
+                        }
+                    });
+
+                     lanes.forEach((laneEvents, laneIndex) => {
+                        const totalLanes = lanes.length;
+                        laneEvents.forEach(event => {
+                             const eventContainer = document.createElement('div');
+                            eventContainer.className = 'event-container';
+                            eventContainer.draggable = true;
+                            eventContainer.dataset.id = event.id;
+
+                            // --- Expansion Logic ---
+                            let colspan = 1;
+                            for (let i = laneIndex + 1; i < totalLanes; i++) {
+                                const conflictingEvent = lanes[i].find(e => 
+                                    (event.start < e.end) && (event.end > e.start)
+                                );
+                                if (!conflictingEvent) {
+                                    colspan++;
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            const durationBar = document.createElement('div');
+                            durationBar.className = 'duration-bar';
+                            durationBar.style.backgroundColor = event.color || 'rgba(59, 130, 246, 0.7)';
+
+                            const eventContent = document.createElement('div');
+                            eventContent.className = 'event-content';
+                            eventContent.innerHTML = `<strong class="font-bold text-sm text-indigo-900">${event.title}</strong><p class="text-xs text-gray-600">${event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${event.end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>`;
+
+                            const resizeHandle = document.createElement('div');
+                            resizeHandle.className = 'resize-handle';
+                            
+                            eventContainer.appendChild(durationBar);
+                            eventContainer.appendChild(eventContent);
+                            durationBar.appendChild(resizeHandle); // Attach handle to the bar
+                            
+                            const startHour = event.start.getHours();
+                            const startMinutes = event.start.getMinutes();
+                            
+                            const durationMinutes = (event.end - event.start) / (1000 * 60);
+                            const durationHeight = (durationMinutes / 60) * slotHeight;
+                            
+                            durationBar.style.height = `${durationHeight}px`;
+
+                            resizeHandle.addEventListener('mousedown', (e) => {
+                                initResize(e, durationBar, event);
+                            });
+
+                            const calendarGridWidth = calendarGrid.offsetWidth;
+                            const timeColWidth = 70;
+                            const dayColWidth = (calendarGridWidth - timeColWidth) / 7;
+
+                            eventContainer.style.top = `${headerHeight + startHour * slotHeight + (startMinutes / 60) * slotHeight}px`;
+                            eventContainer.style.left = `${timeColWidth + dayIndex * dayColWidth + (laneIndex/totalLanes) * dayColWidth}px`;
+                            eventContainer.style.width = `calc(${(dayColWidth / totalLanes) * colspan}px - 4px)`;
+
+
+                            calendarGrid.appendChild(eventContainer);
+
+                            eventContainer.addEventListener('dragstart', (e) => {
+                                draggedEvent = event;
+                                e.dataTransfer.effectAllowed = 'move';
+                                setTimeout(() => e.target.classList.add('dragging'), 0);
+                            });
+
+                            eventContainer.addEventListener('dragend', (e) => {
+                                e.target.classList.remove('dragging');
+                                draggedEvent = null;
+                            });
+                        });
+                    });
+                }
+            }
+
+            calendarGrid.addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
+
+            calendarGrid.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (!draggedEvent) return;
+
+                const gridRect = calendarGrid.getBoundingClientRect();
+                const x = e.clientX - gridRect.left;
+                const y = e.clientY - gridRect.top;
+                
+                const timeColWidth = 70;
+                const dayWidth = (gridRect.width - timeColWidth) / 7;
+                const day = Math.max(0, Math.floor((x - timeColWidth) / dayWidth));
+                
+                const hour = Math.floor((y - headerHeight) / slotHeight);
+                const minutes = Math.round(((y - headerHeight) % slotHeight) / slotHeight * 4) * 15;
+
+
+                const weekStart = new Date(currentDate);
+                weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                weekStart.setHours(0, 0, 0, 0);
+
+                const newStartDate = new Date(weekStart);
+                newStartDate.setDate(weekStart.getDate() + day);
+                newStartDate.setHours(hour, minutes); 
+
+                const duration = draggedEvent.end - draggedEvent.start;
+                const newEndDate = new Date(newStartDate.getTime() + duration);
+
+                const eventToUpdate = events.find(ev => ev.id === draggedEvent.id);
+                if (eventToUpdate) {
+                    eventToUpdate.start = newStartDate;
+                    eventToUpdate.end = newEndDate;
+                }
+                renderCalendar();
+            });
+
+            function renderMiniCalendar() {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                miniMonthYear.textContent = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                
+                miniCalendarBody.innerHTML = '';
+                miniCalendarDays.innerHTML = '';
+
+                const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+                dayNames.forEach(day => {
+                    const dayEl = document.createElement('div');
+                    dayEl.className = "font-semibold text-xs text-gray-500";
+                    dayEl.textContent = day;
+                    miniCalendarDays.appendChild(dayEl);
+                });
+
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                for (let i = 0; i < firstDay; i++) {
+                    const emptyCell = document.createElement('div');
+                    miniCalendarBody.appendChild(emptyCell);
+                }
+
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const dayCell = document.createElement('button');
+                    dayCell.className = "w-8 h-8 flex items-center justify-center rounded-full hover:bg-indigo-100 transition";
+                    dayCell.textContent = i;
+                    const date = new Date(year, month, i);
+                     if (isToday(date)) {
+                        dayCell.classList.add('bg-indigo-600', 'text-white');
+                    }
+                    dayCell.onclick = () => {
+                        currentDate = date;
+                        renderCalendar();
+                    }
+                    miniCalendarBody.appendChild(dayCell);
+                }
+            }
+
+            function renderTaskList() {
+                taskList.innerHTML = '';
+                const upcomingEvents = events
+                    .filter(event => event.start > new Date())
+                    .sort((a, b) => a.start - b.start)
+                    .slice(0, 5);
+
+                if (upcomingEvents.length === 0) {
+                    taskList.innerHTML = `<li class="text-gray-500 text-sm">No upcoming tasks.</li>`;
+                    return;
+                }
+
+                upcomingEvents.forEach(event => {
+                    const li = document.createElement('li');
+                    li.className = "py-3 px-4 rounded-lg flex items-start gap-4";
+                    li.style.backgroundColor = event.color ? `${event.color.replace('0.7', '0.15')}` : 'rgba(59, 130, 246, 0.15)';
+                    
+                    const colorDot = document.createElement('div');
+                    colorDot.className = "w-3 h-3 rounded-full mt-1 flex-shrink-0";
+                    colorDot.style.backgroundColor = event.color || 'rgba(59, 130, 246, 0.7)';
+
+                    const eventDetails = document.createElement('div');
+                    eventDetails.innerHTML = `
+                        <p class="font-semibold text-sm">${event.title}</p>
+                        <p class="text-xs text-gray-600">${event.start.toLocaleString([], {weekday: 'short', hour: 'numeric', minute: '2-digit'})}</p>
+                    `;
+
+                    li.appendChild(colorDot);
+                    li.appendChild(eventDetails);
+                    taskList.appendChild(li);
+                });
+            }
+
+            function scheduleWithAI() {
+                const text = aiInput.value.trim();
+                if (!text) return;
+                
+                // This is a simplified mock of an AI call.
+                const now = new Date();
+                let startDate = new Date();
+                let title = text;
+                
+                const timeMatch = text.match(/(\d{1,2})(:\d{2})?\s*(am|pm)?/i);
+                if (timeMatch) {
+                    let hour = parseInt(timeMatch[1], 10);
+                    const minutes = timeMatch[2] ? parseInt(timeMatch[2].substring(1), 10) : 0;
+                    const ampm = timeMatch[3];
+
+                    if (ampm && ampm.toLowerCase() === 'pm' && hour < 12) {
+                        hour += 12;
+                    }
+                    if (ampm && ampm.toLowerCase() === 'am' && hour === 12) {
+                        hour = 0;
+                    }
+                    startDate.setHours(hour, minutes);
+                }
+
+                if (text.toLowerCase().includes("tomorrow")) {
+                    startDate.setDate(now.getDate() + 1);
+                }
+
+                title = text.replace(/tomorrow/i, '').replace(/at\s*(\d{1,2})(:\d{2})?\s*(am|pm)?/i, '').trim();
+
+                const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // Default 1 hour
+                
+                const newEvent = {
+                    id: Date.now(),
+                    title: title || "New Event",
+                    start: startDate,
+                    end: endDate,
+                    color: `rgba(${Math.floor(Math.random()*200 + 55)}, ${Math.floor(Math.random()*200 + 55)}, ${Math.floor(Math.random()*200 + 55)}, 0.8)`
+                };
+                
+                events.push(newEvent);
+                aiInput.value = '';
+                currentDate = startDate;
+                renderCalendar();
+            }
+
+            prevWeekBtn.addEventListener('click', () => {
+                currentDate.setDate(currentDate.getDate() - 7);
+                renderCalendar();
+            });
+
+            nextWeekBtn.addEventListener('click', () => {
+                currentDate.setDate(currentDate.getDate() + 7);
+                renderCalendar();
+            });
+            
+            todayBtn.addEventListener('click', () => {
+                currentDate = new Date();
+                renderCalendar();
+            });
+
+            aiScheduleBtn.addEventListener('click', scheduleWithAI);
+            aiInput.addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') {
+                    scheduleWithAI();
+                }
+            })
+
+            miniPrevMonthBtn.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar();
+            });
+
+            miniNextMonthBtn.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar();
+            });
+            
+            // --- Resize Logic ---
+            let isResizing = false;
+            let resizingEventInfo = null;
+            let initialMouseY = 0;
+            let initialEventHeight = 0;
+
+            function initResize(e, durationBar, event) {
+                e.preventDefault();
+                e.stopPropagation();
+                isResizing = true;
+                initialEventHeight = durationBar.offsetHeight;
+
+                resizingEventInfo = { 
+                    event, 
+                    durationBar: durationBar
+                };
+                initialMouseY = e.clientY;
+
+                document.addEventListener('mousemove', handleResize);
+                document.addEventListener('mouseup', stopResize);
+            }
+
+            function handleResize(e) {
+                if (!isResizing || !resizingEventInfo) return;
+
+                const dy = e.clientY - initialMouseY;
+                let newDurationHeight = initialEventHeight + dy;
+                
+                const minHeight = (15 / 60) * slotHeight;
+                newDurationHeight = Math.max(minHeight, newDurationHeight);
+                const snapInterval = (15 / 60) * slotHeight;
+                newDurationHeight = Math.round(newDurationHeight / snapInterval) * snapInterval;
+
+                resizingEventInfo.durationBar.style.height = `${newDurationHeight}px`;
+
+                const newDurationMinutes = (newDurationHeight / slotHeight) * 60;
+                const newEndDate = new Date(resizingEventInfo.event.start.getTime() + newDurationMinutes * 60000);
+
+                const eventContentEl = resizingEventInfo.durationBar.closest('.event-container').querySelector('.event-content');
+                if (eventContentEl) {
+                    const timeP = eventContentEl.querySelector('p');
+                    if (timeP) {
+                        timeP.textContent = `${resizingEventInfo.event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${newEndDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                    }
+                }
+            }
+
+            function stopResize() {
+                if (!isResizing || !resizingEventInfo) return;
+
+                const finalDurationHeight = resizingEventInfo.durationBar.offsetHeight;
+                const newDurationMinutes = (finalDurationHeight / slotHeight) * 60;
+                const eventToUpdate = events.find(ev => ev.id === resizingEventInfo.event.id);
+
+                if (eventToUpdate) {
+                    eventToUpdate.end = new Date(eventToUpdate.start.getTime() + newDurationMinutes * 60000);
+                }
+
+                isResizing = false;
+                resizingEventInfo = null;
+
+                document.removeEventListener('mousemove', handleResize);
+                document.removeEventListener('mouseup', stopResize);
+
+                renderCalendar(); // Rerender to finalize
+            }
+            
+            window.addEventListener('resize', renderCalendar);
+            // Initial render
+            renderCalendar();
+
+            // Dummy events for demonstration
+            const today = new Date();
+            events.push({
+                id: 1,
+                title: 'Team Standup',
+                start: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 9, 0),
+                end: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 9, 30),
+                color: 'rgba(239, 68, 68, 0.8)'
+            });
+             events.push({
+                id: 4,
+                title: 'Another Standup',
+                start: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 9, 15),
+                end: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 9, 45),
+                color: 'rgba(139, 92, 246, 0.8)'
+            });
+            events.push({
+                id: 2,
+                title: 'Design Review',
+                start: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 11, 0),
+                end: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12, 30),
+                color: 'rgba(34, 197, 94, 0.8)'
+            });
+            events.push({
+                id: 3,
+                title: 'Project Sync',
+                start: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 14, 0),
+                end: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 15, 0),
+                color: 'rgba(249, 115, 22, 0.8)'
+            });
+            renderCalendar();
+        });
+    </script>
+</body>
+</html>
+

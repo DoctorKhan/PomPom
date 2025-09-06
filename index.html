@@ -79,6 +79,14 @@
              color: #fff;
         }
 
+        .main-tab {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .main-tab:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
         .participant-avatar {
              background: linear-gradient(135deg, #007A7A, #1A2942);
         }
@@ -175,42 +183,54 @@
                  </div>
             </header>
 
+            <!-- Navigation Tabs -->
+            <nav class="flex border-b border-white/10 bg-black/5">
+                <button id="timer-tab" class="main-tab flex-1 py-3 text-sm font-semibold text-white border-b-2 border-teal-400">
+                    🕐 Timer
+                </button>
+                <button id="calendar-tab" class="main-tab flex-1 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent hover:text-white transition">
+                    📅 Calendar
+                </button>
+            </nav>
+
             <!-- Main Content -->
             <main class="flex-1 flex overflow-hidden">
-                <!-- Main View -->
-                                <!-- Main View -->
-                <div id="timer-view" class="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto">
-                    <div id="timer-display" class="text-8xl md:text-9xl font-bold text-white tracking-tighter kawaii-float">25:00</div>
-                    <div id="timer-mode-display" class="text-xl text-teal-300 mt-2 mb-6">Focus Time</div>
+                
+                <!-- Timer View -->
+                <div id="timer-main-view" class="flex-1 flex overflow-hidden">
+                    <!-- Timer Content -->
+                    <div id="timer-view" class="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto">
+                        <div id="timer-display" class="text-8xl md:text-9xl font-bold text-white tracking-tighter kawaii-float">25:00</div>
+                        <div id="timer-mode-display" class="text-xl text-teal-300 mt-2 mb-6">Focus Time</div>
 
-                    <div class="w-full max-w-md mb-6">
-                        <div class="flex gap-2">
-                            <input id="goal-input" type="text" placeholder="Current task (top of list)" class="form-input flex-1 rounded-lg text-sm px-4 py-3" readonly>
-                            <button id="breakdown-task-btn" class="btn-secondary flex-shrink-0 px-4 rounded-lg font-semibold text-white text-sm" title="Break down top task with AI">✨ Break down</button>
+                        <div class="w-full max-w-md mb-6">
+                            <div class="flex gap-2">
+                                <input id="goal-input" type="text" placeholder="Current task (top of list)" class="form-input flex-1 rounded-lg text-sm px-4 py-3" readonly>
+                                <button id="breakdown-task-btn" class="btn-secondary flex-shrink-0 px-4 rounded-lg font-semibold text-white text-sm" title="Break down top task with AI">✨ Break down</button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4 mb-8">
+                            <button id="start-pause-btn" class="btn-primary-teal text-xl px-10 py-4 rounded-xl font-bold">Start</button>
+                            <button id="reset-btn" class="btn-secondary text-gray-300 px-6 py-4 rounded-xl font-semibold">Reset</button>
+                        </div>
+
+                        <div id="mode-controls" class="flex items-center justify-center gap-2 flex-wrap">
+                            <button data-mode="pomodoro25" class="mode-btn btn-secondary px-3 py-1 rounded-full text-xs font-medium">Focus (25m)</button>
+                            <button data-mode="shortBreak" class="mode-btn btn-secondary px-3 py-1 rounded-full text-xs font-medium">Short Break (5m)</button>
+                            <button data-mode="longBreak" class="mode-btn btn-secondary px-3 py-1 rounded-full text-xs font-medium">Long Break (15m)</button>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-4 mb-8">
-                        <button id="start-pause-btn" class="btn-primary-teal text-xl px-10 py-4 rounded-xl font-bold">Start</button>
-                        <button id="reset-btn" class="btn-secondary text-gray-300 px-6 py-4 rounded-xl font-semibold">Reset</button>
-                    </div>
+                    <!-- Right Sidebar (Team/Tasks/Chat) - shown only in timer view -->
+                    <aside class="w-96 border-l border-white/10 flex flex-col bg-black/10">
+                        <nav class="flex-shrink-0 border-b border-white/10">
+                             <button data-view="tasks" class="nav-btn w-1/3 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent">Tasks</button>
+                             <button data-view="participants" class="nav-btn w-1/3 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent active">Team</button>
+                             <button data-view="planner" class="nav-btn w-1/3 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent">Planner</button>
+                        </nav>
 
-                    <div id="mode-controls" class="flex items-center justify-center gap-2 flex-wrap">
-                        <button data-mode="pomodoro25" class="mode-btn btn-secondary px-3 py-1 rounded-full text-xs font-medium">Focus (25m)</button>
-                        <button data-mode="shortBreak" class="mode-btn btn-secondary px-3 py-1 rounded-full text-xs font-medium">Short Break (5m)</button>
-                        <button data-mode="longBreak" class="mode-btn btn-secondary px-3 py-1 rounded-full text-xs font-medium">Long Break (15m)</button>
-                    </div>
-                </div>
-
-                <!-- Right Sidebar (Team/Tasks/Chat) -->
-                <aside class="w-96 border-l border-white/10 flex flex-col bg-black/10">
-                    <nav class="flex-shrink-0 border-b border-white/10">
-                         <button data-view="tasks" class="nav-btn w-1/3 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent">Tasks</button>
-                         <button data-view="participants" class="nav-btn w-1/3 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent active">Team</button>
-                         <button data-view="planner" class="nav-btn w-1/3 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent">Planner</button>
-                    </nav>
-
-                    <div class="flex-1 overflow-y-auto p-4">
+                        <div class="flex-1 overflow-y-auto p-4">
 
                         <!-- Tasks View -->
                         <div id="tasks-view" class="hidden">
@@ -248,6 +268,14 @@
                         </div>
                     </div>
                 </aside>
+                </div>
+
+                <!-- Full Calendar View (hidden by default) -->
+                <div id="calendar-main-view" class="hidden flex-1 p-4 overflow-hidden">
+                    <div class="w-full h-full bg-white rounded-lg overflow-hidden">
+                        <iframe id="calendar-iframe" src="src/full-calendar.html" class="w-full h-full border-0"></iframe>
+                    </div>
+                </div>
             </main>
         </div>
 
@@ -374,8 +402,20 @@
                 const isTests = location.pathname.includes('/tests');
                 if (isTests) modulePath = '../src/meet.js';
             } catch {}
-            const { createHandleStartMeet } = await import(modulePath);
-            window.__createHandleStartMeet = createHandleStartMeet;
+            // Dynamic import with fallback for environments that rewrite paths
+            let createHandleStartMeet;
+            try {
+                ({ createHandleStartMeet } = await import(modulePath));
+            } catch (err) {
+                try {
+                    ({ createHandleStartMeet } = await import('../src/meet.js'));
+                } catch (e2) {
+                    console.error('Failed to load meet.js via both paths', err, e2);
+                }
+            }
+            if (createHandleStartMeet) {
+                window.__createHandleStartMeet = createHandleStartMeet;
+            }
         } catch (e) {
             console.error('Could not load meet.js:', e);
         }
@@ -566,6 +606,12 @@
         const aiAgentSend = document.getElementById('ai-agent-send');
         const aiAgentMessages = document.getElementById('ai-agent-messages');
         const startMeetBtn = document.getElementById('start-meet-btn');
+        
+        // Main tab elements
+        const timerTab = document.getElementById('timer-tab');
+        const calendarTab = document.getElementById('calendar-tab');
+        const timerMainView = document.getElementById('timer-main-view');
+        const calendarMainView = document.getElementById('calendar-main-view');
         const leaveBtn = document.getElementById('leave-btn');
         const toastEl = document.getElementById('toast');
 
@@ -674,6 +720,29 @@
                         console.error('Failed to load calendar:', error);
                         document.getElementById('calendar-container').innerHTML = '<p class="text-red-400">Could not load planner. Please try again later.</p>';
                     });
+            }
+        }
+
+        function switchMainView(view) {
+            // Hide all main views
+            timerMainView.classList.add('hidden');
+            calendarMainView.classList.add('hidden');
+            
+            // Remove active class from all tabs
+            timerTab.classList.remove('border-teal-400', 'text-white');
+            timerTab.classList.add('border-transparent', 'text-gray-400');
+            calendarTab.classList.remove('border-teal-400', 'text-white');
+            calendarTab.classList.add('border-transparent', 'text-gray-400');
+
+            // Show selected view and activate tab
+            if (view === 'timer') {
+                timerMainView.classList.remove('hidden');
+                timerTab.classList.remove('border-transparent', 'text-gray-400');
+                timerTab.classList.add('border-teal-400', 'text-white');
+            } else if (view === 'calendar') {
+                calendarMainView.classList.remove('hidden');
+                calendarTab.classList.remove('border-transparent', 'text-gray-400');
+                calendarTab.classList.add('border-teal-400', 'text-white');
             }
         }
 
@@ -854,6 +923,15 @@
                 const view = button.dataset.view;
                 switchView(view);
             });
+        });
+
+        // Main tab event listeners
+        timerTab.addEventListener('click', () => {
+            switchMainView('timer');
+        });
+
+        calendarTab.addEventListener('click', () => {
+            switchMainView('calendar');
         });
 
         chatPopupBtn.addEventListener('click', () => {

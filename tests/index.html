@@ -577,43 +577,55 @@
         async function loadApp() {
             const previewArea = document.getElementById('app-preview-container');
             if (!previewArea) return;
-            
+
             try {
                 log('Loading app for testing...', 'info');
-                
+
                 // Fetch the main app HTML
                 const response = await fetch('../index.html');
                 if (!response.ok) {
                     throw new Error(`Failed to load app: ${response.status}`);
                 }
-                
+
                 const html = await response.text();
-                
+
                 // Create a container for the app
                 previewArea.innerHTML = `
                     <div id="test-app-container" style="width: 100%; height: 100%; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">
                         ${html}
                     </div>
                 `;
-                
+
+                // Fix stylesheet paths relative to /tests
+                try {
+                    const styleLinks = previewArea.querySelectorAll('link[rel="stylesheet"]');
+                    styleLinks.forEach(link => {
+                        const href = link.getAttribute('href') || '';
+                        if (href && !href.startsWith('http') && !href.startsWith('../')) {
+                            link.setAttribute('href', '../' + href);
+                        }
+                    });
+                } catch (e) { console.warn('Failed to adjust stylesheet links', e); }
+
+
                 // Execute scripts in the loaded HTML in sequence
                 const scriptElements = Array.from(previewArea.querySelectorAll('script'));
-                
+
                 for (const script of scriptElements) {
-                    if (script.src) {
-                        // External script - adjust relative paths
+                    const attrSrc = script.getAttribute('src');
+                    if (attrSrc) {
+                        // External script - adjust relative paths using the original attribute
                         const newScript = document.createElement('script');
-                        if (script.src.startsWith('src/')) {
-                            // Adjust relative path for scripts in src/ directory
-                            newScript.src = '../' + script.src;
-                        } else {
-                            newScript.src = script.src;
+                        let fixedSrc = attrSrc;
+                        if (!/^https?:\/\//.test(attrSrc) && !attrSrc.startsWith('../')) {
+                            fixedSrc = '../' + attrSrc;
                         }
-                        
+                        newScript.src = fixedSrc;
+
                         // Wait for script to load before continuing
-                        await new Promise((resolve, reject) => {
+                        await new Promise((resolve) => {
                             newScript.onload = resolve;
-                            newScript.onerror = (e) => {
+                            newScript.onerror = () => {
                                 console.warn('Failed to load script:', newScript.src);
                                 resolve(); // Continue even if script fails
                             };
@@ -624,39 +636,44 @@
                         try {
                             // For module scripts, we need special handling
                             if (script.type === 'module') {
-                                // Replace relative imports with absolute paths
+                                // Replace relative imports with paths that work from /tests
                                 let modifiedContent = script.textContent;
                                 modifiedContent = modifiedContent.replace(/from '\.\/src\//g, "from '../src/");
                                 modifiedContent = modifiedContent.replace(/from "\.\/src\//g, 'from "../src/');
-                                
+                                modifiedContent = modifiedContent.replace(/import\(['"]\.\/src\//g, "import('../src/");
+
                                 // Create a blob URL for the module script
                                 const blob = new Blob([modifiedContent], { type: 'application/javascript' });
                                 const url = URL.createObjectURL(blob);
                                 const newScript = document.createElement('script');
                                 newScript.type = 'module';
                                 newScript.src = url;
-                                
+
                                 // Wait for module to load
-                                await new Promise((resolve, reject) => {
+                                await new Promise((resolve) => {
                                     newScript.onload = resolve;
-                                    newScript.onerror = (e) => {
+                                    newScript.onerror = () => {
                                         console.warn('Failed to load module script');
                                         resolve(); // Continue even if module fails
                                     };
                                     document.head.appendChild(newScript);
                                 });
                             } else {
-                                // Regular script - execute immediately
-                                new Function(script.textContent)();
+                                // Regular script
+                                try {
+                                    new Function(script.textContent)();
+                                } catch (e) {
+                                    console.warn('Failed to execute inline script');
+                                }
                             }
                         } catch (e) {
                             console.error('Error executing script:', e);
                         }
                     }
                 }
-                
+
                 log('App loaded successfully for testing', 'info');
-                
+
             } catch (error) {
                 log(`Failed to load app: ${error.message}`, false);
                 previewArea.innerHTML = `
@@ -676,7 +693,7 @@
                 const timeout = setTimeout(() => {
                     reject(new Error('App load timeout'));
                 }, 10000); // 10 second timeout
-                
+
                 const checkLoaded = () => {
                     const appContainer = document.getElementById('test-app-container');
                     if (appContainer && appContainer.innerHTML) {
@@ -686,7 +703,7 @@
                         setTimeout(checkLoaded, 100);
                     }
                 };
-                
+
                 checkLoaded();
             });
         }
@@ -1064,7 +1081,7 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
                 navigator.clipboard.writeText('No failed tests to copy.');
                 return;
             }
-            
+
             const failedText = failedTests.join('\n');
             navigator.clipboard.writeText(failedText).then(() => {
                 log('✅ Failed tests copied to clipboard!', 'info');
@@ -1193,13 +1210,13 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
                         const originalConsoleError = console.error;
                         let hasErrors = false;
                         let errorMessages = [];
-                        
+
                         console.error = (...args) => {
                             hasErrors = true;
                             errorMessages.push(args.join(' '));
                             originalConsoleError.apply(console, args);
                         };
-                        
+
                         // Wait a bit more for the app to fully initialize
                         setTimeout(() => {
                             console.error = originalConsoleError;
@@ -1292,7 +1309,7 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
             if (isRunning) return;
             setButtonsDisabled(true);
             clearResults();
-            
+
             log('Waiting for app to load...', 'info');
             await waitForAppLoad();
             log('App loaded, running all tests...', 'info');
@@ -1304,7 +1321,7 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
 
             // Display failed tests summary for easy copying
             showFailedTestsSummary();
-            
+
             setButtonsDisabled(false);
         }
 
