@@ -112,5 +112,3 @@ try {
   }
 } catch {}
 
-module.exports = { playGong, playDing, playMeetingRing };
-

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PomPom - A productivity timer for remote teams</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -191,7 +191,7 @@
                     </div>
 
                     <div class="flex items-center gap-4 mb-8">
-                        <button id="start-pause-btn" class="btn-primary text-xl px-10 py-4 rounded-xl font-bold">Start</button>
+                        <button id="start-pause-btn" class="btn-primary-teal text-xl px-10 py-4 rounded-xl font-bold">Start</button>
                         <button id="reset-btn" class="btn-secondary text-gray-300 px-6 py-4 rounded-xl font-semibold">Reset</button>
                     </div>
 
@@ -228,8 +228,14 @@
                         <div id="participants-view" class="">
                              <h3 class="font-semibold text-white mb-3">Team Members (<span id="participant-count">0</span>)</h3>
                              <div id="participants-list" class="space-y-3"></div>
+
+                             <!-- Extension Status - Subtle indicator -->
+                             <div id="extension-status" class="mb-2 text-xs text-gray-400 hidden">
+                                <span id="extension-status-text">Extension: Not installed</span>
+                             </div>
+
                              <div class="mt-4">
-                                <button id="start-meet-btn" class="btn-primary w-full py-2 rounded-lg font-semibold text-white text-sm flex items-center justify-center gap-2">
+                                <button id="start-meet-btn" class="btn-primary-teal w-full py-2 rounded-lg font-semibold text-white text-sm flex items-center justify-center gap-2">
                                     📹 Start Meeting
                                 </button>
                              </div>
@@ -331,6 +337,24 @@
                             🔍 Check
                         </button>
                     </div>
+
+                    <!-- Extension Settings -->
+                    <div class="border-t border-white/10 pt-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <label class="text-white font-medium">Chrome Extension</label>
+                                <p id="extension-settings-status" class="text-gray-400 text-sm">Checking extension status...</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button id="extension-install-btn" class="btn-secondary px-3 py-1 rounded text-xs hidden">
+                                    Install
+                                </button>
+                                <button id="extension-help-btn" class="btn-secondary px-3 py-1 rounded text-xs">
+                                    Help
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -342,9 +366,15 @@
     <script src="src/sound.js"></script>
 
     <script type="module">
-        // Load meet functionality
+        // Load meet functionality with robust path handling for tests and app
         try {
-            const { createHandleStartMeet } = await import('./src/meet.js');
+            let modulePath = './src/meet.js';
+            try {
+                // If running inside tests (served from /tests), adjust path
+                const isTests = location.pathname.includes('/tests');
+                if (isTests) modulePath = '../src/meet.js';
+            } catch {}
+            const { createHandleStartMeet } = await import(modulePath);
             window.__createHandleStartMeet = createHandleStartMeet;
         } catch (e) {
             console.error('Could not load meet.js:', e);
@@ -389,6 +419,116 @@
         document.addEventListener('click', initAudioOnInteraction);
         document.addEventListener('keydown', initAudioOnInteraction);
 
+        // --- PomPom Extension Integration ---
+        let extensionAvailable = false;
+        let extensionVersion = null;
+
+        // Check for extension availability
+        async function checkExtensionAvailability() {
+            try {
+                if (typeof window.pomPomExtensionCheck === 'function') {
+                    const status = await window.pomPomExtensionCheck();
+                    extensionAvailable = status.installed;
+                    extensionVersion = status.version;
+                } else if (window.POMPOM_EXTENSION_AVAILABLE) {
+                    extensionAvailable = true;
+                }
+            } catch (error) {
+                console.log('Extension not available:', error);
+                extensionAvailable = false;
+            }
+
+            updateExtensionUI();
+        }
+
+        // Update extension UI based on availability
+        function updateExtensionUI() {
+            const status = document.getElementById('extension-status');
+            const statusText = document.getElementById('extension-status-text');
+            const settingsStatus = document.getElementById('extension-settings-status');
+            const installBtn = document.getElementById('extension-install-btn');
+
+            if (extensionAvailable) {
+                // Subtle status indicator
+                if (status && statusText) {
+                    status.classList.remove('hidden');
+                    statusText.textContent = 'Extension: Active';
+                    statusText.className = 'text-xs text-green-400';
+                }
+
+                // Settings modal status
+                if (settingsStatus) {
+                    settingsStatus.textContent = `Extension active${extensionVersion ? ` (v${extensionVersion})` : ''} - Meeting URLs will be captured automatically`;
+                    settingsStatus.className = 'text-green-400 text-sm';
+                }
+
+                // Hide install button
+                if (installBtn) {
+                    installBtn.classList.add('hidden');
+                }
+            } else {
+                // Subtle status indicator
+                if (status && statusText) {
+                    status.classList.remove('hidden');
+                    statusText.textContent = 'Extension: Not installed';
+                    statusText.className = 'text-xs text-gray-400';
+                }
+
+                // Settings modal status
+                if (settingsStatus) {
+                    settingsStatus.textContent = 'Install the Chrome extension for automatic meeting URL capture';
+                    settingsStatus.className = 'text-gray-400 text-sm';
+                }
+
+                // Show install button
+                if (installBtn) {
+                    installBtn.classList.remove('hidden');
+                }
+            }
+        }
+
+        // Handle captured meeting URL from extension
+        window.handleCapturedMeetingUrl = function(meetingUrl, meetingId) {
+            console.log('PomPom: Received meeting URL from extension:', meetingUrl);
+            updateChatWithMeetingUrl(meetingUrl);
+            showToast('✅ Meeting URL captured by extension!');
+        };
+
+        // Listen for extension events
+        window.addEventListener('pomPomMeetingUrlCaptured', (event) => {
+            const { meetingUrl, meetingId } = event.detail;
+            handleCapturedMeetingUrl(meetingUrl, meetingId);
+        });
+
+        // Extension install handlers
+        function setupExtensionButtons() {
+            const installBtn = document.getElementById('extension-install-btn');
+            const helpBtn = document.getElementById('extension-help-btn');
+
+            if (installBtn) {
+                installBtn.addEventListener('click', () => {
+                    window.open('extension-install.html', '_blank');
+                });
+            }
+
+            if (helpBtn) {
+                helpBtn.addEventListener('click', () => {
+                    window.open('extension-install.html', '_blank');
+                });
+            }
+        }
+
+        // Setup extension buttons
+        setupExtensionButtons();
+
+
+
+        // Check extension availability on page load
+        setTimeout(checkExtensionAvailability, 1000);
+
+        // Also check when extension might be installed
+        window.addEventListener('pomPomExtensionReady', checkExtensionAvailability);
+
         // --- DOM Elements ---
         const welcomePage = document.getElementById('welcome-page');
         const sessionPage = document.getElementById('session-page');
@@ -426,6 +566,7 @@
         const aiAgentSend = document.getElementById('ai-agent-send');
         const aiAgentMessages = document.getElementById('ai-agent-messages');
         const startMeetBtn = document.getElementById('start-meet-btn');
+        const leaveBtn = document.getElementById('leave-btn');
         const toastEl = document.getElementById('toast');
 
 
@@ -551,14 +692,6 @@
             }
         });
 
-        startSessionBtn.addEventListener('click', () => {
-            sessionId = sessionNameInput.value.trim() || generateRandomTeamName();
-            userName = userNameSetupInput.value.trim() || generateRandomUserName();
-
-            if (!userName) {
-                showToast("Please enter your name to start.");
-                return;
-            }
         // AI Agent toggle
         aiAgentBtn.addEventListener('click', () => {
             aiAgentPopup.classList.toggle('hidden');
@@ -671,14 +804,49 @@
         });
         aiAgentInput.addEventListener('keypress', async (e) => { if (e.key==='Enter') { e.preventDefault(); aiAgentSend.click(); }});
 
+        shuffleUserNameBtn.addEventListener('click', () => {
+            userNameSetupInput.value = generateRandomUserName();
+        });
 
+        // Start session button
+        startSessionBtn.addEventListener('click', () => {
+            const name = userNameSetupInput.value.trim();
+            const team = sessionNameInput.value.trim();
+            if (!name) {
+                showToast('Please enter your name');
+                return;
+            }
+            userName = name;
+            sessionId = team || generateRandomTeamName();
             welcomePage.classList.add('hidden');
             sessionPage.classList.remove('hidden');
             sessionHeaderName.textContent = `Team: ${sessionId}`;
         });
 
-        shuffleUserNameBtn.addEventListener('click', () => {
+        // Leave session button
+        leaveBtn.addEventListener('click', () => {
+            // Reset session state
+            sessionId = '';
+            userName = '';
+            tasks = [];
+            
+            // Stop any running timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            running = false;
+            remainingSeconds = getModeSeconds();
+            
+            // Hide session page and show welcome page
+            sessionPage.classList.add('hidden');
+            welcomePage.classList.remove('hidden');
+            
+            // Reset form
             userNameSetupInput.value = generateRandomUserName();
+            sessionNameInput.value = '';
+            
+            showToast('Left the session');
         });
 
         viewButtons.forEach(button => {
@@ -793,53 +961,86 @@
                     playMeetingRing();
                 }
 
-                // Open Google Meet and let it generate a real meeting room
-                const meetWindow = window.open('https://meet.google.com/new', '_blank');
-                showToast('Opening Google Meet...');
+                // Check if extension is available for automatic URL capture
+                if (extensionAvailable && typeof window.pomPomExtensionCaptureMeeting === 'function') {
+                    showToast('🚀 Starting meeting with extension...');
 
-                // Try to capture the actual meeting URL after Google creates it
-                let actualMeetUrl = null;
-                let meetingId = null;
+                    // Use extension to capture meeting URL
+                    const capturePromise = window.pomPomExtensionCaptureMeeting(sessionId, userName);
 
-                if (meetWindow) {
-                    // Try to get the real meeting URL (limited by browser security)
-                    const checkForUrl = () => {
-                        try {
-                            if (meetWindow.location && meetWindow.location.href &&
-                                meetWindow.location.href !== 'https://meet.google.com/new' &&
-                                meetWindow.location.href !== 'about:blank' &&
-                                !meetWindow.location.href.includes('accounts.google.com')) {
+                    // Open Google Meet
+                    const meetWindow = window.open('https://meet.google.com/new', '_blank');
 
-                                actualMeetUrl = meetWindow.location.href;
-                                const match = actualMeetUrl.match(/meet\.google\.com\/([a-z]{3}-[a-z]{4}-[a-z]{3})/);
-                                if (match) {
-                                    meetingId = match[1];
-                                    updateChatWithMeetingUrl(actualMeetUrl);
-                                    return true;
+                    // Wait for URL capture (with timeout)
+                    try {
+                        const result = await Promise.race([
+                            capturePromise,
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 15000))
+                        ]);
+
+                        if (result.success) {
+                            updateChatWithMeetingUrl(result.meetingUrl);
+                            showToast('✅ Meeting URL captured automatically!');
+                        } else {
+                            showGenericMeetingMessage();
+                            showToast('⚠️ Could not capture URL automatically');
+                        }
+                    } catch (error) {
+                        console.log('Extension capture failed:', error);
+                        showGenericMeetingMessage();
+                        showToast('⚠️ Extension capture timed out');
+                    }
+                } else {
+                    // Fallback to manual capture method
+                    showToast('Opening Google Meet...');
+
+                    // Open Google Meet and let it generate a real meeting room
+                    const meetWindow = window.open('https://meet.google.com/new', '_blank');
+
+                    // Try to capture the actual meeting URL after Google creates it
+                    let actualMeetUrl = null;
+                    let meetingId = null;
+
+                    if (meetWindow) {
+                        // Try to get the real meeting URL (limited by browser security)
+                        const checkForUrl = () => {
+                            try {
+                                if (meetWindow.location && meetWindow.location.href &&
+                                    meetWindow.location.href !== 'https://meet.google.com/new' &&
+                                    meetWindow.location.href !== 'about:blank' &&
+                                    !meetWindow.location.href.includes('accounts.google.com')) {
+
+                                    actualMeetUrl = meetWindow.location.href;
+                                    const match = actualMeetUrl.match(/meet\.google\.com\/([a-z]{3}-[a-z]{4}-[a-z]{3})/);
+                                    if (match) {
+                                        meetingId = match[1];
+                                        updateChatWithMeetingUrl(actualMeetUrl);
+                                        return true;
+                                    }
+                                }
+                            } catch (e) {
+                                // Cross-origin restriction - expected
+                            }
+                            return false;
+                        };
+
+                        // Check periodically for the URL
+                        let attempts = 0;
+                        const urlCheckInterval = setInterval(() => {
+                            attempts++;
+                            if (checkForUrl() || attempts > 20) { // Stop after 10 seconds
+                                clearInterval(urlCheckInterval);
+                                if (!actualMeetUrl) {
+                                    // Couldn't capture URL, show generic message
+                                    showGenericMeetingMessage();
                                 }
                             }
-                        } catch (e) {
-                            // Cross-origin restriction - expected
-                        }
-                        return false;
-                    };
-
-                    // Check periodically for the URL
-                    let attempts = 0;
-                    const urlCheckInterval = setInterval(() => {
-                        attempts++;
-                        if (checkForUrl() || attempts > 20) { // Stop after 10 seconds
-                            clearInterval(urlCheckInterval);
-                            if (!actualMeetUrl) {
-                                // Couldn't capture URL, show generic message
-                                showGenericMeetingMessage();
-                            }
-                        }
-                    }, 500);
-                } else {
-                    // Popup was blocked
-                    showToast('❌ Popup blocked - please allow popups and try again');
-                    showGenericMeetingMessage();
+                        }, 500);
+                    } else {
+                        // Popup was blocked
+                        showToast('❌ Popup blocked - please allow popups and try again');
+                        showGenericMeetingMessage();
+                    }
                 }
 
                 // Helper function to update chat with captured meeting URL
@@ -1004,6 +1205,7 @@
         settingsBtn.addEventListener('click', () => {
             settingsModal.classList.remove('hidden');
             updateSoundToggleUI();
+            updateExtensionUI(); // Update extension status when opening settings
         });
 
         closeSettingsBtn.addEventListener('click', () => {

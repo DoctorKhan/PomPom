@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 300px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a1a;
+      color: white;
+      margin: 0;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    
+    .logo {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    
+    .title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .subtitle {
+      font-size: 12px;
+      color: #888;
+    }
+    
+    .status {
+      background: #2a2a2a;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 12px 0;
+    }
+    
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 8px 0;
+      font-size: 14px;
+    }
+    
+    .status-label {
+      color: #ccc;
+    }
+    
+    .status-value {
+      font-weight: 500;
+    }
+    
+    .status-value.active {
+      color: #10B981;
+    }
+    
+    .status-value.inactive {
+      color: #EF4444;
+    }
+    
+    .recent-meeting {
+      background: #2a2a2a;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 12px 0;
+    }
+    
+    .meeting-url {
+      font-family: monospace;
+      font-size: 12px;
+      background: #1a1a1a;
+      padding: 8px;
+      border-radius: 4px;
+      margin: 8px 0;
+      word-break: break-all;
+      color: #60A5FA;
+    }
+    
+    .button {
+      background: #3B82F6;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      width: 100%;
+      margin: 4px 0;
+    }
+    
+    .button:hover {
+      background: #2563EB;
+    }
+    
+    .button.secondary {
+      background: #374151;
+    }
+    
+    .button.secondary:hover {
+      background: #4B5563;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 11px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🐕</div>
+    <div class="title">PomPom Meeting Helper</div>
+    <div class="subtitle">Automatic Google Meet URL capture</div>
+  </div>
+  
+  <div class="status">
+    <div class="status-item">
+      <span class="status-label">Extension Status:</span>
+      <span class="status-value active" id="extension-status">Active</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">PomPom Tabs:</span>
+      <span class="status-value" id="pompom-tabs">0</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">Meetings Captured:</span>
+      <span class="status-value" id="meetings-captured">0</span>
+    </div>
+  </div>
+  
+  <div id="recent-meeting" class="recent-meeting" style="display: none;">
+    <div style="font-weight: 500; margin-bottom: 8px;">Most Recent Meeting:</div>
+    <div class="meeting-url" id="recent-url"></div>
+    <button class="button" id="copy-url">📋 Copy URL</button>
+  </div>
+  
+  <div style="margin: 16px 0;">
+    <button class="button secondary" id="open-pompom">🚀 Open PomPom</button>
+    <button class="button secondary" id="test-extension">🔧 Test Extension</button>
+  </div>
+  
+  <div class="footer">
+    Version <span id="version">1.0.0</span> • Made for PomPom
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

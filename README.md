@@ -64,6 +64,21 @@ firebase deploy --only firestore:rules,firestore:indexes
 - **Security**: Firestore rules configured for PomPom sessions
 - **⚠️ Security**: See `README-SECURITY.md` for important security setup
 
+### Chrome Extension (Optional)
+PomPom includes a Chrome extension that automatically captures Google Meet URLs for seamless sharing with your team.
+
+#### Quick Install
+1. **Download**: Get `pompom-extension-v1.0.0.zip` from the repository root
+2. **Extract**: Unzip the file to a folder on your computer  
+3. **Install**: Open `chrome://extensions/`, enable "Developer mode", click "Load unpacked", and select the extracted folder
+4. **Verify**: Look for the blue "P" icon in your Chrome toolbar
+
+#### Features
+- 🔗 **Auto-capture**: Automatically detects Google Meet URLs when you start meetings
+- 📤 **Instant sharing**: Shares meeting links with your PomPom team automatically  
+- 🔒 **Privacy-focused**: Only monitors Google Meet domains
+- ⚡ **Background operation**: Works seamlessly without interfering with your workflow
+
 ### Features
 1. **Landing Page**: Create or join a session with the new PomPom branding
 2. **Name Setup**: Set your team name and personal name with fun defaults

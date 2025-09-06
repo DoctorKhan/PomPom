@@ -69,6 +69,14 @@ input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 /* Tailwind-driven component classes previously using @apply */
 .btn { @apply py-2 px-4 rounded-lg font-semibold transition-colors duration-200; }
 .btn-primary { @apply bg-white text-sky-600 hover:bg-sky-50 shadow-lg border border-sky-200; }
+.btn-primary-teal {
+  @apply bg-teal-500 hover:bg-teal-600 shadow-lg border border-teal-400;
+  color: #ffffff !important;
+}
+/* Ensure nested elements like spans/icons inherit white text */
+.btn-primary-teal *, .btn-primary-teal:disabled {
+  color: #ffffff !important;
+}
 .btn-secondary { @apply bg-sky-500 hover:bg-sky-600 text-white shadow-lg; }
 .icon-btn { @apply w-12 h-12 flex items-center justify-center rounded-full cursor-pointer transition-colors duration-200; }
 .icon-btn.active { @apply bg-white bg-opacity-20; }

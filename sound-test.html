@@ -53,7 +53,7 @@
 
     <div class="test-section">
         <h2>1. Basic Audio Test</h2>
-        <p>Test if your browser can play basic audio files:</p>
+        <p>Test if your browser can play audio using WebAudio API:</p>
         <button onclick="testBasicAudio()">🎵 Test Basic Audio</button>
         <div id="basic-status" class="status">Click the button to test basic audio</div>
     </div>
@@ -113,11 +113,26 @@
             updateStatus('basic-status', 'Testing basic audio...', 'info');
             
             try {
-                const audio = new Audio('https://cdn.jsdelivr.net/gh/DoctorKhan/pompom-assets/gong.mp3');
-                audio.volume = 0.5;
+                // Create a simple test tone using WebAudio API
+                const ctx = initAudioContext();
+                if (!ctx) {
+                    throw new Error('WebAudio API not available');
+                }
+
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
                 
-                await audio.play();
-                updateStatus('basic-status', '✅ Basic audio works! You should have heard a gong sound.', 'success');
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                
+                oscillator.frequency.setValueAtTime(440, ctx.currentTime); // A4 note
+                gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                
+                oscillator.start(ctx.currentTime);
+                oscillator.stop(ctx.currentTime + 0.5);
+                
+                updateStatus('basic-status', '✅ Basic audio works! You should have heard a test tone.', 'success');
             } catch (error) {
                 updateStatus('basic-status', `❌ Basic audio failed: ${error.message}`, 'error');
             }

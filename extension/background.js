@@ -40,6 +40,19 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         id: meetingId,
         timestamp: Date.now()
       });
+
+      // Store in chrome.storage for popup
+      chrome.storage.local.get(['meetingCount'], (result) => {
+        const count = (result.meetingCount || 0) + 1;
+        chrome.storage.local.set({
+          meetingCount: count,
+          lastMeeting: {
+            url: meetingUrl,
+            id: meetingId,
+            timestamp: Date.now()
+          }
+        });
+      });
       
       // Send to all PomPom tabs
       for (const pomPomTabId of pomPomTabs) {
@@ -73,27 +86,36 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'registerPomPomTab') {
     pomPomTabs.add(sender.tab.id);
     sendResponse({ success: true });
+    return true; // Keep message channel open
   }
-  
+
   if (request.action === 'getLatestMeeting') {
     // Find the most recent meeting
     let latestMeeting = null;
     let latestTime = 0;
-    
+
     for (const meeting of meetingTabs.values()) {
       if (meeting.timestamp > latestTime) {
         latestMeeting = meeting;
         latestTime = meeting.timestamp;
       }
     }
-    
+
     sendResponse({ meeting: latestMeeting });
+    return true; // Keep message channel open
   }
-  
+
   if (request.action === 'startMeetingCapture') {
     // PomPom is starting a meeting, prepare to capture
     console.log('PomPom Extension: Ready to capture meeting URL');
     sendResponse({ success: true });
+    return true; // Keep message channel open
+  }
+
+  if (request.action === 'test') {
+    // Test message for popup
+    sendResponse({ success: true, message: 'Extension is working' });
+    return true; // Keep message channel open
   }
 });
 

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PomPom Extension Icon Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        canvas { border: 1px solid #ccc; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1>PomPom Extension Icons</h1>
+    <p>Right-click each canvas and "Save image as..." to download the icons.</p>
+    
+    <div>
+        <h3>16x16</h3>
+        <canvas id="icon16" width="16" height="16"></canvas>
+    </div>
+    
+    <div>
+        <h3>32x32</h3>
+        <canvas id="icon32" width="32" height="32"></canvas>
+    </div>
+    
+    <div>
+        <h3>48x48</h3>
+        <canvas id="icon48" width="48" height="48"></canvas>
+    </div>
+    
+    <div>
+        <h3>128x128</h3>
+        <canvas id="icon128" width="128" height="128"></canvas>
+    </div>
+
+    <script>
+        function drawIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+
+            // Clear canvas
+            ctx.clearRect(0, 0, size, size);
+
+            // Background circle
+            ctx.fillStyle = '#3B82F6';
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2 - 1, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Simple "P" for PomPom
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${size * 0.7}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('P', size/2, size/2);
+        }
+
+        function downloadCanvas(canvas, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // Generate all icons
+        drawIcon(document.getElementById('icon16'), 16);
+        drawIcon(document.getElementById('icon32'), 32);
+        drawIcon(document.getElementById('icon48'), 48);
+        drawIcon(document.getElementById('icon128'), 128);
+
+        // Add download buttons
+        document.body.innerHTML += `
+            <div style="margin-top: 20px;">
+                <button onclick="downloadCanvas(document.getElementById('icon16'), 'icon16.png')">Download 16x16</button>
+                <button onclick="downloadCanvas(document.getElementById('icon32'), 'icon32.png')">Download 32x32</button>
+                <button onclick="downloadCanvas(document.getElementById('icon48'), 'icon48.png')">Download 48x48</button>
+                <button onclick="downloadCanvas(document.getElementById('icon128'), 'icon128.png')">Download 128x128</button>
+            </div>
+        `;
+    </script>
+</body>
+</html>

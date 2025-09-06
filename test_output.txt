@@ -1,0 +1,92 @@
+  console.error
+    Error executing module script: SyntaxError: await is only valid in async functions and the top level bodies of modules
+        at new Function (<anonymous>)
+        at executeModuleScript (/Users/khan/Projects/PomPom/__tests__/ui.spec.js:21:20)
+        at Object.executeModuleScript (/Users/khan/Projects/PomPom/__tests__/ui.spec.js:65:5)
+        at Promise.then.completed (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/utils.js:298:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/utils.js:231:10)
+        at _callCircusHook (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/run.js:281:40)
+        at _runTest (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/run.js:246:5)
+        at _runTestsForDescribeBlock (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/run.js:126:9)
+        at _runTestsForDescribeBlock (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/run.js:121:9)
+        at run (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/run.js:71:3)
+        at runAndTransformResultsToJestFormat (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+        at jestAdapter (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+        at runTestInternal (/Users/khan/Projects/PomPom/node_modules/jest-runner/build/runTest.js:367:16)
+        at runTest (/Users/khan/Projects/PomPom/node_modules/jest-runner/build/runTest.js:444:34)
+
+      22 |       func();
+      23 |     } catch (e) {
+    > 24 |       console.error('Error executing module script:', e);
+         |               ^
+      25 |     }
+      26 |   }
+      27 |   
+
+      at error (__tests__/ui.spec.js:24:15)
+      at Object.executeModuleScript (__tests__/ui.spec.js:65:5)
+
+  console.error
+    Error: Could not load link: "http://localhost/styles.css"
+        at onErrorWrapped (/Users/khan/Projects/PomPom/node_modules/jest-environment-jsdom/node_modules/jsdom/lib/jsdom/browser/resources/per-document-resource-loader.js:38:19)
+        at Object.check (/Users/khan/Projects/PomPom/node_modules/jest-environment-jsdom/node_modules/jsdom/lib/jsdom/browser/resources/resource-queue.js:72:23)
+        at /Users/khan/Projects/PomPom/node_modules/jest-environment-jsdom/node_modules/jsdom/lib/jsdom/browser/resources/resource-queue.js:124:14
+        at processTicksAndRejections (node:internal/process/task_queues:105:5) {
+      type: 'resource loading',
+      detail: Error: read ECONNRESET
+          at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+        errno: -54,
+        code: 'ECONNRESET',
+        syscall: 'read'
+      }
+    }
+
+      at VirtualConsole.<anonymous> (node_modules/jest-environment-jsdom/build/index.js:63:23)
+
+  console.error
+    Error executing module script: SyntaxError: await is only valid in async functions and the top level bodies of modules
+        at new Function (<anonymous>)
+        at executeModuleScript (/Users/khan/Projects/PomPom/__tests__/ui.spec.js:21:20)
+        at Object.executeModuleScript (/Users/khan/Projects/PomPom/__tests__/ui.spec.js:65:5)
+        at Promise.then.completed (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/utils.js:298:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/utils.js:231:10)
+        at _callCircusHook (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/run.js:281:40)
+        at _runTest (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/run.js:246:5)
+        at _runTestsForDescribeBlock (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/run.js:126:9)
+        at _runTestsForDescribeBlock (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/run.js:121:9)
+        at run (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/run.js:71:3)
+        at runAndTransformResultsToJestFormat (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+        at jestAdapter (/Users/khan/Projects/PomPom/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+        at runTestInternal (/Users/khan/Projects/PomPom/node_modules/jest-runner/build/runTest.js:367:16)
+        at runTest (/Users/khan/Projects/PomPom/node_modules/jest-runner/build/runTest.js:444:34)
+
+      22 |       func();
+      23 |     } catch (e) {
+    > 24 |       console.error('Error executing module script:', e);
+         |               ^
+      25 |     }
+      26 |   }
+      27 |   
+
+      at error (__tests__/ui.spec.js:24:15)
+      at Object.executeModuleScript (__tests__/ui.spec.js:65:5)
+
+  console.error
+    Error: Could not load link: "http://localhost/styles.css"
+        at onErrorWrapped (/Users/khan/Projects/PomPom/node_modules/jest-environment-jsdom/node_modules/jsdom/lib/jsdom/browser/resources/per-document-resource-loader.js:38:19)
+        at Object.check (/Users/khan/Projects/PomPom/node_modules/jest-environment-jsdom/node_modules/jsdom/lib/jsdom/browser/resources/resource-queue.js:72:23)
+        at /Users/khan/Projects/PomPom/node_modules/jest-environment-jsdom/node_modules/jsdom/lib/jsdom/browser/resources/resource-queue.js:124:14
+        at processTicksAndRejections (node:internal/process/task_queues:105:5) {
+      type: 'resource loading',
+      detail: Error: read ECONNRESET
+          at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+        errno: -54,
+        code: 'ECONNRESET',
+        syscall: 'read'
+      }
+    }
+
+      at VirtualConsole.<anonymous> (node_modules/jest-environment-jsdom/build/index.js:63:23)
+

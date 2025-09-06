@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test PomPom Extension</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #2a2a2a;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #2d5a2d; }
+        .error { background: #5a2d2d; }
+        .info { background: #2d4a5a; }
+        button {
+            background: #4a9eff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover { background: #3a8eef; }
+    </style>
+</head>
+<body>
+    <h1>🔧 PomPom Extension Test</h1>
+    <p>This page helps test if the PomPom extension is working correctly.</p>
+
+    <div class="test-section">
+        <h2>1. Extension Detection</h2>
+        <button onclick="testExtensionDetection()">Test Extension Detection</button>
+        <div id="detection-status" class="status info">Click the button to test</div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Message Communication</h2>
+        <button onclick="testMessageCommunication()">Test Messages</button>
+        <div id="message-status" class="status info">Click the button to test</div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Google Meet Simulation</h2>
+        <button onclick="simulateGoogleMeet()">Open Google Meet</button>
+        <div id="meet-status" class="status info">Click to open Google Meet and test URL capture</div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Extension Status</h2>
+        <button onclick="checkExtensionStatus()">Check Status</button>
+        <div id="status-display" class="status info">Click to check extension status</div>
+    </div>
+
+    <script>
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+        }
+
+        async function testExtensionDetection() {
+            updateStatus('detection-status', 'Testing extension detection...', 'info');
+            
+            try {
+                // Check if extension functions are available
+                if (typeof window.pomPomExtensionCheck === 'function') {
+                    const status = await window.pomPomExtensionCheck();
+                    if (status.installed) {
+                        updateStatus('detection-status', `✅ Extension detected! Version: ${status.version}`, 'success');
+                    } else {
+                        updateStatus('detection-status', '❌ Extension not responding', 'error');
+                    }
+                } else if (window.POMPOM_EXTENSION_AVAILABLE) {
+                    updateStatus('detection-status', '✅ Extension available flag detected', 'success');
+                } else {
+                    updateStatus('detection-status', '❌ Extension not detected', 'error');
+                }
+            } catch (error) {
+                updateStatus('detection-status', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testMessageCommunication() {
+            updateStatus('message-status', 'Testing message communication...', 'info');
+            
+            try {
+                // Test postMessage communication
+                window.postMessage({
+                    type: 'POMPOM_CHECK_EXTENSION'
+                }, '*');
+                
+                // Listen for response
+                const listener = (event) => {
+                    if (event.data.type === 'POMPOM_EXTENSION_STATUS') {
+                        window.removeEventListener('message', listener);
+                        updateStatus('message-status', '✅ Message communication working', 'success');
+                    }
+                };
+                
+                window.addEventListener('message', listener);
+                
+                // Timeout after 3 seconds
+                setTimeout(() => {
+                    window.removeEventListener('message', listener);
+                    updateStatus('message-status', '❌ Message communication timeout', 'error');
+                }, 3000);
+                
+            } catch (error) {
+                updateStatus('message-status', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function simulateGoogleMeet() {
+            updateStatus('meet-status', 'Opening Google Meet...', 'info');
+            
+            try {
+                // Open Google Meet
+                const meetWindow = window.open('https://meet.google.com/new', '_blank');
+                
+                if (meetWindow) {
+                    updateStatus('meet-status', '✅ Google Meet opened. Check if URL is captured in extension popup.', 'success');
+                } else {
+                    updateStatus('meet-status', '❌ Popup blocked. Please allow popups.', 'error');
+                }
+            } catch (error) {
+                updateStatus('meet-status', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkExtensionStatus() {
+            updateStatus('status-display', 'Checking extension status...', 'info');
+            
+            try {
+                // Check if we can access chrome.runtime
+                if (typeof chrome !== 'undefined' && chrome.runtime) {
+                    updateStatus('status-display', '✅ Chrome extension APIs available', 'success');
+                } else {
+                    updateStatus('status-display', '❌ Chrome extension APIs not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('status-display', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run detection test on page load
+        window.addEventListener('load', () => {
+            setTimeout(testExtensionDetection, 1000);
+        });
+
+        // Listen for extension messages
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'POMPOM_MEETING_URL_CAPTURED') {
+                updateStatus('meet-status', `✅ Meeting URL captured: ${event.data.meetingUrl}`, 'success');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -29,6 +29,11 @@ describe('UI Features', () => {
         // Initialize failed tests array
         window.failedTests = [];
         
+        // Define log function globally before eval
+        window.log = function(message, status = true) {
+            console.log(message);
+        };
+        
         // Mock the functions from the HTML
         eval(`
             let failedTests = [];
