@@ -73,6 +73,11 @@ const setupTestEventHandlers = () => {
     const todoAddBtn = document.getElementById('todo-add-btn');
     const todoIdeaInput = document.getElementById('todo-idea-input');
     const todoList = document.getElementById('todo-list');
+    // Main tabs
+    const timerTab = document.getElementById('timer-tab');
+    const calendarTab = document.getElementById('calendar-tab');
+    const timerMainView = document.getElementById('timer-main-view');
+    const calendarMainView = document.getElementById('calendar-main-view');
 
     // Shuffle button handler
     if (shuffleBtn) {
@@ -133,7 +138,7 @@ const setupTestEventHandlers = () => {
         });
     }
 
-    // Mock switchView function
+    // Mock switchView function (sidebar)
     window.switchView = (view) => {
         // Hide all views
         const views = ['participants', 'tasks', 'planner'];
@@ -147,12 +152,27 @@ const setupTestEventHandlers = () => {
         if (selectedView) selectedView.classList.remove('hidden');
 
         // Handle planner view loading
-        if (view === 'planner' && !selectedView.dataset.loaded) {
-            fetch('src/calendar.html')
+        if (view === 'planner' && selectedView && !selectedView.dataset.loaded) {
+            fetch('src/daily-planner.html')
                 .then(response => response.text())
                 .then(html => {
                     const container = document.getElementById('calendar-container');
-                    if (container) container.innerHTML = html;
+                    if (container) {
+                        // Inject HTML and execute any <script> content
+                        const tmp = document.createElement('div');
+                        tmp.innerHTML = html;
+                        const scripts = Array.from(tmp.querySelectorAll('script'));
+                        scripts.forEach(s => s.parentNode && s.parentNode.removeChild(s));
+                        container.innerHTML = '';
+                        while (tmp.firstChild) container.appendChild(tmp.firstChild);
+                        scripts.forEach(oldScript => {
+                            const newScript = document.createElement('script');
+                            if (oldScript.src) newScript.src = oldScript.src;
+                            else newScript.textContent = oldScript.textContent || '';
+                            container.appendChild(newScript);
+                        });
+                        try { document.dispatchEvent(new Event('DOMContentLoaded')); } catch {}
+                    }
                     selectedView.dataset.loaded = true;
                 })
                 .catch(error => {
@@ -160,6 +180,32 @@ const setupTestEventHandlers = () => {
                     const container = document.getElementById('calendar-container');
                     if (container) container.innerHTML = '<p class="text-red-400">Could not load planner. Please try again later.</p>';
                 });
+        }
+    };
+
+    // Mock switchMainView for main tabs
+    window.switchMainView = (view) => {
+        const timerMainView = document.getElementById('timer-main-view');
+        const calendarMainView = document.getElementById('calendar-main-view');
+        const timerTab = document.getElementById('timer-tab');
+        const calendarTab = document.getElementById('calendar-tab');
+
+        // Hide both
+        timerMainView.classList.add('hidden');
+        calendarMainView.classList.add('hidden');
+        timerTab.classList.remove('border-teal-400', 'text-white');
+        timerTab.classList.add('border-transparent', 'text-gray-400');
+        calendarTab.classList.remove('border-teal-400', 'text-white');
+        calendarTab.classList.add('border-transparent', 'text-gray-400');
+
+        if (view === 'timer') {
+            timerMainView.classList.remove('hidden');
+            timerTab.classList.remove('border-transparent', 'text-gray-400');
+            timerTab.classList.add('border-teal-400', 'text-white');
+        } else if (view === 'calendar') {
+            calendarMainView.classList.remove('hidden');
+            calendarTab.classList.remove('border-transparent', 'text-gray-400');
+            calendarTab.classList.add('border-teal-400', 'text-white');
         }
     };
 };
@@ -321,7 +367,7 @@ describe('PomPom User Flow Tests', () => {
 
             const mockCalendarContent = '<div id="mock-calendar-content">Calendar Loaded Successfully</div>';
             global.fetch = jest.fn((url) => {
-                if (typeof url === 'string' && url.endsWith('src/calendar.html')) {
+                if (typeof url === 'string' && url.endsWith('src/daily-planner.html')) {
                     return Promise.resolve({
                         ok: true,
                         text: () => Promise.resolve(mockCalendarContent),
@@ -347,12 +393,12 @@ describe('PomPom User Flow Tests', () => {
                 expect((calendarContainer.innerHTML || '')).toContain('Calendar Loaded Successfully');
             }, { timeout: 3000 });
 
-            const calendarFetchCalls = global.fetch.mock.calls.filter(call => typeof call[0] === 'string' && call[0].endsWith('src/calendar.html'));
+            const calendarFetchCalls = global.fetch.mock.calls.filter(call => typeof call[0] === 'string' && call[0].endsWith('src/daily-planner.html'));
             expect(calendarFetchCalls.length).toBe(1);
 
             plannerBtn.click();
             await new Promise(resolve => setTimeout(resolve, 50));
-            const newCalendarFetchCalls = global.fetch.mock.calls.filter(call => typeof call[0] === 'string' && call[0].endsWith('src/calendar.html'));
+            const newCalendarFetchCalls = global.fetch.mock.calls.filter(call => typeof call[0] === 'string' && call[0].endsWith('src/daily-planner.html'));
             expect(newCalendarFetchCalls.length).toBe(1);
         }, 10000);
     });

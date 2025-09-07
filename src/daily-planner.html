@@ -1,0 +1,443 @@
+<!-- Calendar Component for PomPom Planner -->
+<style>
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: 70px repeat(7, minmax(0, 1fr));
+        grid-template-rows: auto repeat(24, minmax(60px, auto));
+        position: relative;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 16px;
+    }
+    .time-slot {
+        height: 60px;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .event-container {
+        position: absolute;
+        display: flex;
+        align-items: flex-start;
+        gap: 0;
+        transition: all 0.2s ease-in-out;
+        cursor: grab;
+        z-index: 10;
+        border-radius: 8px;
+        overflow: visible;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+        .duration-bar {
+            width: 8px; /* Slightly thicker bar */
+            flex-shrink: 0;
+            border-radius: 4px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            /* Height is now set dynamically in JS */
+        }
+    .event-content {
+        background-color: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        padding: 8px 12px;
+        flex-grow: 1;
+        min-height: 48px;
+        height: 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border-radius: 8px;
+        margin-left: 12px;
+        width: calc(100% - 12px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+        .resize-handle {
+            position: absolute;
+            bottom: -5px; /* Position below the duration bar */
+            left: -2px;
+            width: 12px;
+            height: 12px;
+            background-color: white;
+            border: 2px solid #4f46e5;
+            border-radius: 50%;
+            cursor: ns-resize;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 12; /* Above event content */
+        }
+        .event-container:hover .resize-handle {
+            opacity: 1;
+        }
+        .dragging {
+            opacity: 0.6;
+            transform: scale(1.02);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+            z-index: 20;
+        }
+        /* Simple in-slot draggable/resizable pill */
+        .event-pill { position: relative; background: rgba(20,184,166,0.2); border: 1px solid rgba(20,184,166,0.4); color: #e6fffa; border-radius: 6px; padding: 4px 6px 10px 6px; font-size: 12px; user-select: none; }
+        .event-pill .resize { position: absolute; left: 4px; right: 4px; bottom: 2px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.5); cursor: ns-resize; }
+</style>
+
+<!-- Simple Calendar Component for PomPom -->
+<div class="space-y-4">
+    <!-- Calendar Header -->
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+            <h3 id="current-month-year" class="text-lg font-semibold text-white"></h3>
+            <div class="flex gap-1">
+                <button id="prev-week" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition text-white">‹</button>
+                <button id="next-week" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition text-white">›</button>
+                <button id="today-btn" class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition text-white text-sm">Today</button>
+            </div>
+        </div>
+        <button id="add-event-btn" class="btn-primary-teal px-3 py-2 rounded-lg text-sm">+ Add Event</button>
+    </div>
+
+    <!-- Quick Add Event -->
+    <div id="quick-add" class="hidden mb-4 p-4 bg-white/5 rounded-lg border border-white/10">
+        <input id="event-input" type="text" placeholder="e.g., 'Team meeting tomorrow at 2pm'"
+               class="w-full py-2 px-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 mb-3">
+        <div class="flex gap-2">
+            <button id="save-event-btn" class="btn-primary-teal px-4 py-2 rounded-lg text-sm">Save</button>
+            <button id="cancel-event-btn" class="btn-secondary px-4 py-2 rounded-lg text-sm">Cancel</button>
+        </div>
+    </div>
+
+    <!-- AI Quick Schedule (ported from old calendar) -->
+    <div id="ai-quick" class="mb-4 p-4 bg-white/5 rounded-lg border border-white/10">
+        <div class="flex gap-2">
+            <input id="ai-input" type="text" placeholder="e.g., 'Team lunch tomorrow at 1pm'"
+                   class="flex-1 py-2 px-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400">
+            <button id="ai-schedule-btn" class="btn-primary-teal px-4 py-2 rounded-lg text-sm">Schedule with AI</button>
+        </div>
+        <div class="text-xs text-gray-400 mt-2">Tip: Try "Standup tomorrow 9am"</div>
+    </div>
+
+    <!-- Simple Weekly Calendar View -->
+    <div class="calendar-grid">
+        <!-- Day headers -->
+        <div class="grid grid-cols-2 gap-1 mb-2">
+            <div class="text-xs text-gray-400 p-2"></div> <!-- Time label column -->
+            <div id="day-0" class="text-center p-2 text-sm text-gray-300 font-medium"></div>
+        </div>
+
+        <!-- Time slots -->
+        <div id="time-slots" class="space-y-1">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Upcoming Events -->
+    <div class="mt-6">
+        <h4 class="text-white font-medium mb-3">Upcoming Events</h4>
+        <div id="event-list" class="space-y-2">
+            <div class="p-3 bg-white/5 rounded-lg border border-white/10">
+                <div class="text-sm text-gray-300">No events scheduled</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const currentMonthYear = document.getElementById('current-month-year');
+    const prevWeekBtn = document.getElementById('prev-week');
+    const nextWeekBtn = document.getElementById('next-week');
+    const todayBtn = document.getElementById('today-btn');
+
+    // Existing quick add (kept)
+    const addEventBtn = document.getElementById('add-event-btn');
+    const quickAdd = document.getElementById('quick-add');
+    const eventInput = document.getElementById('event-input');
+    const saveEventBtn = document.getElementById('save-event-btn');
+    const cancelEventBtn = document.getElementById('cancel-event-btn');
+
+    // New AI quick schedule (ported)
+    const aiInput = document.getElementById('ai-input');
+    const aiScheduleBtn = document.getElementById('ai-schedule-btn');
+
+    const timeSlotsContainer = document.getElementById('time-slots');
+    const eventList = document.getElementById('event-list');
+
+    let currentDate = new Date();
+    let events = [];
+
+    function renderCalendar() {
+        const weekStart = new Date(currentDate);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+        weekStart.setHours(0, 0, 0, 0);
+
+        // Update month/year display
+        currentMonthYear.textContent = weekStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+        // Update header for today only
+        const day = new Date(currentDate);
+        const dayElement = document.getElementById('day-0');
+        if (dayElement) {
+            const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
+            const dayNumber = day.getDate();
+            const isToday = day.toDateString() === new Date().toDateString();
+            dayElement.innerHTML = `
+                <div class="text-xs mb-1">${dayName}</div>
+                <div class="text-lg font-bold ${isToday ? 'bg-teal-500 text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto' : ''}">${dayNumber}</div>
+            `;
+        }
+
+        renderTimeSlots();
+        renderEventList();
+    }
+
+    function renderTimeSlots() {
+        timeSlotsContainer.innerHTML = '';
+
+        // Create simple time slots for key hours (one-day view)
+        const keyHours = [9, 10, 11, 12, 13, 14, 15, 16, 17];
+
+        keyHours.forEach(hour => {
+            const timeRow = document.createElement('div');
+            timeRow.className = 'grid grid-cols-2 gap-1 py-2 border-b border-white/5';
+
+            const timeLabel = document.createElement('div');
+            timeLabel.className = 'text-xs text-gray-400 p-2 text-right';
+            timeLabel.textContent = `${hour > 12 ? hour - 12 : hour}:00 ${hour >= 12 ? 'PM' : 'AM'}`;
+
+            timeRow.appendChild(timeLabel);
+
+            // Only today's slot (dayIndex 0)
+            const day = 0;
+            const daySlot = document.createElement('div');
+            daySlot.className = 'p-2 min-h-[40px] bg-white/5 rounded border border-white/10 hover:bg-white/10 transition cursor-pointer';
+            daySlot.dataset.day = day;
+            daySlot.dataset.hour = hour;
+
+            // Check for events at this time and render draggable pill for first event
+            const dayEvents = getEventsForTimeSlot(day, hour);
+            if (dayEvents.length > 0) {
+                const ev = dayEvents[0];
+                const pill = document.createElement('div');
+                pill.className = 'event-pill';
+                pill.textContent = ev.title;
+                const res = document.createElement('div');
+                res.className = 'resize';
+                pill.appendChild(res);
+                // drag move across hours within the day
+                pill.draggable = true;
+                pill.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', String(ev.id));
+                });
+                // resize: simple +1 hour per mousedown
+                res.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    ev.end = new Date(ev.end.getTime() + 60*60*1000);
+                    renderCalendar();
+                });
+                daySlot.innerHTML = '';
+                daySlot.appendChild(pill);
+                daySlot.className += ' bg-teal-500/20 border-teal-400/30';
+            }
+
+            // enable drop to move event within the same day
+            daySlot.addEventListener('dragover', (e) => e.preventDefault());
+            daySlot.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const idStr = e.dataTransfer.getData('text/plain');
+                const id = parseInt(idStr, 10);
+                const ev = events.find(x => x.id === id);
+                if (!ev) return;
+                const newStart = new Date(currentDate);
+                newStart.setHours(hour, 0, 0, 0);
+                const duration = ev.end - ev.start;
+                ev.start = newStart;
+                ev.end = new Date(newStart.getTime() + duration);
+                renderCalendar();
+            });
+
+            timeRow.appendChild(daySlot);
+            timeSlotsContainer.appendChild(timeRow);
+        });
+    }
+
+    function getEventsForTimeSlot(dayIndex, hour) {
+        const targetDate = new Date(currentDate);
+        targetDate.setHours(0,0,0,0);
+
+        return events.filter(event => {
+            const eventDate = new Date(event.start);
+            return eventDate.toDateString() === targetDate.toDateString() &&
+                   eventDate.getHours() === hour;
+        });
+    }
+
+    function renderEventList() {
+        const upcomingEvents = events
+            .filter(event => new Date(event.start) > new Date())
+            .sort((a, b) => new Date(a.start) - new Date(b.start))
+            .slice(0, 3);
+
+        if (upcomingEvents.length === 0) {
+            eventList.innerHTML = `
+                <div class="p-3 bg-white/5 rounded-lg border border-white/10">
+                    <div class="text-sm text-gray-300">No upcoming events</div>
+                </div>
+            `;
+            return;
+        }
+
+        eventList.innerHTML = upcomingEvents.map(event => `
+            <div class="p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition">
+                <div class="text-sm text-white font-medium">${event.title}</div>
+                <div class="text-xs text-gray-400 mt-1">
+                    ${new Date(event.start).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit'
+                    })}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Event handlers
+    addEventBtn?.addEventListener('click', () => {
+        quickAdd.classList.toggle('hidden');
+        if (!quickAdd.classList.contains('hidden')) {
+            eventInput.focus();
+        }
+    });
+
+    cancelEventBtn?.addEventListener('click', () => {
+        quickAdd.classList.add('hidden');
+        eventInput.value = '';
+    });
+
+    saveEventBtn?.addEventListener('click', () => {
+        const text = eventInput.value.trim();
+        if (text) {
+            addEvent(text);
+            eventInput.value = '';
+            quickAdd.classList.add('hidden');
+        }
+    });
+
+    eventInput?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            saveEventBtn.click();
+        }
+    });
+
+    // AI quick schedule
+    function scheduleWithAI() {
+        const text = (aiInput && aiInput.value || '').trim();
+        if (!text) return;
+
+        // very simple parse like old calendar
+        const now = new Date();
+        let startDate = new Date();
+        let title = text;
+
+        const timeMatch = text.match(/(\d{1,2})(:\d{2})?\s*(am|pm)?/i);
+        if (timeMatch) {
+            let hour = parseInt(timeMatch[1], 10);
+            const minutes = timeMatch[2] ? parseInt(timeMatch[2].substring(1), 10) : 0;
+            const ampm = timeMatch[3];
+            if (ampm && ampm.toLowerCase() === 'pm' && hour < 12) hour += 12;
+            if (ampm && ampm.toLowerCase() === 'am' && hour === 12) hour = 0;
+            startDate.setHours(hour, minutes, 0, 0);
+        }
+        if (text.toLowerCase().includes('tomorrow')) {
+            startDate.setDate(now.getDate() + 1);
+        }
+        title = text.replace(/tomorrow/i, '').replace(/at\s*(\d{1,2})(:\d{2})?\s*(am|pm)?/i, '').trim();
+
+        const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+        const newEvent = { id: Date.now(), title: title || 'New Event', start: startDate, end: endDate };
+        events.push(newEvent);
+        if (aiInput) aiInput.value = '';
+        currentDate = startDate;
+        renderCalendar();
+    }
+
+    aiScheduleBtn && aiScheduleBtn.addEventListener('click', scheduleWithAI);
+    aiInput && aiInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') scheduleWithAI(); });
+
+    prevWeekBtn.addEventListener('click', () => {
+        currentDate.setDate(currentDate.getDate() - 7);
+        renderCalendar();
+    });
+
+    nextWeekBtn.addEventListener('click', () => {
+        currentDate.setDate(currentDate.getDate() + 7);
+        renderCalendar();
+    });
+
+    todayBtn.addEventListener('click', () => {
+        currentDate = new Date();
+        renderCalendar();
+    });
+
+    function addEvent(text) {
+        // Simple event parsing
+        const now = new Date();
+        let startDate = new Date();
+        let title = text;
+
+        // Parse time (e.g., "2pm", "14:00")
+        const timeMatch = text.match(/(\d{1,2})(:\d{2})?\s*(am|pm)?/i);
+        if (timeMatch) {
+            let hour = parseInt(timeMatch[1], 10);
+            const minutes = timeMatch[2] ? parseInt(timeMatch[2].substring(1), 10) : 0;
+            const ampm = timeMatch[3];
+
+            if (ampm && ampm.toLowerCase() === 'pm' && hour < 12) {
+                hour += 12;
+            }
+            if (ampm && ampm.toLowerCase() === 'am' && hour === 12) {
+                hour = 0;
+            }
+            startDate.setHours(hour, minutes, 0, 0);
+        }
+
+        // Parse day (e.g., "tomorrow", "monday")
+        if (text.toLowerCase().includes("tomorrow")) {
+            startDate.setDate(now.getDate() + 1);
+        }
+
+        // Clean up title
+        title = text.replace(/tomorrow/i, '').replace(/at\s*(\d{1,2})(:\d{2})?\s*(am|pm)?/i, '').trim();
+
+        const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // Default 1 hour
+
+        const newEvent = {
+            id: Date.now(),
+            title: title || "New Event",
+            start: startDate,
+            end: endDate
+        };
+
+        events.push(newEvent);
+        renderCalendar();
+    }
+
+    // Initialize with some sample events
+    const today = new Date();
+    events.push({
+        id: 1,
+        title: 'Team Standup',
+        start: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 9, 0),
+        end: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 9, 30)
+    });
+
+    events.push({
+        id: 2,
+        title: 'Project Review',
+        start: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 14, 0),
+        end: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 15, 0)
+    });
+
+    // Initial render
+    renderCalendar();
+});
+
+</script>

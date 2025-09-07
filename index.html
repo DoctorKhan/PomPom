@@ -756,7 +756,7 @@
             document.getElementById(`${view}-view`).classList.remove('hidden');
 
             if (view === 'planner' && !plannerView.dataset.loaded) {
-                fetch('src/calendar.html')
+                fetch('src/daily-planner.html')
                     .then(response => response.text())
                     .then(html => {
                         const container = document.getElementById('calendar-container');
