@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Duplication Test</title>
+</head>
+<body>
+    <h1>Task Duplication Test</h1>
+    <div>
+        <input type="text" id="test-input" placeholder="Enter task">
+        <button id="test-btn">Add Task</button>
+    </div>
+    <div id="task-count">Tasks added: 0</div>
+    <div id="task-list"></div>
+
+    <script>
+        let tasks = [];
+        const input = document.getElementById('test-input');
+        const btn = document.getElementById('test-btn');
+        const count = document.getElementById('task-count');
+        const list = document.getElementById('task-list');
+
+        function addTask(text) {
+            tasks.push({ text: text, id: Date.now() });
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            count.textContent = `Tasks added: ${tasks.length}`;
+            list.innerHTML = tasks.map(task => `<div>${task.text}</div>`).join('');
+        }
+
+        // Simulate the fixed event listeners
+        btn.addEventListener('click', () => {
+            const text = input.value.trim();
+            if (text) {
+                addTask(text);
+                input.value = '';
+            }
+        });
+
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                btn.click();
+            }
+        });
+
+        // Test: Add a task and check count
+        setTimeout(() => {
+            input.value = 'Test Task';
+            input.dispatchEvent(new KeyboardEvent('keypress', { key: 'Enter' }));
+        }, 100);
+    </script>
+</body>
+</html>

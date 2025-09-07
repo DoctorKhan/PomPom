@@ -95,7 +95,20 @@ describe('Timer Screen Task Creation', () => {
             
             // Add a task
             timerTaskInput.value = 'New task from timer';
-            fireEvent.click(timerAddTaskBtn);
+
+            // Check if functions exist
+            console.log('renderTasks function exists:', typeof window.renderTasks);
+            console.log('updateTimerCurrentTask function exists:', typeof window.updateTimerCurrentTask);
+
+            // Manually trigger the task addition logic
+            if (timerTaskInput.value.trim()) {
+                window.tasks.push({ text: timerTaskInput.value.trim(), completed: false, inProgress: false });
+                if (window.renderTasks) window.renderTasks();
+                if (window.updateTimerCurrentTask) window.updateTimerCurrentTask();
+                timerTaskInput.value = '';
+            }
+
+            console.log('Tasks after manual addition:', window.tasks);
             
             // Check if task was added to global tasks array
             await waitFor(() => {

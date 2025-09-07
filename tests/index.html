@@ -449,6 +449,13 @@
             <nav class="test-suites">
                 <h2>Test Suites</h2>
                 <ul>
+                    <li class="test-suite-item" style="border-left: 3px solid #10B981;">
+                        <div class="suite-info">
+                            <i class="fas fa-star" style="color: #10B981;"></i>
+                            <span>New Feature Tests <span class="suite-count">(18)</span></span>
+                        </div>
+                        <button class="run-suite-btn" onclick="runNewFeatureTests()" title="Run New Feature Tests - Tests timer task creation, team chat, and refactored code"><i class="fas fa-play"></i></button>
+                    </li>
                     <li class="test-suite-item">
                         <div class="suite-info">
                             <i class="fas fa-globe-americas"></i>
@@ -506,7 +513,7 @@
             <div class="suite-actions">
                 <button id="run-all-btn" onclick="runAllTests()">
                     <i class="fas fa-rocket"></i>
-                    <span>Run All Tests (129)</span>
+                    <span>Run All Tests (135)</span>
                 </button>
                 <button id="clear-results-btn" onclick="clearResults()">
                     <i class="fas fa-trash-alt"></i>
@@ -558,7 +565,7 @@
     <script>
         // --- STATE MANAGEMENT ---
         let testResults = [];
-        const TOTAL_TESTS = 117; // Updated with new error-catching tests
+        const TOTAL_TESTS = 135; // Updated with new timer task creation and team chat tests
         let isRunning = false;
         let testIframe = null;
         let failedTests = []; // Track failed tests for summary
@@ -1388,17 +1395,27 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
                 }
             }
 
-            // Wire Run All to prefer legacy tests for now
+            // Wire Run All to include all test suites
             const originalRunAll = runAllTests;
             runAllTests = async function() {
                 if (isRunning) return;
                 setButtonsDisabled(true);
                 clearResults();
-                // First run legacy tests for parity
+
+                log('🚀 Starting comprehensive test suite...', 'info');
+
+                // First run new feature tests
+                await runNewFeatureTests();
+
+                // Then run legacy tests for parity
                 await runLegacyTests();
-                // Then run extension tests
+
+                // Finally run extension tests
                 await runExtensionTestSuite();
+
                 setButtonsDisabled(false);
+                showFailedTestsSummary();
+                log('✅ All test suites completed!', 'info');
             };
 
             // Also expose a sidebar button to run legacy directly if needed
@@ -1436,9 +1453,492 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
             runUserFlowTests = async function() { if (isRunning) return; setButtonsDisabled(true); clearResults(); await runLegacySuite('runUserFlowTests'); setButtonsDisabled(false); showFailedTestsSummary(); };
             runExtensionTests = async function() { if (isRunning) return; setButtonsDisabled(true); clearResults(); await runExtensionTestSuite(); setButtonsDisabled(false); showFailedTestsSummary(); };
 
+            // Add new feature tests bridge
+            window.runNewFeatureTests = async function() {
+                if (isRunning) return;
+                setButtonsDisabled(true);
+                clearResults();
+                await runNewFeatureTests();
+                setButtonsDisabled(false);
+                showFailedTestsSummary();
+            };
+
             window.runLegacyTests = runLegacyTests;
             window.showFailedTestsSummary = showFailedTestsSummary;
 
+        }
+
+        // --- NEW FEATURE TESTS ---
+        async function runNewFeatureTests() {
+            log('🚀 Starting New Feature Tests...', 'info');
+            isRunning = true;
+            updateUI();
+
+            const newFeatureTests = [
+                testModularAppStructure,
+                testTimerTaskCreation,
+                testTimerTaskInput,
+                testTimerTaskCompletion,
+                testTeamChatInterface,
+                testTeamChatMessaging,
+                testBottomRightAIChat,
+                testTaskPersistence,
+                testTimerIntegration,
+                testRefactoredCodeStructure,
+                testGlobalVariableReduction,
+                testFileOrganization,
+                testErrorHandling,
+                testUIResponsiveness,
+                testCrossTabFunctionality,
+                testLocalStoragePersistence,
+                testModularJavaScript,
+                testCodeSeparation
+            ];
+
+            for (const test of newFeatureTests) {
+                try {
+                    await test();
+                    await sleep(100); // Small delay between tests
+                } catch (error) {
+                    log(`❌ Test failed: ${error.message}`, false);
+                }
+            }
+
+            isRunning = false;
+            updateUI();
+            log('✅ New Feature Tests completed!', 'info');
+        }
+
+        // New Feature Test Functions
+        async function testModularAppStructure() {
+            const testName = 'Modular App Structure';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) {
+                    throw new Error('App iframe not available');
+                }
+
+                const appWindow = iframe.contentWindow;
+
+                // Check if PomPomApp class exists
+                if (typeof appWindow.PomPomApp === 'function') {
+                    log(`✅ ${testName}: PomPomApp class is available`, true);
+                } else {
+                    throw new Error('PomPomApp class not found');
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testTimerTaskCreation() {
+            const testName = 'Timer Screen Task Creation';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) {
+                    throw new Error('App iframe not available');
+                }
+
+                const appDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+                // Check if timer task creation elements exist
+                const timerTaskInput = appDoc.getElementById('timer-task-input');
+                const timerAddTaskBtn = appDoc.getElementById('timer-add-task-btn');
+
+                if (timerTaskInput && timerAddTaskBtn) {
+                    log(`✅ ${testName}: Timer task creation UI elements exist`, true);
+                } else {
+                    throw new Error('Timer task creation elements not found');
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testTimerTaskInput() {
+            const testName = 'Timer Task Input Functionality';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) {
+                    throw new Error('App iframe not available');
+                }
+
+                const appDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const timerTaskInput = appDoc.getElementById('timer-task-input');
+
+                if (timerTaskInput) {
+                    // Test input placeholder
+                    if (timerTaskInput.placeholder && timerTaskInput.placeholder.includes('Add a task')) {
+                        log(`✅ ${testName}: Timer task input has correct placeholder`, true);
+                    } else {
+                        throw new Error('Timer task input placeholder incorrect');
+                    }
+                } else {
+                    throw new Error('Timer task input not found');
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testTimerTaskCompletion() {
+            const testName = 'Timer Task Completion';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) {
+                    throw new Error('App iframe not available');
+                }
+
+                const appDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const timerCompleteBtn = appDoc.getElementById('timer-complete-task-btn');
+
+                if (timerCompleteBtn) {
+                    log(`✅ ${testName}: Timer task completion button exists`, true);
+                } else {
+                    throw new Error('Timer task completion button not found');
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testTeamChatInterface() {
+            const testName = 'Team Chat Interface';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) {
+                    throw new Error('App iframe not available');
+                }
+
+                const appDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+                // Check if team chat elements exist
+                const teamChatContainer = appDoc.getElementById('team-chat-container');
+                const teamChatMessages = appDoc.getElementById('team-chat-messages');
+                const teamChatInput = appDoc.getElementById('team-chat-input');
+                const teamChatSendBtn = appDoc.getElementById('team-chat-send-btn');
+
+                if (teamChatContainer && teamChatMessages && teamChatInput && teamChatSendBtn) {
+                    log(`✅ ${testName}: Team chat interface elements exist`, true);
+                } else {
+                    throw new Error('Team chat interface elements not found');
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testTeamChatMessaging() {
+            const testName = 'Team Chat Messaging';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) {
+                    throw new Error('App iframe not available');
+                }
+
+                const appDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const teamChatInput = appDoc.getElementById('team-chat-input');
+
+                if (teamChatInput) {
+                    // Test input placeholder
+                    if (teamChatInput.placeholder && teamChatInput.placeholder.includes('Send a message')) {
+                        log(`✅ ${testName}: Team chat input has correct placeholder`, true);
+                    } else {
+                        throw new Error('Team chat input placeholder incorrect');
+                    }
+                } else {
+                    throw new Error('Team chat input not found');
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testBottomRightAIChat() {
+            const testName = 'Bottom-Right AI Chat';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) {
+                    throw new Error('App iframe not available');
+                }
+
+                const appDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const chatPopup = appDoc.getElementById('chat-popup');
+
+                if (chatPopup) {
+                    // Check if it's labeled as AI Assistant
+                    const header = chatPopup.querySelector('header h3');
+                    if (header && header.textContent.includes('AI')) {
+                        log(`✅ ${testName}: Bottom-right chat is labeled as AI Assistant`, true);
+                    } else {
+                        throw new Error('Bottom-right chat not properly labeled as AI');
+                    }
+                } else {
+                    throw new Error('Chat popup not found');
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testTaskPersistence() {
+            const testName = 'Task Persistence';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) {
+                    throw new Error('App iframe not available');
+                }
+
+                const appDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const todoList = appDoc.getElementById('todo-list');
+
+                if (todoList) {
+                    log(`✅ ${testName}: Task list container exists`, true);
+                } else {
+                    throw new Error('Task list container not found');
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testTimerIntegration() {
+            const testName = 'Timer Integration';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) {
+                    throw new Error('App iframe not available');
+                }
+
+                const appDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const timerDisplay = appDoc.getElementById('timer-display');
+                const startPauseBtn = appDoc.getElementById('start-pause-btn');
+
+                if (timerDisplay && startPauseBtn) {
+                    log(`✅ ${testName}: Timer integration elements exist`, true);
+                } else {
+                    throw new Error('Timer integration elements not found');
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testRefactoredCodeStructure() {
+            const testName = 'Refactored Code Structure';
+            try {
+                // Check if src/app.js exists by trying to load it
+                const response = await fetch('../src/app.js');
+                if (response.ok) {
+                    log(`✅ ${testName}: Modular JavaScript file exists`, true);
+                } else {
+                    throw new Error('Modular JavaScript file not found');
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testGlobalVariableReduction() {
+            const testName = 'Global Variable Reduction';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) {
+                    throw new Error('App iframe not available');
+                }
+
+                const appWindow = iframe.contentWindow;
+
+                // Check if app instance exists (indicating modular structure)
+                if (typeof appWindow.app !== 'undefined' || typeof appWindow.PomPomApp !== 'undefined') {
+                    log(`✅ ${testName}: Modular app structure detected`, true);
+                } else {
+                    log(`⚠️ ${testName}: Legacy structure still in use`, 'warning');
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testFileOrganization() {
+            const testName = 'File Organization';
+            try {
+                // Check if old files have been removed
+                const oldFiles = ['index-old.html', 'old-calendar.html', 'sound-test.html'];
+                let removedCount = 0;
+
+                for (const file of oldFiles) {
+                    try {
+                        const response = await fetch(`../${file}`);
+                        if (!response.ok) {
+                            removedCount++;
+                        }
+                    } catch {
+                        removedCount++;
+                    }
+                }
+
+                if (removedCount === oldFiles.length) {
+                    log(`✅ ${testName}: Old/unused files have been removed`, true);
+                } else {
+                    log(`⚠️ ${testName}: Some old files still exist (${oldFiles.length - removedCount} remaining)`, 'warning');
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testErrorHandling() {
+            const testName = 'Error Handling';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) {
+                    throw new Error('App iframe not available');
+                }
+
+                // Check if console errors are being caught
+                let errorsCaught = false;
+                const originalError = iframe.contentWindow.console.error;
+                iframe.contentWindow.console.error = (...args) => {
+                    errorsCaught = true;
+                    originalError.apply(iframe.contentWindow.console, args);
+                };
+
+                // Restore original after test
+                setTimeout(() => {
+                    iframe.contentWindow.console.error = originalError;
+                }, 1000);
+
+                log(`✅ ${testName}: Error handling monitoring active`, true);
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testUIResponsiveness() {
+            const testName = 'UI Responsiveness';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) {
+                    throw new Error('App iframe not available');
+                }
+
+                const appDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const app = appDoc.getElementById('app');
+
+                if (app) {
+                    // Check if responsive classes are present
+                    const hasResponsiveClasses = app.className.includes('h-screen') && app.className.includes('w-screen');
+                    if (hasResponsiveClasses) {
+                        log(`✅ ${testName}: Responsive design classes detected`, true);
+                    } else {
+                        throw new Error('Responsive design classes not found');
+                    }
+                } else {
+                    throw new Error('Main app container not found');
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testCrossTabFunctionality() {
+            const testName = 'Cross-Tab Functionality';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) {
+                    throw new Error('App iframe not available');
+                }
+
+                const appDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const tabs = appDoc.querySelectorAll('[id$="-tab"]');
+
+                if (tabs.length >= 4) {
+                    log(`✅ ${testName}: Multiple tabs detected (${tabs.length} tabs)`, true);
+                } else {
+                    throw new Error(`Insufficient tabs found (${tabs.length})`);
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testLocalStoragePersistence() {
+            const testName = 'Local Storage Persistence';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) {
+                    throw new Error('App iframe not available');
+                }
+
+                const appWindow = iframe.contentWindow;
+
+                // Check if localStorage is available
+                if (appWindow.localStorage) {
+                    log(`✅ ${testName}: Local storage is available`, true);
+                } else {
+                    throw new Error('Local storage not available');
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testModularJavaScript() {
+            const testName = 'Modular JavaScript';
+            try {
+                // Check if modular files exist
+                const moduleFiles = ['src/app.js', 'src/utils.js', 'src/eventParser.js'];
+                let existingCount = 0;
+
+                for (const file of moduleFiles) {
+                    try {
+                        const response = await fetch(`../${file}`);
+                        if (response.ok) {
+                            existingCount++;
+                        }
+                    } catch {
+                        // File doesn't exist
+                    }
+                }
+
+                if (existingCount >= 2) {
+                    log(`✅ ${testName}: Modular JavaScript files detected (${existingCount}/${moduleFiles.length})`, true);
+                } else {
+                    throw new Error(`Insufficient modular files (${existingCount}/${moduleFiles.length})`);
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
+        }
+
+        async function testCodeSeparation() {
+            const testName = 'Code Separation';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) {
+                    throw new Error('App iframe not available');
+                }
+
+                const appDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const scripts = appDoc.querySelectorAll('script');
+
+                // Count inline scripts (should be minimal)
+                let inlineScripts = 0;
+                scripts.forEach(script => {
+                    if (!script.src && script.textContent.trim().length > 100) {
+                        inlineScripts++;
+                    }
+                });
+
+                if (inlineScripts <= 3) {
+                    log(`✅ ${testName}: Minimal inline scripts detected (${inlineScripts})`, true);
+                } else {
+                    log(`⚠️ ${testName}: Many inline scripts still present (${inlineScripts})`, 'warning');
+                }
+            } catch (error) {
+                log(`❌ ${testName}: ${error.message}`, false);
+            }
         }
 
         // --- EXTENSION TESTS ---

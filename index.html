@@ -281,6 +281,18 @@
       })();
     </script>
 
+    <!-- Load modular JavaScript -->
+    <script src="src/app.js"></script>
+    <script>
+      // Initialize the main app when DOM is ready
+      let app;
+
+      document.addEventListener('DOMContentLoaded', () => {
+        app = new PomPomApp();
+        app.init();
+      });
+    </script>
+
 </head>
 <body class="text-gray-200">
 
@@ -515,6 +527,25 @@
                         <button id="start-meet-btn" class="btn-primary-teal w-full py-3 rounded-lg font-semibold text-white text-lg flex items-center justify-center gap-2">
                             📹 Start Meeting
                         </button>
+
+                        <!-- Team Chat Section -->
+                        <div id="team-chat-container" class="mt-8">
+                            <h3 class="text-xl font-bold text-white mb-4">Team Chat</h3>
+                            <div class="glass-card rounded-lg overflow-hidden">
+                                <div id="team-chat-messages" class="h-64 p-4 overflow-y-auto bg-black/10 space-y-3 text-sm">
+                                    <div class="text-gray-400 text-center text-xs">Team chat messages will appear here</div>
+                                </div>
+                                <div class="p-4 border-t border-white/10">
+                                    <div class="flex gap-2">
+                                        <input id="team-chat-input" type="text" placeholder="Send a message to your team..."
+                                               class="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent text-sm">
+                                        <button id="team-chat-send-btn" class="btn-primary-teal px-4 py-2 rounded-lg font-semibold text-white text-sm">
+                                            Send
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -531,7 +562,7 @@
         <div id="chat-popup-container" class="fixed bottom-6 right-6 z-20">
             <div id="chat-popup" class="hidden absolute bottom-20 right-0 w-80 h-96 glass-card rounded-2xl flex flex-col overflow-hidden">
                 <header class="p-4 border-b border-white/10 flex-shrink-0 flex justify-between items-center">
-                    <h3 class="font-semibold text-white">Team Chat</h3>
+                    <h3 class="font-semibold text-white">AI Assistant</h3>
                 </header>
                 <div id="chat-messages" class="flex-1 space-y-3 text-sm p-4 overflow-y-auto bg-black/10"></div>
                 <div class="p-4 border-t border-white/10">
@@ -1423,16 +1454,7 @@
             try {
         // Add task on Enter in ideas input
         if (todoIdeaInput) {
-            todoIdeaInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const idea = (todoIdeaInput.value || '').trim();
-                    if (!idea) return;
-                    tasks.push({ text: idea, completed: false });
-                    renderTasks();
-                    todoIdeaInput.value = '';
-                }
-            });
+            // Event listener handled by app.js - removed duplicate
         }
                 switch ((cmd.action || '').toLowerCase()) {
                     case 'add_task': {
@@ -1620,43 +1642,14 @@
             breakdownTaskBtn.disabled = false;
         });
 
-        todoAddBtn.addEventListener('click', () => {
-            const idea = todoIdeaInput.value.trim();
-            if (!idea) return;
-            tasks.push({ text: idea, completed: false });
-            renderTasks();
-            todoIdeaInput.value = '';
-        });
-
-        todoIdeaInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                todoAddBtn.click();
-            }
-        });
+        // todoAddBtn click listener handled by app.js - removed duplicate
+        // todoIdeaInput keydown listener handled by app.js - removed duplicate
 
         // Timer screen task creation event listeners
-        if (timerAddTaskBtn) {
-            timerAddTaskBtn.addEventListener('click', () => {
-                const taskText = timerTaskInput.value.trim();
-                if (!taskText) return;
-
-                // Add task to global tasks array
-                tasks.push({ text: taskText, completed: false, inProgress: false });
-                renderTasks();
-                updateTimerCurrentTask();
-                timerTaskInput.value = '';
-                showToast('Task added successfully!');
-            });
-        }
+        // timerAddTaskBtn click listener handled by app.js - removed duplicate
 
         if (timerTaskInput) {
-            timerTaskInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    timerAddTaskBtn.click();
-                }
-            });
+            // Event listener handled by app.js - removed duplicate
         }
 
         if (timerCompleteTaskBtn) {
