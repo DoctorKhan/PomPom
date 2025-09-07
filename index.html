@@ -2154,6 +2154,14 @@
                 const o = typeof window !== 'undefined' && Number(window.__TIMER_SECONDS_OVERRIDE);
                 if (Number.isFinite(o) && o > 0) remainingSeconds = o;
             } catch {}
+
+            // Mark current task as in progress
+            const currentTask = tasks.find(task => !task.completed);
+            if (currentTask) {
+                currentTask.inProgress = true;
+                updateTimerCurrentTask();
+            }
+
             running = true;
             targetEndTs = Date.now() + remainingSeconds * 1000;
             renderTimer();

@@ -45,7 +45,21 @@ describe('Timer Screen Task Creation', () => {
         delete window.tasks;
         
         await loadIndexIntoDom();
-        
+
+        // Manually start session for testing
+        const welcomePage = document.getElementById('welcome-page');
+        const sessionPage = document.getElementById('session-page');
+
+        if (welcomePage) {
+            welcomePage.classList.add('hidden');
+        }
+        if (sessionPage) {
+            sessionPage.classList.remove('hidden');
+        }
+
+        // Initialize tasks array for testing
+        window.tasks = [];
+
         // Ensure we start on timer view
         const timerTab = document.getElementById('timer-tab');
         if (timerTab) {
@@ -206,7 +220,7 @@ describe('Timer Screen Task Creation', () => {
             fireEvent.click(timerAddTaskBtn);
             
             // Start timer
-            const startTimerBtn = document.getElementById('start-timer-btn');
+            const startTimerBtn = document.getElementById('start-pause-btn');
             fireEvent.click(startTimerBtn);
             
             // Check if task is marked as in progress
