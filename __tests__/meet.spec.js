@@ -1,34 +1,4 @@
-// Mock the createHandleStartMeet function for testing
-const createHandleStartMeet = (deps) => {
-  return async function handleStartMeet() {
-    const {
-      OFFLINE_MODE = false,
-      windowOpen = (url, target) => window.open(url, target),
-      showToast = () => {},
-      localChat = null,
-      getUserNameFromStorage = () => 'User',
-      userName = '',
-      switchView = () => {},
-    } = deps || {};
-
-    try {
-      windowOpen('https://meet.google.com/new', '_blank');
-      showToast('Opening Google Meet...');
-
-      if (OFFLINE_MODE) {
-        if (localChat) {
-          const msg = `${(userName || getUserNameFromStorage() || 'Someone')} started a Meet. Check the new tab.`;
-          localChat.push({ userId: 'local', userName: userName || 'You', text: msg, createdAt: new Date() });
-        }
-        switchView('chat');
-        return;
-      }
-    } catch (e) {
-      showToast('Failed to start Meet');
-      throw e;
-    }
-  };
-};
+import { createHandleStartMeet } from '../src/meet.js';
 
 function makeDeps(overrides = {}) {
   const pushed = [];

@@ -20,7 +20,7 @@ function executeModuleScript() {
       }
     }
   });
-  
+
   // Mock the module functionality
   window.__createHandleStartMeet = () => {};
 }

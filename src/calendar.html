@@ -72,7 +72,10 @@
             transform: scale(1.02);
             box-shadow: 0 12px 24px rgba(0,0,0,0.2);
             z-index: 20;
-    }
+        }
+        /* Simple in-slot draggable/resizable pill */
+        .event-pill { position: relative; background: rgba(20,184,166,0.2); border: 1px solid rgba(20,184,166,0.4); color: #e6fffa; border-radius: 6px; padding: 4px 6px 10px 6px; font-size: 12px; user-select: none; }
+        .event-pill .resize { position: absolute; left: 4px; right: 4px; bottom: 2px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.5); cursor: ns-resize; }
 </style>
 
 <!-- Simple Calendar Component for PomPom -->
@@ -113,15 +116,9 @@
     <!-- Simple Weekly Calendar View -->
     <div class="calendar-grid">
         <!-- Day headers -->
-        <div class="grid grid-cols-8 gap-1 mb-2">
-            <div class="text-xs text-gray-400 p-2"></div> <!-- Empty corner -->
+        <div class="grid grid-cols-2 gap-1 mb-2">
+            <div class="text-xs text-gray-400 p-2"></div> <!-- Time label column -->
             <div id="day-0" class="text-center p-2 text-sm text-gray-300 font-medium"></div>
-            <div id="day-1" class="text-center p-2 text-sm text-gray-300 font-medium"></div>
-            <div id="day-2" class="text-center p-2 text-sm text-gray-300 font-medium"></div>
-            <div id="day-3" class="text-center p-2 text-sm text-gray-300 font-medium"></div>
-            <div id="day-4" class="text-center p-2 text-sm text-gray-300 font-medium"></div>
-            <div id="day-5" class="text-center p-2 text-sm text-gray-300 font-medium"></div>
-            <div id="day-6" class="text-center p-2 text-sm text-gray-300 font-medium"></div>
         </div>
 
         <!-- Time slots -->
@@ -173,21 +170,17 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update month/year display
         currentMonthYear.textContent = weekStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-        // Update day headers
-        for (let i = 0; i < 7; i++) {
-            const day = new Date(weekStart);
-            day.setDate(day.getDate() + i);
-            const dayElement = document.getElementById(`day-${i}`);
-            if (dayElement) {
-                const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
-                const dayNumber = day.getDate();
-                const isToday = day.toDateString() === new Date().toDateString();
-
-                dayElement.innerHTML = `
-                    <div class="text-xs mb-1">${dayName}</div>
-                    <div class="text-lg font-bold ${isToday ? 'bg-teal-500 text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto' : ''}">${dayNumber}</div>
-                `;
-            }
+        // Update header for today only
+        const day = new Date(currentDate);
+        const dayElement = document.getElementById('day-0');
+        if (dayElement) {
+            const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
+            const dayNumber = day.getDate();
+            const isToday = day.toDateString() === new Date().toDateString();
+            dayElement.innerHTML = `
+                <div class="text-xs mb-1">${dayName}</div>
+                <div class="text-lg font-bold ${isToday ? 'bg-teal-500 text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto' : ''}">${dayNumber}</div>
+            `;
         }
 
         renderTimeSlots();
@@ -197,46 +190,76 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderTimeSlots() {
         timeSlotsContainer.innerHTML = '';
 
-        // Create simple time slots for key hours
+        // Create simple time slots for key hours (one-day view)
         const keyHours = [9, 10, 11, 12, 13, 14, 15, 16, 17];
 
         keyHours.forEach(hour => {
-            const timeSlot = document.createElement('div');
-            timeSlot.className = 'grid grid-cols-8 gap-1 py-2 border-b border-white/5';
+            const timeRow = document.createElement('div');
+            timeRow.className = 'grid grid-cols-2 gap-1 py-2 border-b border-white/5';
 
             const timeLabel = document.createElement('div');
             timeLabel.className = 'text-xs text-gray-400 p-2 text-right';
             timeLabel.textContent = `${hour > 12 ? hour - 12 : hour}:00 ${hour >= 12 ? 'PM' : 'AM'}`;
 
-            timeSlot.appendChild(timeLabel);
+            timeRow.appendChild(timeLabel);
 
-            // Add 7 day slots
-            for (let day = 0; day < 7; day++) {
-                const daySlot = document.createElement('div');
-                daySlot.className = 'p-2 min-h-[40px] bg-white/5 rounded border border-white/10 hover:bg-white/10 transition cursor-pointer';
-                daySlot.dataset.day = day;
-                daySlot.dataset.hour = hour;
+            // Only today's slot (dayIndex 0)
+            const day = 0;
+            const daySlot = document.createElement('div');
+            daySlot.className = 'p-2 min-h-[40px] bg-white/5 rounded border border-white/10 hover:bg-white/10 transition cursor-pointer';
+            daySlot.dataset.day = day;
+            daySlot.dataset.hour = hour;
 
-                // Check for events at this time
-                const dayEvents = getEventsForTimeSlot(day, hour);
-                if (dayEvents.length > 0) {
-                    daySlot.innerHTML = `<div class="text-xs text-teal-300 truncate">${dayEvents[0].title}</div>`;
-                    daySlot.className += ' bg-teal-500/20 border-teal-400/30';
-                }
-
-                timeSlot.appendChild(daySlot);
+            // Check for events at this time and render draggable pill for first event
+            const dayEvents = getEventsForTimeSlot(day, hour);
+            if (dayEvents.length > 0) {
+                const ev = dayEvents[0];
+                const pill = document.createElement('div');
+                pill.className = 'event-pill';
+                pill.textContent = ev.title;
+                const res = document.createElement('div');
+                res.className = 'resize';
+                pill.appendChild(res);
+                // drag move across hours within the day
+                pill.draggable = true;
+                pill.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', String(ev.id));
+                });
+                // resize: simple +1 hour per mousedown
+                res.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    ev.end = new Date(ev.end.getTime() + 60*60*1000);
+                    renderCalendar();
+                });
+                daySlot.innerHTML = '';
+                daySlot.appendChild(pill);
+                daySlot.className += ' bg-teal-500/20 border-teal-400/30';
             }
 
-            timeSlotsContainer.appendChild(timeSlot);
+            // enable drop to move event within the same day
+            daySlot.addEventListener('dragover', (e) => e.preventDefault());
+            daySlot.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const idStr = e.dataTransfer.getData('text/plain');
+                const id = parseInt(idStr, 10);
+                const ev = events.find(x => x.id === id);
+                if (!ev) return;
+                const newStart = new Date(currentDate);
+                newStart.setHours(hour, 0, 0, 0);
+                const duration = ev.end - ev.start;
+                ev.start = newStart;
+                ev.end = new Date(newStart.getTime() + duration);
+                renderCalendar();
+            });
+
+            timeRow.appendChild(daySlot);
+            timeSlotsContainer.appendChild(timeRow);
         });
     }
 
     function getEventsForTimeSlot(dayIndex, hour) {
-        const weekStart = new Date(currentDate);
-        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-
-        const targetDate = new Date(weekStart);
-        targetDate.setDate(targetDate.getDate() + dayIndex);
+        const targetDate = new Date(currentDate);
+        targetDate.setHours(0,0,0,0);
 
         return events.filter(event => {
             const eventDate = new Date(event.start);
