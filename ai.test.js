@@ -83,8 +83,8 @@ const setupDOMAndScript = () => {
 
     // Manually set up AI event handlers that might not be executed above
     const breakdownTaskBtn = document.getElementById('breakdown-task-btn');
-    const summarizeChatBtn = document.getElementById('summarize-chat-btn');
-    const icebreakerBtn = document.getElementById('icebreaker-btn');
+    const summarizeChatBtn = document.getElementById('summarize-chat-action');
+    const icebreakerBtn = document.getElementById('icebreaker-action');
     const chatInput = document.getElementById('chat-input');
     const chatMessages = document.getElementById('chat-messages');
     const todoAddBtn = document.getElementById('todo-add-btn');
@@ -226,7 +226,7 @@ describe('AI Functionality (Groq)', () => {
         const chatMessages = document.getElementById('chat-messages');
         chatMessages.innerHTML = '<div>User A: We should refactor.</div><div>User B: I agree, let us move to microservices.</div>';
         
-        const summarizeChatBtn = document.getElementById('summarize-chat-btn');
+        const summarizeChatBtn = document.getElementById('summarize-chat-action');
         summarizeChatBtn.click();
 
         await waitFor(() => {
@@ -243,7 +243,7 @@ describe('AI Functionality (Groq)', () => {
             json: () => Promise.resolve({ choices: [{ message: { content: `"${mockQuestion}"` } }] }),
         });
 
-        const icebreakerBtn = document.getElementById('icebreaker-btn');
+        const icebreakerBtn = document.getElementById('icebreaker-action');
         const chatInput = document.getElementById('chat-input');
 
         icebreakerBtn.click();

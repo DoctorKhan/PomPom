@@ -66,22 +66,20 @@ describe('Daily Planner (sidebar) one-day schedule', () => {
         return fetch('src/daily-planner.html')
           .then(r => r.text())
           .then(html => {
-            const container = document.getElementById('calendar-container');
-            if (container) {
-              const tmp = document.createElement('div');
-              tmp.innerHTML = html;
-              const scripts = Array.from(tmp.querySelectorAll('script'));
-              scripts.forEach(s => s.parentNode && s.parentNode.removeChild(s));
-              container.innerHTML = '';
-              while (tmp.firstChild) container.appendChild(tmp.firstChild);
-              scripts.forEach(oldScript => {
-                const newScript = document.createElement('script');
-                if (oldScript.src) newScript.src = oldScript.src;
-                else newScript.textContent = oldScript.textContent || '';
-                container.appendChild(newScript);
-              });
-              try { document.dispatchEvent(new Event('DOMContentLoaded')); } catch {}
-            }
+            // Load content directly into the planner view
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            const scripts = Array.from(tmp.querySelectorAll('script'));
+            scripts.forEach(s => s.parentNode && s.parentNode.removeChild(s));
+            selectedView.innerHTML = '';
+            while (tmp.firstChild) selectedView.appendChild(tmp.firstChild);
+            scripts.forEach(oldScript => {
+              const newScript = document.createElement('script');
+              if (oldScript.src) newScript.src = oldScript.src;
+              else newScript.textContent = oldScript.textContent || '';
+              selectedView.appendChild(newScript);
+            });
+            try { document.dispatchEvent(new Event('DOMContentLoaded')); } catch {}
             selectedView.dataset.loaded = true;
           });
       }
@@ -90,18 +88,23 @@ describe('Daily Planner (sidebar) one-day schedule', () => {
 
     await window.switchView('planner');
 
-    const container = document.getElementById('calendar-container');
+    // Wait for planner view to be visible and loaded
     await waitFor(() => {
-      expect(container && container.innerHTML).toBeTruthy();
-      // Header should only have day-0
-      expect(container.querySelector('#day-0')).toBeTruthy();
-      expect(container.querySelector('#day-1')).toBeFalsy();
-      // Grid header should be 2 columns (time + today)
-      const header = container.querySelector('.grid.grid-cols-2');
-      expect(header).toBeTruthy();
-      // There should be multiple time rows (based on keyHours)
-      const timeRows = container.querySelectorAll('#time-slots > div');
-      expect(timeRows.length).toBeGreaterThanOrEqual(5);
+      const plannerView = document.getElementById('planner-view');
+      expect(plannerView).toBeTruthy();
+      expect(plannerView.classList.contains('hidden')).toBe(false);
+
+      // Check for daily planner specific elements
+      const agendaList = document.getElementById('agenda-list');
+      const currentDate = document.getElementById('current-date');
+      const addTaskBtn = document.getElementById('add-task-btn');
+
+      expect(agendaList).toBeTruthy();
+      expect(currentDate).toBeTruthy();
+      expect(addTaskBtn).toBeTruthy();
+
+      // Check that content has been loaded
+      expect(plannerView.innerHTML.trim()).not.toBe('');
     }, { timeout: 3000 });
 
     // Visibility: planner-view should be shown and others hidden

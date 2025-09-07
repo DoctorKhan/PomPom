@@ -581,98 +581,24 @@
             try {
                 log('Loading app for testing...', 'info');
 
-                // Fetch the main app HTML
-                const response = await fetch('../index.html');
-                if (!response.ok) {
-                    throw new Error(`Failed to load app: ${response.status}`);
-                }
-
-                const html = await response.text();
-
-                // Create a container for the app
+                // Load the index.html directly into an iframe.
+                // This is simpler and avoids many pathing issues.
                 previewArea.innerHTML = `
-                    <div id="test-app-container" style="width: 100%; height: 100%; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">
-                        ${html}
-                    </div>
+                    <iframe id="app-iframe" src="../index.html" style="width:100%; height:100%; border: 1px solid #e2e8f0; border-radius: 6px;"></iframe>
                 `;
 
-                // Fix stylesheet paths relative to /tests
-                try {
-                    const styleLinks = previewArea.querySelectorAll('link[rel="stylesheet"]');
-                    styleLinks.forEach(link => {
-                        const href = link.getAttribute('href') || '';
-                        if (href && !href.startsWith('http') && !href.startsWith('../')) {
-                            link.setAttribute('href', '../' + href);
-                        }
-                    });
-                } catch (e) { console.warn('Failed to adjust stylesheet links', e); }
-
-
-                // Execute scripts in the loaded HTML in sequence
-                const scriptElements = Array.from(previewArea.querySelectorAll('script'));
-
-                for (const script of scriptElements) {
-                    const attrSrc = script.getAttribute('src');
-                    if (attrSrc) {
-                        // External script - adjust relative paths using the original attribute
-                        const newScript = document.createElement('script');
-                        let fixedSrc = attrSrc;
-                        if (!/^https?:\/\//.test(attrSrc) && !attrSrc.startsWith('../')) {
-                            fixedSrc = '../' + attrSrc;
-                        }
-                        newScript.src = fixedSrc;
-
-                        // Wait for script to load before continuing
-                        await new Promise((resolve) => {
-                            newScript.onload = resolve;
-                            newScript.onerror = () => {
-                                console.warn('Failed to load script:', newScript.src);
-                                resolve(); // Continue even if script fails
-                            };
-                            document.head.appendChild(newScript);
-                        });
-                    } else if (script.textContent) {
-                        // Inline script
-                        try {
-                            // For module scripts, we need special handling
-                            if (script.type === 'module') {
-                                // Replace relative imports with paths that work from /tests
-                                let modifiedContent = script.textContent;
-                                modifiedContent = modifiedContent.replace(/from '\.\/src\//g, "from '../src/");
-                                modifiedContent = modifiedContent.replace(/from "\.\/src\//g, 'from "../src/');
-                                modifiedContent = modifiedContent.replace(/import\(['"]\.\/src\//g, "import('../src/");
-
-                                // Create a blob URL for the module script
-                                const blob = new Blob([modifiedContent], { type: 'application/javascript' });
-                                const url = URL.createObjectURL(blob);
-                                const newScript = document.createElement('script');
-                                newScript.type = 'module';
-                                newScript.src = url;
-
-                                // Wait for module to load
-                                await new Promise((resolve) => {
-                                    newScript.onload = resolve;
-                                    newScript.onerror = () => {
-                                        console.warn('Failed to load module script');
-                                        resolve(); // Continue even if module fails
-                                    };
-                                    document.head.appendChild(newScript);
-                                });
-                            } else {
-                                // Regular script
-                                try {
-                                    new Function(script.textContent)();
-                                } catch (e) {
-                                    console.warn('Failed to execute inline script');
-                                }
-                            }
-                        } catch (e) {
-                            console.error('Error executing script:', e);
-                        }
-                    }
-                }
-
-                log('App loaded successfully for testing', 'info');
+                // Wait for the iframe to load
+                await new Promise((resolve, reject) => {
+                    const iframe = document.getElementById('app-iframe');
+                    iframe.onload = () => {
+                        log('App loaded successfully into iframe.', 'info');
+                        resolve();
+                    };
+                    iframe.onerror = () => {
+                        log('Failed to load app iframe.', false);
+                        reject(new Error('Iframe loading failed'));
+                    };
+                });
 
             } catch (error) {
                 log(`Failed to load app: ${error.message}`, false);
@@ -689,14 +615,14 @@
          */
         function waitForAppLoad() {
             return new Promise((resolve, reject) => {
-                const container = document.getElementById('app-preview-container');
                 const timeout = setTimeout(() => {
                     reject(new Error('App load timeout'));
                 }, 10000); // 10 second timeout
 
                 const checkLoaded = () => {
-                    const appContainer = document.getElementById('test-app-container');
-                    if (appContainer && appContainer.innerHTML) {
+                    const iframe = document.getElementById('app-iframe');
+                    // Check if iframe exists and its document has loaded
+                    if (iframe && iframe.contentWindow && iframe.contentWindow.document.readyState === 'complete') {
                         clearTimeout(timeout);
                         resolve();
                     } else {
@@ -1139,7 +1065,21 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
             () => log('Time formatting utility works for seconds'),
             () => log('Time formatting utility works for minutes'),
             () => log('UI update functions are defined'),
-            () => log('Firebase config is loaded', Math.random() > 0.95), // 5% chance to fail
+            () => {
+                // Check if Firebase config is actually loaded
+                const checkFirebaseConfig = () => {
+                    try {
+                        if (typeof window.__firebase_config !== 'undefined') {
+                            log('Firebase config is loaded');
+                        } else {
+                            log('Firebase config is NOT loaded', false);
+                        }
+                    } catch (e) {
+                        log(`Firebase config check error: ${e.message}`, false);
+                    }
+                };
+                checkFirebaseConfig();
+            },
             () => log('User authentication module is initialized'),
             () => log('Firestore module is initialized'),
             () => log('Utility for random name generation exists'),

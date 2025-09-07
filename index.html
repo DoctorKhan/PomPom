@@ -20,21 +20,24 @@
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(20, 20, 30, 0.9);
             -webkit-backdrop-filter: blur(20px);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #00A6A6, #007A7A);
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px 0 rgba(0, 166, 166, 0.3);
+            background: linear-gradient(135deg, #14b8a6, #0891b2);
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px 0 rgba(20, 184, 166, 0.3);
+            font-weight: 600;
+            color: white !important;
         }
         .btn-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px 0 rgba(0, 166, 166, 0.4);
+            background: linear-gradient(135deg, #0891b2, #0e7490);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px 0 rgba(20, 184, 166, 0.4);
         }
         .btn-primary:disabled {
             opacity: 0.5;
@@ -45,24 +48,31 @@
         .btn-secondary {
             background-color: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
         }
         .btn-secondary:hover {
             background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
         }
 
         .form-input {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #E0E0E0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            transition: all 0.2s ease;
         }
         .form-input::placeholder {
-            color: #888;
+            color: rgba(255, 255, 255, 0.5);
         }
         .form-input:focus {
             outline: none;
-            border-color: #00A6A6;
-            box-shadow: 0 0 0 2px rgba(0, 166, 166, 0.5);
+            border-color: #14b8a6;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
         }
 
         .nav-btn {
@@ -104,10 +114,109 @@
             display: none !important;
         }
 
+        /* Enhanced Visual Hierarchy */
+        
+        /* Enhanced timer display */
+        #timer-display {
+            text-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
+            background: linear-gradient(135deg, #ffffff, #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Enhanced task items */
+        .task-item {
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .task-item:hover {
+            border-left-color: #14b8a6;
+            background: rgba(20, 184, 166, 0.05) !important;
+        }
+
+        .task-item.completed {
+            border-left-color: #6b7280;
+        }
+
+        /* Enhanced current task display */
+        .current-task-highlight {
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(8, 145, 178, 0.1));
+            border: 1px solid rgba(20, 184, 166, 0.3);
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.1);
+        }
+
+        /* Enhanced typography */
+        h1, h2, h3 {
+            color: white;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        h2 {
+            color: #f8fafc;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Status indicators */
+        .status-active {
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-break {
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-paused {
+            color: #6b7280;
+            background: rgba(107, 114, 128, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Enhanced main tabs */
+        .main-tab.active {
+            position: relative;
+        }
+
+        .main-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #14b8a6, #0891b2);
+            border-radius: 2px 2px 0 0;
+        }
+
+        /* Enhanced toast */
+        .toast {
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.9), rgba(8, 145, 178, 0.9));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(20, 184, 166, 0.3);
+            box-shadow: 0 8px 25px rgba(20, 184, 166, 0.3);
+            color: white;
+            font-weight: 500;
+        }
+
         /* Spinner for loading states */
         .spinner {
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top: 2px solid #00A6A6;
+            border: 2px solid rgba(20, 184, 166, 0.2);
+            border-top: 2px solid #14b8a6;
             border-radius: 50%;
             width: 16px;
             height: 16px;
@@ -116,6 +225,12 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        #chat-popup-container {
+          display: flex;
+          flex-direction: column; /* or row depending on desired layout */
+          gap: 10px;
         }
 
     </style>
@@ -235,6 +350,12 @@
                 <button id="timer-tab" class="main-tab flex-1 py-3 text-sm font-semibold text-white border-b-2 border-teal-400">
                     🕐 Timer
                 </button>
+                <button id="tasks-tab" class="main-tab flex-1 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent hover:text-white transition">
+                    ✅ Tasks
+                </button>
+                <button id="team-tab" class="main-tab flex-1 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent hover:text-white transition">
+                    👥 Team
+                </button>
                 <button id="calendar-tab" class="main-tab flex-1 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent hover:text-white transition">
                     📅 Calendar
                 </button>
@@ -242,82 +363,142 @@
 
             <!-- Main Content -->
             <main class="flex-1 flex overflow-hidden">
-
-                <!-- Timer View -->
-                <div id="timer-main-view" class="flex-1 flex overflow-hidden">
-                    <!-- Timer Content -->
-                    <div id="timer-view" class="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto">
-                        <div id="timer-display" class="text-8xl md:text-9xl font-bold text-white tracking-tighter kawaii-float">25:00</div>
-                        <div id="timer-mode-display" class="text-xl text-teal-300 mt-2 mb-6">Focus Time</div>
-
-                        <div class="w-full max-w-md mb-6">
-                            <div class="flex gap-2">
-                                <input id="goal-input" type="text" placeholder="Current task (top of list)" class="form-input flex-1 rounded-lg text-sm px-4 py-3" readonly>
-                                <button id="breakdown-task-btn" class="btn-secondary flex-shrink-0 px-4 rounded-lg font-semibold text-white text-sm" title="Break down top task with AI">✨ Break down</button>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-4 mb-8">
-                            <button id="start-pause-btn" class="btn-primary-teal text-xl px-10 py-4 rounded-xl font-bold">Start</button>
-                            <button id="reset-btn" class="btn-secondary text-gray-300 px-6 py-4 rounded-xl font-semibold">Reset</button>
-                        </div>
-
-                        <div id="mode-controls" class="flex items-center justify-center gap-2 flex-wrap">
-                            <button data-mode="pomodoro25" class="mode-btn btn-secondary px-3 py-1 rounded-full text-xs font-medium">Focus (25m)</button>
-                            <button data-mode="shortBreak" class="mode-btn btn-secondary px-3 py-1 rounded-full text-xs font-medium">Short Break (5m)</button>
-                            <button data-mode="longBreak" class="mode-btn btn-secondary px-3 py-1 rounded-full text-xs font-medium">Long Break (15m)</button>
-                        </div>
+                <!-- Sidebar for Timer View -->
+                <aside id="timer-sidebar" class="w-80 bg-black/20 border-r border-white/10 flex flex-col p-6 overflow-y-auto">
+                    <!-- Sidebar Navigation -->
+                    <div class="flex flex-col gap-2 mb-6">
+                        <button data-view="participants" class="view-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition">
+                            👥 Participants
+                        </button>
+                        <button data-view="tasks" class="view-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition">
+                            ✅ Tasks
+                        </button>
+                        <button data-view="planner" class="view-btn w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition">
+                            📅 Daily Planner
+                        </button>
                     </div>
 
-                    <!-- Right Sidebar (Team/Tasks/Chat) - shown only in timer view -->
-                    <aside class="w-96 border-l border-white/10 flex flex-col bg-black/10">
-                        <nav class="flex-shrink-0 border-b border-white/10">
-                             <button data-view="tasks" class="nav-btn w-1/3 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent">Tasks</button>
-                             <button data-view="participants" class="nav-btn w-1/3 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent active">Team</button>
-                             <button data-view="planner" class="nav-btn w-1/3 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent">Daily Planner</button>
-                        </nav>
-
-                        <div class="flex-1 overflow-y-auto p-4">
+                    <!-- Sidebar Views -->
+                    <div class="flex-1">
+                        <!-- Participants View -->
+                        <div id="participants-view" class="hidden">
+                            <h3 class="text-lg font-semibold text-white mb-4">Team Members</h3>
+                            <div id="participants-list" class="space-y-2"></div>
+                        </div>
 
                         <!-- Tasks View -->
                         <div id="tasks-view" class="hidden">
-                            <h3 class="font-semibold text-white mb-3">Session Tasks</h3>
+                            <h3 class="text-lg font-semibold text-white mb-4">Session Tasks</h3>
                             <div id="todo-list" class="space-y-2"></div>
-                             <div class="flex gap-2 mt-4">
-                                <input id="todo-idea-input" type="text" placeholder="Add a new task idea..." class="form-input flex-1 rounded-lg text-sm px-3 py-2">
-                                <button id="todo-add-btn" class="btn-primary flex-shrink-0 px-4 rounded-lg font-semibold !text-white text-sm flex items-center gap-2">
-                                    ✨ Add
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Participants View -->
-                        <div id="participants-view" class="">
-                             <h3 class="font-semibold text-white mb-3">Team Members (<span id="participant-count">0</span>)</h3>
-                             <div id="participants-list" class="space-y-3"></div>
-
-                             <!-- Extension Status - Subtle indicator -->
-                             <div id="extension-status" class="mb-2 text-xs text-gray-400 hidden">
-                                <span id="extension-status-text">Extension: Not installed</span>
-                             </div>
-
-                             <div class="mt-4">
-                                <button id="start-meet-btn" class="btn-primary-teal w-full py-2 rounded-lg font-semibold text-white text-sm flex items-center justify-center gap-2">
-                                    📹 Start Meeting
-                                </button>
-                             </div>
                         </div>
 
                         <!-- Planner View -->
                         <div id="planner-view" class="hidden">
-                            <h3 class="font-semibold text-white mb-3">Daily Planner</h3>
-                            <div id="calendar-container"></div>
+                            <div id="calendar-container">
+                                <!-- Daily planner content will be loaded here -->
+                            </div>
                         </div>
                     </div>
                 </aside>
+
+                <!-- Timer View -->
+                <div id="timer-main-view" class="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto">
+                    <div id="timer-display" class="text-8xl md:text-9xl font-bold text-white tracking-tighter kawaii-float">25:00</div>
+                    <div id="timer-mode-display" class="text-xl text-teal-300 mt-2 mb-6">Focus Time</div>
+
+                    <!-- Current Task Display -->
+                    <div class="w-full max-w-lg mb-8">
+                        <div class="text-center mb-4">
+                            <div class="text-sm text-gray-400 mb-2">Current Focus Task</div>
+                            <div id="current-task-display" class="text-xl text-white font-medium p-4 bg-white/10 rounded-lg border border-white/20 min-h-[3rem] flex items-center justify-center">
+                                No task selected - add a task to get started
+                            </div>
+                        </div>
+                        <div class="flex gap-2 justify-center">
+                            <button id="complete-current-task-btn" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" disabled>
+                                ✓ Complete Task
+                            </button>
+                            <button id="next-task-btn" class="btn-secondary px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" disabled>
+                                → Next Task
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4 mb-8">
+                        <button id="start-pause-btn" class="btn-primary-teal text-xl px-10 py-4 rounded-xl font-bold">Start</button>
+                        <button id="reset-btn" class="btn-secondary text-gray-300 px-6 py-4 rounded-xl font-semibold">Reset</button>
+                    </div>
+
+                    <div id="mode-controls" class="flex items-center justify-center gap-2 flex-wrap">
+                        <button data-mode="pomodoro25" class="mode-btn btn-secondary px-3 py-1 rounded-full text-xs font-medium">Focus (25m)</button>
+                        <button data-mode="shortBreak" class="mode-btn btn-secondary px-3 py-1 rounded-full text-xs font-medium">Short Break (5m)</button>
+                        <button data-mode="longBreak" class="mode-btn btn-secondary px-3 py-1 rounded-full text-xs font-medium">Long Break (15m)</button>
+                    </div>
                 </div>
 
-                <!-- Calendar View (hidden by default) -->
+                <!-- Tasks View -->
+                <div id="tasks-main-view" class="hidden flex-1 p-6 overflow-y-auto">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-2xl font-bold text-white">Session Tasks</h2>
+                            <div class="flex gap-3 items-center">
+                                <!-- Smart Actions Menu -->
+                                <div class="relative">
+                                    <button id="smart-actions-btn" class="btn-primary-teal px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                                        ✨ Smart Actions
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
+                                    <div id="smart-actions-menu" class="hidden absolute right-0 top-full mt-2 w-48 glass-card rounded-lg shadow-lg z-10">
+                                        <div class="p-2 space-y-1">
+                                            <button id="refine-task-action" class="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 rounded flex items-center gap-2">
+                                                ✨ Refine Current Task
+                                            </button>
+                                            <button id="breakdown-task-action" class="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 rounded flex items-center gap-2">
+                                                📋 Break Down Task
+                                            </button>
+                                            <hr class="border-white/10 my-1">
+                                            <button id="summarize-chat-action" class="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 rounded flex items-center gap-2">
+                                                📝 Summarize Chat
+                                            </button>
+                                            <button id="icebreaker-action" class="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 rounded flex items-center gap-2">
+                                                🧊 Generate Icebreaker
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Add Task -->
+                                <div class="flex gap-2">
+                                    <input id="todo-idea-input" type="text" placeholder="Add a new task idea..." class="form-input rounded-lg text-sm px-4 py-2 w-64">
+                                    <button id="todo-add-btn" class="btn-primary px-4 py-2 rounded-lg font-semibold !text-white text-sm flex items-center gap-2">
+                                        ✨ Add Task
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="todo-list" class="space-y-3"></div>
+                    </div>
+                </div>
+
+                <!-- Team View -->
+                <div id="team-main-view" class="hidden flex-1 p-6 overflow-y-auto">
+                    <div class="max-w-4xl mx-auto">
+                        <h2 class="text-2xl font-bold text-white mb-6">Team Members (<span id="participant-count">0</span>)</h2>
+                        <div id="participants-list" class="space-y-3 mb-6"></div>
+
+                        <!-- Extension Status -->
+                        <div id="extension-status" class="mb-4 p-4 bg-white/5 rounded-lg border border-white/10 hidden">
+                            <span id="extension-status-text">Extension: Not installed</span>
+                        </div>
+
+                        <button id="start-meet-btn" class="btn-primary-teal w-full py-3 rounded-lg font-semibold text-white text-lg flex items-center justify-center gap-2">
+                            📹 Start Meeting
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Calendar View -->
                 <div id="calendar-main-view" class="hidden flex-1 p-4 overflow-hidden">
                     <div class="w-full h-full bg-white rounded-lg overflow-hidden">
                         <iframe id="calendar-iframe" src="src/full-calendar.html" class="w-full h-full border-0"></iframe>
@@ -331,16 +512,12 @@
             <div id="chat-popup" class="hidden absolute bottom-20 right-0 w-80 h-96 glass-card rounded-2xl flex flex-col overflow-hidden">
                 <header class="p-4 border-b border-white/10 flex-shrink-0 flex justify-between items-center">
                     <h3 class="font-semibold text-white">Team Chat</h3>
-                    <div class="flex gap-2">
-                        <button id="summarize-chat-btn" class="btn-secondary text-xs px-2 py-1 rounded-lg">✨ Sum</button>
-                        <button id="icebreaker-btn" class="btn-secondary text-xs px-2 py-1 rounded-lg">🧊</button>
-                    </div>
                 </header>
                 <div id="chat-messages" class="flex-1 space-y-3 text-sm p-4 overflow-y-auto bg-black/10"></div>
                 <div class="p-4 border-t border-white/10">
                     <div class="flex gap-2">
                         <input id="chat-input" type="text" placeholder="Send a message..." class="form-input flex-1 rounded-lg text-sm px-3 py-2">
-                        <button id="send-chat-btn" class="btn-primary flex-shrink-0 px-4 rounded-lg font-semibold text-white text-sm">Send</button>
+                        <button id="send-chat-btn" class="btn-primary flex-shrink-0 px-4 rounded-lg font-semibold !text-white text-sm">Send</button>
                     </div>
                 </div>
             </div>
@@ -435,8 +612,36 @@
         </div>
         <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-teal-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm z-50"></div>
 
+        <!-- Task Actions Modal -->
+        <div id="task-actions-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="glass-card rounded-2xl p-6 w-full max-w-md mx-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-white">Task Actions</h3>
+                    <button id="close-task-modal" class="text-gray-400 hover:text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="task-modal-content">
+                    <div class="text-white mb-4" id="current-task-title"></div>
+                    <div class="space-y-3">
+                        <button id="refine-task-btn" class="w-full btn-primary-teal px-4 py-3 rounded-lg text-sm flex items-center justify-center gap-2">
+                            ✨ Refine with AI
+                        </button>
+                        <button id="breakdown-task-btn" class="w-full btn-secondary px-4 py-3 rounded-lg text-sm flex items-center justify-center gap-2">
+                            📋 Break Down
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
+    <!-- Load Firebase configuration -->
+    <script src="firebase-config.js"></script>
+    
     <!-- Load sound functions -->
     <script src="src/sound.js"></script>
 
@@ -632,12 +837,10 @@
         const startSessionBtn = document.getElementById('start-session-btn');
         const sessionHeaderName = document.getElementById('session-header-name');
         const copyLinkBtn = document.getElementById('copy-link-btn');
-        const goalInput = document.getElementById('goal-input');
         const breakdownTaskBtn = document.getElementById('breakdown-task-btn');
-        const viewButtons = document.querySelectorAll('.nav-btn');
-        const participantsView = document.getElementById('participants-view');
-        const tasksView = document.getElementById('tasks-view');
-        const plannerView = document.getElementById('planner-view');
+        const currentTaskDisplay = document.getElementById('current-task-display');
+        const completeCurrentTaskBtn = document.getElementById('complete-current-task-btn');
+        const nextTaskBtn = document.getElementById('next-task-btn');
         const todoIdeaInput = document.getElementById('todo-idea-input');
         const todoAddBtn = document.getElementById('todo-add-btn');
         const todoList = document.getElementById('todo-list');
@@ -645,8 +848,6 @@
         const chatPopup = document.getElementById('chat-popup');
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
-        const summarizeChatBtn = document.getElementById('summarize-chat-btn');
-        const icebreakerBtn = document.getElementById('icebreaker-btn');
         const aiAgentBtn = document.getElementById('ai-agent-btn');
         const aiAgentPopup = document.getElementById('ai-agent-popup');
         const aiAgentInput = document.getElementById('ai-agent-input');
@@ -656,9 +857,27 @@
 
         // Main tab elements
         const timerTab = document.getElementById('timer-tab');
+        const tasksTab = document.getElementById('tasks-tab');
+        const teamTab = document.getElementById('team-tab');
         const calendarTab = document.getElementById('calendar-tab');
         const timerMainView = document.getElementById('timer-main-view');
+        const tasksMainView = document.getElementById('tasks-main-view');
+        const teamMainView = document.getElementById('team-main-view');
         const calendarMainView = document.getElementById('calendar-main-view');
+
+        // Sidebar elements
+        const participantsView = document.getElementById('participants-view');
+        const tasksView = document.getElementById('tasks-view');
+        const plannerView = document.getElementById('planner-view');
+        const viewButtons = document.querySelectorAll('.view-btn');
+
+        // Smart Actions elements
+        const smartActionsBtn = document.getElementById('smart-actions-btn');
+        const smartActionsMenu = document.getElementById('smart-actions-menu');
+        const refineTaskAction = document.getElementById('refine-task-action');
+        const breakdownTaskAction = document.getElementById('breakdown-task-action');
+        const summarizeChatAction = document.getElementById('summarize-chat-action');
+        const icebreakerAction = document.getElementById('icebreaker-action');
         const leaveBtn = document.getElementById('leave-btn');
         const toastEl = document.getElementById('toast');
 
@@ -667,6 +886,268 @@
         let sessionId = '';
         let userName = '';
         let tasks = []; // In-memory task list for this example
+
+        // --- Auto-populate user name from localStorage ---
+        function autoPopulateUserName() {
+            try {
+                const storedUserName = localStorage.getItem('pompom_username');
+                if (storedUserName && userNameSetupInput && !userNameSetupInput.value) {
+                    userNameSetupInput.value = storedUserName;
+                }
+            } catch (e) {
+                // Ignore localStorage errors in some environments
+            }
+        }
+
+        // --- Auto-populate team name from localStorage ---
+        function autoPopulateTeamName() {
+            try {
+                const storedTeamName = localStorage.getItem('pompom_team_name');
+                if (storedTeamName && sessionNameInput && !sessionNameInput.value) {
+                    sessionNameInput.value = storedTeamName;
+                }
+            } catch (e) {
+                // Ignore localStorage errors in some environments
+            }
+        }
+
+        // Call auto-population when page loads
+        if (typeof window !== 'undefined' && window.addEventListener) {
+            window.addEventListener('DOMContentLoaded', () => {
+                autoPopulateUserName();
+                autoPopulateTeamName();
+            });
+        } else {
+            // Fallback for environments without addEventListener
+            setTimeout(() => {
+                autoPopulateUserName();
+                autoPopulateTeamName();
+            }, 100);
+        }
+
+        // --- Task-Timer Integration ---
+        function getCurrentTask() {
+            return tasks.find(task => !task.completed) || null;
+        }
+
+        function updateCurrentTaskDisplay() {
+            const currentTask = getCurrentTask();
+            if (currentTask) {
+                currentTaskDisplay.innerHTML = `
+                    <div class="current-task-highlight p-4 rounded-lg text-center">
+                        <div class="text-sm text-teal-300 mb-1">Currently Working On</div>
+                        <div class="text-white font-medium">${currentTask.text}</div>
+                    </div>
+                `;
+                currentTaskDisplay.className = "min-h-[3rem] flex items-center justify-center";
+                completeCurrentTaskBtn.disabled = false;
+                nextTaskBtn.disabled = false;
+            } else {
+                currentTaskDisplay.innerHTML = `
+                    <div class="p-4 rounded-lg text-center bg-white/5 border border-white/10">
+                        <div class="text-gray-400 text-sm">No active tasks</div>
+                        <div class="text-gray-500 text-xs mt-1">Add a task to get started</div>
+                    </div>
+                `;
+                currentTaskDisplay.className = "min-h-[3rem] flex items-center justify-center";
+                completeCurrentTaskBtn.disabled = true;
+                nextTaskBtn.disabled = true;
+            }
+        }
+
+        function completeCurrentTask() {
+            const currentTask = getCurrentTask();
+            if (currentTask) {
+                currentTask.completed = true;
+                updateCurrentTaskDisplay();
+                renderTasks();
+                showToast('✅ Task completed! Great work!');
+            }
+        }
+
+        function moveToNextTask() {
+            const currentTask = getCurrentTask();
+            if (currentTask) {
+                // Move current task to end of list
+                const index = tasks.indexOf(currentTask);
+                const movedTask = tasks.splice(index, 1)[0];
+                tasks.push(movedTask);
+                updateCurrentTaskDisplay();
+                renderTasks();
+                showToast('→ Moved to next task');
+            }
+        }
+
+        // --- Smart Actions Functions ---
+        function toggleSmartActionsMenu() {
+            smartActionsMenu.classList.toggle('hidden');
+        }
+
+        function hideSmartActionsMenu() {
+            smartActionsMenu.classList.add('hidden');
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!smartActionsBtn.contains(e.target) && !smartActionsMenu.contains(e.target)) {
+                hideSmartActionsMenu();
+            }
+        });
+
+        async function refineCurrentTask() {
+            const currentTask = getCurrentTask();
+            if (!currentTask) {
+                showToast('No current task to refine');
+                return;
+            }
+
+            refineTaskAction.innerHTML = '<div class="spinner w-3 h-3"></div> Refining...';
+            refineTaskAction.disabled = true;
+
+            const prompt = `Please refine and improve this task description to be more specific, actionable, and clear. Keep it concise but make it better: "${currentTask.text}"`;
+            const refinedTask = await callGroqAPI(prompt);
+            
+            if (refinedTask) {
+                currentTask.text = refinedTask;
+                updateCurrentTaskDisplay();
+                renderTasks();
+                showToast('✨ Task refined!');
+            }
+
+            refineTaskAction.innerHTML = '✨ Refine Current Task';
+            refineTaskAction.disabled = false;
+            hideSmartActionsMenu();
+        }
+
+        async function breakdownCurrentTask() {
+            const currentTask = getCurrentTask();
+            if (!currentTask) {
+                showToast('No current task to break down');
+                return;
+            }
+
+            breakdownTaskAction.innerHTML = '<div class="spinner w-3 h-3"></div> Breaking down...';
+            breakdownTaskAction.disabled = true;
+
+            const prompt = `Break down this task into 3-5 smaller, actionable sub-tasks. Present them as a simple list: "${currentTask.text}"`;
+            const breakdown = await callGroqAPI(prompt);
+            
+            if (breakdown) {
+                // Remove the original task
+                const index = tasks.indexOf(currentTask);
+                tasks.splice(index, 1);
+
+                // Add the breakdown as separate tasks
+                const subTasks = breakdown.split('\n').filter(task => task.trim() && task.includes('-') || task.match(/^\d+\./));
+                subTasks.forEach(subTask => {
+                    const cleanTask = subTask.replace(/^[-*•\d.)\s]+/, '').trim();
+                    if (cleanTask) {
+                        tasks.push({ text: cleanTask, completed: false });
+                    }
+                });
+
+                updateCurrentTaskDisplay();
+                renderTasks();
+                showToast('📋 Task broken down!');
+            }
+
+            breakdownTaskAction.innerHTML = '📋 Break Down Task';
+            breakdownTaskAction.disabled = false;
+            hideSmartActionsMenu();
+        }
+
+        async function summarizeChatFromActions() {
+            const messages = Array.from(chatMessages.children).map(el => el.textContent).join('\n');
+            if (messages.length < 50) {
+                showToast('Not enough chat history to summarize');
+                return;
+            }
+
+            summarizeChatAction.innerHTML = '<div class="spinner w-3 h-3"></div> Summarizing...';
+            summarizeChatAction.disabled = true;
+
+            const prompt = `Summarize the key decisions, action items, and overall sentiment of the following chat conversation. Present it in a few bullet points.\n\nChat History:\n${messages}`;
+            const summary = await callGroqAPI(prompt);
+            
+            if (summary) {
+                const summaryEl = document.createElement('div');
+                summaryEl.className = 'p-2 bg-teal-900/50 rounded-lg text-xs italic mt-2';
+                summaryEl.textContent = `✨ Summary: ${summary}`;
+                chatMessages.appendChild(summaryEl);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                showToast('📝 Chat summarized!');
+            }
+
+            summarizeChatAction.innerHTML = '📝 Summarize Chat';
+            summarizeChatAction.disabled = false;
+            hideSmartActionsMenu();
+        }
+
+        async function generateIcebreakerFromActions() {
+            icebreakerAction.innerHTML = '<div class="spinner w-3 h-3"></div> Generating...';
+            icebreakerAction.disabled = true;
+
+            const prompt = 'Generate a fun, safe-for-work icebreaker question for a remote team to discuss.';
+            const question = await callGroqAPI(prompt);
+            
+            if (question) {
+                chatInput.value = question.replace(/"/g, '');
+                showToast('🧊 Icebreaker generated!');
+            }
+
+            icebreakerAction.innerHTML = '🧊 Generate Icebreaker';
+            icebreakerAction.disabled = false;
+            hideSmartActionsMenu();
+        }
+
+        // --- Inline Task Editing ---
+        function startTaskEdit(index) {
+            const task = tasks[index];
+            const taskElements = todoList.querySelectorAll('.task-text');
+            const taskElement = taskElements[index];
+            
+            if (!taskElement) return;
+
+            // Create input element
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = task.text;
+            input.className = 'form-input flex-1 rounded px-2 py-1 text-sm bg-white/10 border border-teal-400 text-white';
+            
+            // Replace text with input
+            const parent = taskElement.parentElement;
+            parent.replaceChild(input, taskElement);
+            
+            // Focus and select text
+            input.focus();
+            input.select();
+
+            // Handle save/cancel
+            const saveEdit = () => {
+                const newText = input.value.trim();
+                if (newText && newText !== task.text) {
+                    task.text = newText;
+                    showToast('✏️ Task updated!');
+                }
+                renderTasks();
+                updateCurrentTaskDisplay();
+            };
+
+            const cancelEdit = () => {
+                renderTasks();
+            };
+
+            input.addEventListener('blur', saveEdit);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveEdit();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    cancelEdit();
+                }
+            });
+        }
 
         // --- Groq API Helper (via backend proxy) ---
         async function callGroqAPI(prompt) {
@@ -732,20 +1213,30 @@
             todoList.innerHTML = '';
             if (tasks.length === 0) {
                 todoList.innerHTML = `<p class="text-gray-400 text-sm">No tasks yet. Add one!</p>`;
+                updateCurrentTaskDisplay(); // Update timer display when no tasks
                 return;
             }
             tasks.forEach((task, index) => {
                 const taskEl = document.createElement('div');
-                taskEl.className = `p-2 rounded-lg flex justify-between items-center ${task.completed ? 'bg-white/5 text-gray-500' : 'bg-white/10'}`;
+                taskEl.className = `task-item p-3 rounded-lg flex justify-between items-center ${task.completed ? 'bg-white/5 text-gray-500 completed' : 'bg-white/10'} group transition-all hover:bg-white/15`;
                 taskEl.innerHTML = `
-                    <span class="${task.completed ? 'line-through' : ''}">${task.text}</span>
-                    <div class="flex gap-2">
-                        <button data-index="${index}" class="toggle-task-btn text-xs">${task.completed ? 'Undo' : 'Done'}</button>
-                        <button data-index="${index}" class="delete-task-btn text-xs text-red-400">Del</button>
+                    <div class="flex-1 flex items-center gap-3">
+                        <button data-index="${index}" class="toggle-task-btn w-5 h-5 rounded border-2 border-gray-400 flex items-center justify-center ${task.completed ? 'bg-teal-500 border-teal-500' : ''} hover:border-teal-400 transition">
+                            ${task.completed ? '<svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>' : ''}
+                        </button>
+                        <span class="task-text flex-1 cursor-pointer ${task.completed ? 'line-through' : ''} hover:text-teal-300 transition" data-index="${index}" title="Click to edit">${task.text}</span>
+                    </div>
+                    <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button data-index="${index}" class="delete-task-btn text-red-400 px-2 py-1 rounded hover:bg-red-500/20 transition">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
                     </div>
                 `;
                 todoList.appendChild(taskEl);
             });
+            updateCurrentTaskDisplay(); // Update timer display after rendering tasks
         }
 
         function switchView(view) {
@@ -800,23 +1291,41 @@
         function switchMainView(view) {
             // Hide all main views
             timerMainView.classList.add('hidden');
+            tasksMainView.classList.add('hidden');
+            teamMainView.classList.add('hidden');
             calendarMainView.classList.add('hidden');
 
             // Remove active class from all tabs
-            timerTab.classList.remove('border-teal-400', 'text-white');
-            timerTab.classList.add('border-transparent', 'text-gray-400');
-            calendarTab.classList.remove('border-teal-400', 'text-white');
-            calendarTab.classList.add('border-transparent', 'text-gray-400');
+            [timerTab, tasksTab, teamTab, calendarTab].forEach(tab => {
+                tab.classList.remove('border-teal-400', 'text-white');
+                tab.classList.add('border-transparent', 'text-gray-400');
+            });
 
             // Show selected view and activate tab
-            if (view === 'timer') {
-                timerMainView.classList.remove('hidden');
-                timerTab.classList.remove('border-transparent', 'text-gray-400');
-                timerTab.classList.add('border-teal-400', 'text-white');
-            } else if (view === 'calendar') {
-                calendarMainView.classList.remove('hidden');
-                calendarTab.classList.remove('border-transparent', 'text-gray-400');
-                calendarTab.classList.add('border-teal-400', 'text-white');
+            let activeTab, activeView;
+            switch(view) {
+                case 'timer':
+                    activeTab = timerTab;
+                    activeView = timerMainView;
+                    break;
+                case 'tasks':
+                    activeTab = tasksTab;
+                    activeView = tasksMainView;
+                    break;
+                case 'team':
+                    activeTab = teamTab;
+                    activeView = teamMainView;
+                    break;
+                case 'calendar':
+                    activeTab = calendarTab;
+                    activeView = calendarMainView;
+                    break;
+            }
+
+            if (activeTab && activeView) {
+                activeView.classList.remove('hidden');
+                activeTab.classList.remove('border-transparent', 'text-gray-400');
+                activeTab.classList.add('border-teal-400', 'text-white');
             }
         }
 
@@ -961,6 +1470,15 @@
             }
             userName = name;
             sessionId = team || generateRandomTeamName();
+            
+            // Save to localStorage for auto-population
+            try {
+                localStorage.setItem('pompom_username', userName);
+                localStorage.setItem('pompom_team_name', sessionId);
+            } catch (e) {
+                // Ignore localStorage errors in some environments
+            }
+            
             welcomePage.classList.add('hidden');
             sessionPage.classList.remove('hidden');
             sessionHeaderName.textContent = `Team: ${sessionId}`;
@@ -992,20 +1510,29 @@
             showToast('Left the session');
         });
 
-        viewButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const view = button.dataset.view;
-                switchView(view);
-            });
-        });
-
         // Main tab event listeners
         timerTab.addEventListener('click', () => {
             switchMainView('timer');
         });
 
+        tasksTab.addEventListener('click', () => {
+            switchMainView('tasks');
+        });
+
+        teamTab.addEventListener('click', () => {
+            switchMainView('team');
+        });
+
         calendarTab.addEventListener('click', () => {
             switchMainView('calendar');
+        });
+
+        // Sidebar view event listeners
+        viewButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const view = button.dataset.view;
+                switchView(view);
+            });
         });
 
         chatPopupBtn.addEventListener('click', () => {
@@ -1058,47 +1585,51 @@
         });
 
         todoList.addEventListener('click', (e) => {
-            const index = e.target.dataset.index;
+            const index = parseInt(e.target.dataset.index);
+            
             if (e.target.classList.contains('toggle-task-btn')) {
                 tasks[index].completed = !tasks[index].completed;
-            }
-            if (e.target.classList.contains('delete-task-btn')) {
+                renderTasks();
+                updateCurrentTaskDisplay();
+            } else if (e.target.classList.contains('delete-task-btn')) {
                 tasks.splice(index, 1);
+                renderTasks();
+                updateCurrentTaskDisplay();
+                showToast('🗑️ Task deleted');
+            } else if (e.target.classList.contains('task-text')) {
+                startTaskEdit(index);
             }
-            renderTasks();
         });
 
-        summarizeChatBtn.addEventListener('click', async () => {
-            const messages = Array.from(chatMessages.children).map(el => el.textContent).join('\\n');
-            if (messages.length < 50) {
-                showToast("Not enough chat history to summarize.");
-                return;
-            }
-            summarizeChatBtn.disabled = true;
-            summarizeChatBtn.innerHTML = `<div class="spinner"></div>`;
-            const prompt = `Summarize the key decisions, action items, and overall sentiment of the following chat conversation. Present it in a few bullet points. \\n\\nChat History:\\n${messages}`;
-            const summary = await callGroqAPI(prompt);
-            if (summary) {
-                const summaryEl = document.createElement('div');
-                summaryEl.className = 'p-2 bg-teal-900/50 rounded-lg text-xs italic mt-2';
-                summaryEl.textContent = `✨ Summary: ${summary}`;
-                chatMessages.appendChild(summaryEl);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-            summarizeChatBtn.disabled = false;
-            summarizeChatBtn.textContent = '✨ Sum';
+        // Timer-task integration event listeners
+        completeCurrentTaskBtn.addEventListener('click', () => {
+            completeCurrentTask();
         });
 
-        icebreakerBtn.addEventListener('click', async () => {
-            icebreakerBtn.disabled = true;
-            icebreakerBtn.innerHTML = `<div class="spinner"></div>`;
-            const prompt = "Generate a fun, safe-for-work icebreaker question for a remote team to discuss.";
-            const question = await callGroqAPI(prompt);
-            if (question) {
-                chatInput.value = question.replace(/"/g, '');
-            }
-            icebreakerBtn.disabled = false;
-            icebreakerBtn.textContent = '🧊';
+        nextTaskBtn.addEventListener('click', () => {
+            moveToNextTask();
+        });
+
+        // Smart Actions event listeners
+        smartActionsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleSmartActionsMenu();
+        });
+
+        refineTaskAction.addEventListener('click', () => {
+            refineCurrentTask();
+        });
+
+        breakdownTaskAction.addEventListener('click', () => {
+            breakdownCurrentTask();
+        });
+
+        summarizeChatAction.addEventListener('click', () => {
+            summarizeChatFromActions();
+        });
+
+        icebreakerAction.addEventListener('click', () => {
+            generateIcebreakerFromActions();
         });
 
         // Start Meeting functionality
@@ -1604,8 +2135,9 @@
                     taskEl.innerHTML = `
                         <span class="task-text ${task.completed ? 'line-through' : ''}">${task.text}</span>
                         <div class="flex gap-2">
-                            <button data-index="${index}" class="toggle-task-btn text-xs">${task.completed ? 'Undo' : 'Done'}</button>
-                            <button data-index="${index}" class="delete-task-btn text-xs text-red-400">Del</button>
+                            <button data-index="${index}" class="task-actions-btn text-xs px-2 py-1 rounded bg-teal-500/20 text-teal-300 hover:bg-teal-500/30" title="AI Actions">✨</button>
+                            <button data-index="${index}" class="toggle-task-btn text-xs px-2 py-1 rounded bg-white/10 hover:bg-white/20">${task.completed ? 'Undo' : 'Done'}</button>
+                            <button data-index="${index}" class="delete-task-btn text-xs text-red-400 px-2 py-1 rounded hover:bg-red-500/20">Del</button>
                         </div>
                     `;
                     taskEl.addEventListener('dragstart', (ev) => {
@@ -1625,9 +2157,7 @@
                         const moved = tasks.splice(from, 1)[0];
                         tasks.splice(to, 0, moved);
                         renderTasksWithDnD();
-                        // Auto-show top task as goal
-                        const top = topTaskText();
-                        if (top) goalInput.value = top;
+                        // Auto-show top task as goal - removed since goalInput doesn't exist
                     });
                     todoList.appendChild(taskEl);
                 });
@@ -1676,20 +2206,6 @@
                 });
             });
             }
-            // Auto-set goal input to top task
-            const top = topTaskText();
-            if (top) goalInput.value = top; else if (!goalInput.value) goalInput.value = '';
-        }
-
-        if (saveGoalBtn) {
-            saveGoalBtn.addEventListener('click', () => {
-                const txt = (goalInput.value || '').trim();
-                if (!txt) return;
-                // Insert as top task
-                tasks.unshift({ text: txt, completed: false });
-                renderTasksWithDnD();
-                showToast('Goal set as top task');
-            });
         }
 
         // Replace plain renderTasks with DnD-enabled renderer
@@ -1717,7 +2233,95 @@
         // --- Initial Load ---
         userNameSetupInput.value = generateRandomUserName();
         renderTasks();
-        switchView('participants'); // Start with participants view active
+        // Start with timer view active
+        switchMainView('timer');
+
+        // Task Actions Modal functionality
+        let currentTaskIndex = null;
+
+        function showTaskActions(index) {
+            const task = tasks[index];
+            if (!task) return;
+
+            currentTaskIndex = index;
+            document.getElementById('current-task-title').textContent = task.text;
+            document.getElementById('task-actions-modal').classList.remove('hidden');
+        }
+
+        function closeTaskModal() {
+            document.getElementById('task-actions-modal').classList.add('hidden');
+            currentTaskIndex = null;
+        }
+
+        // AI Functions for task refinement and breakdown
+        async function refineTask() {
+            const task = tasks[currentTaskIndex];
+            if (!task) return;
+
+            const prompt = `Refine and improve this task description to be more clear, actionable, and specific: "${task.text}". Respond with a JSON object containing only a "refined" field with the improved task description.`;
+
+            try {
+                const response = await callGroqAPI(prompt);
+                const result = extractJSON(response);
+
+                if (result && result.refined) {
+                    task.text = result.refined;
+                    renderTasks();
+                    closeTaskModal();
+                    showToast('✅ Task refined with AI!');
+                } else {
+                    showToast('❌ Failed to refine task');
+                }
+            } catch (error) {
+                console.error('Refine task error:', error);
+                showToast('❌ Failed to refine task');
+            }
+        }
+
+        async function breakDownTask() {
+            const task = tasks[currentTaskIndex];
+            if (!task) return;
+
+            const prompt = `Break down this task into 3-5 specific, actionable subtasks: "${task.text}". Respond with a JSON object containing a "subtasks" array of strings.`;
+
+            try {
+                const response = await callGroqAPI(prompt);
+                const result = extractJSON(response);
+
+                if (result && result.subtasks && Array.isArray(result.subtasks)) {
+                    // Insert subtasks after the current task
+                    const subtasks = result.subtasks.map((subtask) => ({
+                        text: subtask,
+                        completed: false
+                    }));
+
+                    tasks.splice(currentTaskIndex + 1, 0, ...subtasks);
+                    renderTasks();
+                    closeTaskModal();
+                    showToast(`✅ Task broken into ${subtasks.length} subtasks!`);
+                } else {
+                    showToast('❌ Failed to break down task');
+                }
+            } catch (error) {
+                console.error('Break down task error:', error);
+                showToast('❌ Failed to break down task');
+            }
+        }
+
+        // Event listeners for task actions
+        document.getElementById('close-task-modal').addEventListener('click', closeTaskModal);
+        document.getElementById('refine-task-btn').addEventListener('click', refineTask);
+        document.getElementById('breakdown-task-btn').addEventListener('click', breakDownTask);
+
+        // Add click handler for task actions buttons
+        todoList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('task-actions-btn')) {
+                const index = parseInt(e.target.dataset.index, 10);
+                if (!isNaN(index)) {
+                    showTaskActions(index);
+                }
+            }
+        });
 
     </script>
 </body>

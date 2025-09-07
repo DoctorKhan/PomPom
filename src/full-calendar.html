@@ -9,92 +9,447 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0B1120 0%, #1A2942 50%, #2A3A5A 100%);
-            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             background-attachment: fixed;
+            min-height: 100vh;
+            color: #1e293b;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            color: #E2E8F0;
         }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.05);
+        /* AI-First Modern Calendar Layout */
+        #app {
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            height: calc(100vh - 48px);
+            margin: 24px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .glass-card-hover {
-            transition: all 0.3s ease;
-        }
-
-        .glass-card-hover:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: 80px repeat(7, minmax(0, 1fr));
-            grid-template-rows: auto repeat(24, minmax(60px, auto));
+        /* AI-Enhanced Header */
+        .calendar-header {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.3);
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 80px;
             position: relative;
         }
 
+        .calendar-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+        }
+
+        /* AI-Enhanced Calendar Grid */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(7, minmax(0, 1fr));
+            grid-template-rows: 50px repeat(24, 60px);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.3);
+            border-radius: 16px;
+            overflow: hidden;
+            margin: 24px;
+            box-shadow:
+                0 10px 25px -5px rgba(0, 0, 0, 0.1),
+                0 10px 10px -5px rgba(0, 0, 0, 0.04),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        /* AI-Enhanced Time Slots */
         .time-slot {
             height: 60px;
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            transition: background-color 0.2s ease;
+            border-right: 1px solid rgba(241, 245, 249, 0.6);
+            border-bottom: 1px solid rgba(241, 245, 249, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .time-slot:hover {
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(59, 130, 246, 0.05);
+            border-color: rgba(59, 130, 246, 0.2);
+            transform: scale(1.002);
         }
 
+        .time-slot.ai-suggested {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            animation: ai-pulse 2s infinite;
+        }
+
+        @keyframes ai-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1); }
+        }
+
+        /* AI-Enhanced Time Labels */
         .time-label {
-            color: #94A3B8;
-            font-size: 0.875rem;
-            font-weight: 500;
-            padding: 0.5rem;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 12px 8px;
             text-align: center;
+            background: linear-gradient(135deg, rgba(248, 250, 252, 0.9), rgba(241, 245, 249, 0.7));
+            backdrop-filter: blur(5px);
+            border-right: 1px solid rgba(226, 232, 240, 0.4);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.3);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
         }
 
+        .time-label::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .time-label:hover::before {
+            opacity: 1;
+        }
+
+        /* AI-Enhanced Day Headers */
         .day-header {
-            padding: 1rem;
+            background: linear-gradient(135deg, rgba(248, 250, 252, 0.95), rgba(241, 245, 249, 0.8));
+            backdrop-filter: blur(10px);
+            padding: 16px 12px;
             text-align: center;
-            font-weight: 600;
-            color: #E2E8F0;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.02);
+            font-weight: 700;
+            font-size: 14px;
+            color: #475569;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.4);
+            border-right: 1px solid rgba(241, 245, 249, 0.3);
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .day-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transition: width 0.3s ease;
+        }
+
+        .day-header:hover::after {
+            width: 80%;
         }
 
         .today-header {
-            background: linear-gradient(135deg, rgba(0, 166, 166, 0.2), rgba(0, 122, 122, 0.2));
-            border-bottom: 2px solid #00A6A6;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: #ffffff;
+            font-weight: 800;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
 
+        .today-header::after {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* AI-Enhanced Event Containers */
         .event-container {
             position: absolute;
             display: flex;
             align-items: flex-start;
             gap: 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: grab;
             z-index: 10;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            box-shadow:
+                0 4px 15px rgba(0, 0, 0, 0.1),
+                0 2px 8px rgba(0, 0, 0, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border-left: 4px solid;
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .event-container.ai-created {
+            border-left: 4px solid #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(255, 255, 255, 0.95));
+            box-shadow:
+                0 6px 20px rgba(16, 185, 129, 0.2),
+                0 2px 8px rgba(0, 0, 0, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .event-container.ai-created::before {
+            content: '🤖';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            font-size: 12px;
+            opacity: 0.7;
         }
 
         .event-container:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow:
+                0 8px 25px rgba(0, 0, 0, 0.15),
+                0 4px 12px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
             z-index: 15;
+        }
+
+        .event-container.ai-created:hover {
+            box-shadow:
+                0 12px 30px rgba(16, 185, 129, 0.3),
+                0 4px 12px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .event-container.dragging {
+            opacity: 0.8;
+            transform: scale(1.05) rotate(2deg);
+            z-index: 1000;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(59, 130, 246, 0.8);
+            background: rgba(59, 130, 246, 0.2);
+            cursor: grabbing;
+        }
+
+        .time-slot.drag-over {
+            background: #dbeafe;
+            border: 1px dashed #3b82f6;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .drag-preview {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1001;
+            opacity: 0.7;
+            transform: rotate(5deg);
+            border: 2px solid rgba(59, 130, 246, 0.8);
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 8px;
+            color: white;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .calendar-container {
+                padding: 8px;
+                gap: 8px;
+            }
+
+            .calendar-header {
+                flex-direction: column;
+                gap: 12px;
+                padding: 12px;
+            }
+
+            .header-controls {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .header-controls button {
+                min-width: 44px; /* Touch-friendly minimum size */
+                min-height: 44px;
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+
+            .calendar-grid {
+                font-size: 12px;
+                min-height: 60vh;
+            }
+
+            .time-label {
+                font-size: 10px;
+                padding: 4px 2px;
+                writing-mode: horizontal-tb;
+            }
+
+            .day-header {
+                font-size: 12px;
+                padding: 8px 4px;
+            }
+
+            .time-slot {
+                min-height: 40px; /* Smaller on mobile */
+            }
+
+            .event-container {
+                padding: 4px 6px;
+                margin: 1px;
+                font-size: 11px;
+                border-radius: 4px;
+            }
+
+            .event-content {
+                line-height: 1.2;
+            }
+
+            .duration-bar {
+                height: 2px;
+            }
+
+            /* Mobile-specific sidebar */
+            .sidebar {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 90%;
+                max-width: 320px;
+                height: 100vh;
+                background: rgba(17, 24, 39, 0.98);
+                backdrop-filter: blur(20px);
+                transition: right 0.3s ease;
+                z-index: 100;
+                overflow-y: auto;
+                padding: 20px;
+            }
+
+            .sidebar.mobile-open {
+                right: 0;
+            }
+
+            .mobile-sidebar-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 99;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+            }
+
+            .mobile-sidebar-overlay.active {
+                opacity: 1;
+                pointer-events: all;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+                background: #ffffff;
+                border: 1px solid #d1d5db;
+                color: #374151;
+                font-size: 14px;
+                padding: 8px 12px;
+                cursor: pointer;
+                border-radius: 6px;
+                transition: all 0.15s ease;
+            }
+
+            .mobile-menu-btn:hover {
+                background: #f9fafb;
+                border-color: #9ca3af;
+            }
+
+            /* Modal adjustments for mobile */
+            .modal-content {
+                margin: 10px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .form-group {
+                margin-bottom: 16px;
+            }
+
+            .input-field, .select-field {
+                font-size: 16px; /* Prevent zoom on iOS */
+                min-height: 44px;
+            }
+
+            .btn-primary, .btn-secondary {
+                min-height: 44px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .calendar-grid {
+                grid-template-columns: 40px repeat(7, 1fr);
+            }
+
+            .time-label {
+                font-size: 9px;
+                padding: 2px 1px;
+            }
+
+            .day-header {
+                font-size: 10px;
+                padding: 6px 2px;
+            }
+
+            .time-slot {
+                min-height: 35px;
+            }
+
+            .event-container {
+                font-size: 10px;
+                padding: 2px 4px;
+            }
+        }
+
+        /* Hide desktop sidebar on mobile */
+        @media (max-width: 768px) {
+            .sidebar:not(.mobile-open) {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-menu-btn {
+                display: none;
+            }
+
+            .mobile-sidebar-overlay {
+                display: none;
+            }
         }
 
         .event-content {
@@ -152,27 +507,219 @@
             opacity: 1;
         }
 
+        /* AI-Enhanced Button Styles */
         .btn-primary {
-            background: linear-gradient(135deg, #00A6A6, #007A7A);
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px 0 rgba(0, 166, 166, 0.3);
-            border: none;
-            color: white;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border: 1px solid transparent;
+            color: #ffffff;
             font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
         }
 
         .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px 0 rgba(0, 166, 166, 0.4);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-            color: #E2E8F0;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(209, 213, 219, 0.3);
+            color: #374151;
             font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
         }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(249, 250, 251, 0.95);
+            border-color: rgba(156, 163, 175, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* AI-Specific Button */
+        .btn-ai {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: 1px solid transparent;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 14px 28px;
+            border-radius: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            font-size: 15px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-ai::before {
+            content: '✨';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            animation: sparkle 2s infinite;
+        }
+
+        .btn-ai:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.5);
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; transform: translateY(-50%) scale(1); }
+            50% { opacity: 0.7; transform: translateY(-50%) scale(1.1); }
+        }
+
+        /* AI Loading Animation */
+        .ai-thinking {
+            position: relative;
+        }
+
+        .ai-thinking::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translateY(-50%) rotate(0deg); }
+            100% { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        /* AI Suggestions Popup */
+        .ai-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            margin-top: 8px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ai-suggestions.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .ai-suggestion-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-suggestion-item:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .ai-suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Floating AI Assistant */
+        .ai-floating-assistant {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+        }
+
+        .ai-floating-assistant:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.5);
+        }
+
+        .ai-floating-assistant::before {
+            content: '🤖';
+            font-size: 24px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Event Colors */
+        .event {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #ffffff;
+            cursor: pointer;
+            margin: 1px 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .event-work { background-color: #3b82f6; border-left-color: #2563eb; }
+        .event-personal { background-color: #10b981; border-left-color: #059669; }
+        .event-meeting { background-color: #f59e0b; border-left-color: #d97706; }
+        .event-other { background-color: #8b5cf6; border-left-color: #7c3aed; }
 
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.15);
@@ -270,28 +817,50 @@
 </head>
 <body class="min-h-screen">
 
-    <div id="app" class="flex h-screen w-screen p-6 gap-6">
+    <!-- Mobile Sidebar Overlay -->
+    <div id="mobile-sidebar-overlay" class="mobile-sidebar-overlay"></div>
 
-        <!-- Sidebar -->
-        <aside class="w-1/4 max-w-sm flex flex-col gap-6">
-            <div class="glass-card glass-card-hover p-6 rounded-3xl flex-1 flex flex-col fade-in">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center">
-                        <i class="fas fa-calendar-alt text-white"></i>
+    <div id="app" class="flex h-screen w-screen">
+
+        <!-- AI-Enhanced Sidebar -->
+        <aside id="sidebar" class="sidebar w-80 bg-gradient-to-b from-white/95 to-gray-50/95 backdrop-filter backdrop-blur-xl border-r border-white/20 flex flex-col shadow-xl">
+            <div class="p-8 flex-1 flex flex-col">
+                <!-- AI Assistant Header -->
+                <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gradient-to-r from-transparent via-gray-200/50 to-transparent">
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                        <span class="text-2xl">🤖</span>
                     </div>
-                    <h2 class="text-xl font-bold text-white">Smart Schedule</h2>
+                    <div>
+                        <h2 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">AI Assistant</h2>
+                        <p class="text-sm text-gray-500">Smart scheduling powered by AI</p>
+                    </div>
                 </div>
 
                 <!-- AI Scheduling Section -->
-                <div class="mb-6">
-                    <div class="relative">
-                        <input id="ai-input" type="text" placeholder="e.g., 'Team lunch tomorrow at 1pm'"
-                               class="input-field w-full py-3 px-4 pl-12 rounded-xl focus:outline-none transition-all duration-300">
-                        <i class="fas fa-magic absolute left-4 top-1/2 transform -translate-y-1/2 text-cyan-400"></i>
+                <div class="mb-8">
+                    <div class="bg-gradient-to-br from-blue-50/80 to-purple-50/80 backdrop-blur-sm rounded-2xl p-6 border border-white/30 shadow-lg">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="text-lg">✨</span>
+                            <h3 class="font-semibold text-gray-800">Natural Language Scheduling</h3>
+                        </div>
+                        <div class="relative mb-4">
+                            <input id="ai-input" type="text"
+                                   placeholder="Try: 'Team meeting tomorrow 2pm' or 'Lunch with Sarah Friday'"
+                                   class="w-full py-4 px-5 pl-12 bg-white/80 backdrop-blur-sm border border-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm shadow-sm transition-all duration-300">
+                            <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
+                                <span class="text-blue-500 animate-pulse">🧠</span>
+                            </div>
+                        </div>
+                        <button id="ai-schedule-btn" class="btn-ai w-full relative pl-10">
+                            Schedule with AI
+                        </button>
+
+                        <!-- AI Status Indicator -->
+                        <div class="mt-4 flex items-center gap-2 text-xs text-gray-500">
+                            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                            <span>AI Assistant Ready</span>
+                        </div>
                     </div>
-                    <button id="ai-schedule-btn" class="btn-primary w-full mt-3 py-3 px-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
-                        <i class="fas fa-sparkles mr-2"></i>Schedule with AI
-                    </button>
                 </div>
 
                 <!-- Mini Calendar -->
@@ -328,84 +897,144 @@
             </div>
         </aside>
 
-        <!-- Main Calendar -->
-        <main class="flex-1 glass-card glass-card-hover rounded-3xl flex flex-col fade-in">
-            <header class="p-6 border-b border-white/10 flex justify-between items-center">
-                <div class="flex items-center gap-4">
+        <!-- AI-Enhanced Main Calendar -->
+        <main class="flex-1 flex flex-col bg-gradient-to-br from-white/90 to-gray-50/90 backdrop-blur-xl">
+            <!-- AI-Enhanced Calendar Header -->
+            <header class="calendar-header">
+                <div class="flex items-center gap-6">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-calendar-week text-white text-sm"></i>
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <span class="text-white text-lg">📅</span>
                         </div>
-                        <h1 id="current-month-year" class="text-2xl font-bold text-white"></h1>
+                        <div>
+                            <h1 id="current-month-year" class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent"></h1>
+                            <p class="text-sm text-gray-500">AI-powered smart calendar</p>
+                        </div>
                     </div>
                     <div class="flex gap-2">
-                        <button id="prev-week" class="btn-secondary p-3 rounded-xl hover:bg-white/20 transition-all duration-200">
+                        <button id="prev-week" class="btn-secondary">
                             <i class="fas fa-chevron-left"></i>
                         </button>
-                        <button id="next-week" class="btn-secondary p-3 rounded-xl hover:bg-white/20 transition-all duration-200">
+                        <button id="next-week" class="btn-secondary">
                             <i class="fas fa-chevron-right"></i>
                         </button>
-                        <button id="today-btn" class="btn-secondary py-3 px-5 rounded-xl font-semibold hover:bg-white/20 transition-all duration-200">
+                        <button id="today-btn" class="btn-secondary">
                             <i class="fas fa-calendar-day mr-2"></i>Today
                         </button>
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
+                <!-- AI-Enhanced Action Buttons -->
                 <div class="flex gap-3">
-                    <button id="add-event-btn" class="btn-primary py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
-                        <i class="fas fa-plus mr-2"></i>Add Event
+                    <button id="add-event-btn" class="btn-primary relative">
+                        <i class="fas fa-plus mr-2"></i>Create Event
                     </button>
-                    <button id="search-btn" class="btn-secondary p-3 rounded-xl hover:bg-white/20 transition-all duration-200">
+                    <button id="ai-quick-schedule" class="btn-ai relative">
+                        Quick AI Schedule
+                    </button>
+                    <button id="search-btn" class="btn-secondary">
                         <i class="fas fa-search"></i>
                     </button>
-                    <button id="filter-btn" class="btn-secondary p-3 rounded-xl hover:bg-white/20 transition-all duration-200">
+                    <button id="filter-btn" class="btn-secondary">
                         <i class="fas fa-filter"></i>
+                    </button>
+                    <button id="mobile-menu-btn" class="mobile-menu-btn">
+                        <i class="fas fa-bars"></i>
                     </button>
                 </div>
             </header>
 
-            <div id="calendar-container" class="flex-1 overflow-auto p-4">
-                <div class="calendar-grid rounded-2xl overflow-hidden">
+            <div id="calendar-container" class="flex-1 overflow-auto">
+                <div class="calendar-grid">
                     <!-- Time labels and content will be populated by JS -->
                 </div>
             </div>
         </main>
     </div>
 
-    <div id="event-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="glass-card rounded-3xl p-8 w-full max-w-md fade-in">
+    <!-- Floating AI Assistant -->
+    <div id="ai-floating-assistant" class="ai-floating-assistant" title="AI Assistant - Click for quick help">
+    </div>
+
+    <!-- AI Quick Actions Modal -->
+    <div id="ai-quick-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white/95 backdrop-blur-xl rounded-3xl p-8 w-full max-w-lg shadow-2xl border border-white/20">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold text-white" id="modal-title">Create Event</h3>
-                <button id="close-modal" class="text-gray-400 hover:text-white transition-colors">
-                    <i class="fas fa-times text-xl"></i>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                        <span class="text-white text-lg">🤖</span>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800">AI Quick Actions</h3>
+                        <p class="text-sm text-gray-500">What would you like me to help with?</p>
+                    </div>
+                </div>
+                <button id="close-ai-quick-modal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-lg"></i>
                 </button>
             </div>
 
-            <form id="event-form" class="space-y-6">
+            <div class="grid grid-cols-2 gap-4">
+                <button class="ai-quick-action p-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 transition-all duration-300 text-left">
+                    <div class="text-2xl mb-2">📅</div>
+                    <div class="font-semibold text-gray-800">Schedule Meeting</div>
+                    <div class="text-xs text-gray-600">Find optimal time slots</div>
+                </button>
+
+                <button class="ai-quick-action p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 transition-all duration-300 text-left">
+                    <div class="text-2xl mb-2">🎯</div>
+                    <div class="font-semibold text-gray-800">Optimize Schedule</div>
+                    <div class="text-xs text-gray-600">Reorganize for efficiency</div>
+                </button>
+
+                <button class="ai-quick-action p-4 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 transition-all duration-300 text-left">
+                    <div class="text-2xl mb-2">⚡</div>
+                    <div class="font-semibold text-gray-800">Quick Add</div>
+                    <div class="text-xs text-gray-600">Natural language input</div>
+                </button>
+
+                <button class="ai-quick-action p-4 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 transition-all duration-300 text-left">
+                    <div class="text-2xl mb-2">📊</div>
+                    <div class="font-semibold text-gray-800">Analyze Time</div>
+                    <div class="text-xs text-gray-600">Get insights & patterns</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="event-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-semibold text-gray-900" id="modal-title">Create Event</h3>
+                <button id="close-modal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+
+            <form id="event-form" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Event Title</label>
-                    <input type="text" id="event-title" class="input-field w-full py-3 px-4 rounded-xl" placeholder="Enter event title" required>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Event Title</label>
+                    <input type="text" id="event-title" class="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter event title" required>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Start Time</label>
-                        <input type="datetime-local" id="event-start" class="input-field w-full py-3 px-4 rounded-xl" required>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                        <input type="datetime-local" id="event-start" class="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">End Time</label>
-                        <input type="datetime-local" id="event-end" class="input-field w-full py-3 px-4 rounded-xl" required>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                        <input type="datetime-local" id="event-end" class="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Category</label>
-                    <select id="event-category" class="input-field w-full py-3 px-4 rounded-xl">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select id="event-category" class="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="work">Work</option>
                         <option value="personal">Personal</option>
                         <option value="meeting">Meeting</option>
-                        <option value="reminder">Reminder</option>
+                        <option value="other">Other</option>
                     </select>
                 </div>
 
@@ -459,41 +1088,582 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // ... existing code ...
-            const addEventBtn = document.getElementById('add-event-btn');
-            const searchBtn = document.getElementById('search-btn');
-            const filterBtn = document.getElementById('filter-btn');
-            const eventModal = document.getElementById('event-modal');
-            const searchModal = document.getElementById('search-modal');
-            const closeModalBtn = document.getElementById('close-modal');
-            const closeSearchModalBtn = document.getElementById('close-search-modal');
-            const cancelEventBtn = document.getElementById('cancel-event');
-            const deleteEventBtn = document.getElementById('delete-event');
-            const eventForm = document.getElementById('event-form');
-            const searchInput = document.getElementById('search-input');
-            const filterCategory = document.getElementById('filter-category');
-            const clearFiltersBtn = document.getElementById('clear-filters');
-            const applyFiltersBtn = document.getElementById('apply-filters');
-
+        const __initCalendar = () => {
+            // Calendar state and utilities
+            let weekStart = startOfWeek(new Date());
+            let events = [];
             let editingEvent = null;
             let currentFilters = { search: '', category: 'all' };
+            let dragState = { isDragging: false, draggedEvent: null, startX: 0, startY: 0 };
+
+            // AI Integration
+            async function callGroqAPI(prompt) {
+                try {
+                    const body = {
+                        model: 'llama-3.1-8b-instant',
+                        messages: [
+                            { role: 'system', content: 'You are a smart calendar assistant. Respond ONLY with valid JSON. No prose.' },
+                            { role: 'user', content: prompt }
+                        ],
+                        temperature: 0.3,
+                        max_tokens: 300
+                    };
+                    const response = await fetch('/api/groq', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                    if (!response.ok) throw new Error(`AI API error ${response.status}`);
+                    const data = await response.json();
+                    return data?.choices?.[0]?.message?.content || '';
+                } catch (error) {
+                    console.error('AI call failed:', error);
+                    showToast('AI is temporarily unavailable. Please try again later.');
+                    return null;
+                }
+            }
+
+            function extractJSON(text) {
+                try {
+                    const match = text.match(/\{[\s\S]*\}/);
+                    return match ? JSON.parse(match[0]) : null;
+                } catch {
+                    return null;
+                }
+            }
+
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white font-medium z-50 transition-all duration-300 ${
+                    type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-green-500' : 'bg-blue-500'
+                }`;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            async function parseEventWithAI(text) {
+                const now = new Date();
+                const currentWeekStart = startOfWeek(now);
+                const currentWeekEnd = addDays(currentWeekStart, 6);
+
+                const prompt = `Parse this natural language event description into a structured event. Current date/time: ${now.toISOString()}. Current week: ${currentWeekStart.toDateString()} to ${currentWeekEnd.toDateString()}.
+
+Event text: "${text}"
+
+Return ONLY valid JSON with these fields:
+- title: string (event title)
+- startDateTime: string (ISO format like "2025-01-07T14:00:00")
+- endDateTime: string (ISO format, default 1 hour after start)
+- category: string (one of: work, personal, meeting, reminder)
+- description: string (optional details)
+- isRecurring: boolean
+- recurrencePattern: string (if recurring: "daily", "weekly", "monthly", or empty)
+
+Examples:
+- "Team meeting tomorrow 2pm" → start tomorrow at 2pm, end at 3pm, category: meeting
+- "Lunch with Sarah Friday 12:30" → start Friday 12:30, end 1:30pm, category: personal
+- "Weekly standup Mondays 9am" → start next Monday 9am, recurring weekly, category: meeting
+- "Dentist appointment next Tuesday 3pm" → start next Tuesday 3pm, category: personal`;
+
+                const response = await callGroqAPI(prompt);
+                if (!response) return null;
+
+                const parsed = extractJSON(response);
+                if (!parsed) {
+                    showToast('Could not understand the event description. Please try rephrasing.', 'error');
+                    return null;
+                }
+
+                // Validate and convert dates
+                try {
+                    const startDate = new Date(parsed.startDateTime);
+                    const endDate = new Date(parsed.endDateTime);
+
+                    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                        throw new Error('Invalid dates');
+                    }
+
+                    if (endDate <= startDate) {
+                        endDate.setTime(startDate.getTime() + 60 * 60 * 1000); // Add 1 hour
+                    }
+
+                    return {
+                        title: parsed.title || 'Untitled Event',
+                        start: startDate,
+                        end: endDate,
+                        category: parsed.category || 'personal',
+                        description: parsed.description || '',
+                        isRecurring: parsed.isRecurring || false,
+                        recurrencePattern: parsed.recurrencePattern || ''
+                    };
+                } catch (error) {
+                    showToast('Could not parse the event dates. Please be more specific.', 'error');
+                    return null;
+                }
+            }
+
+            async function suggestOptimalTime(eventTitle, duration = 60) {
+                const now = new Date();
+                const workingHours = { start: 9, end: 17 }; // 9 AM to 5 PM
+
+                // Get existing events for the next 7 days
+                const nextWeek = [];
+                for (let i = 0; i < 7; i++) {
+                    const day = addDays(now, i);
+                    const dayEvents = events.filter(event =>
+                        event.start.toDateString() === day.toDateString()
+                    );
+                    nextWeek.push({ date: day, events: dayEvents });
+                }
+
+                const prompt = `Suggest the best time slot for a new event.
+
+Event: "${eventTitle}"
+Duration: ${duration} minutes
+Working hours: ${workingHours.start}:00 - ${workingHours.end}:00
+Current time: ${now.toISOString()}
+
+Existing events in next 7 days:
+${nextWeek.map(day =>
+    `${day.date.toDateString()}: ${day.events.map(e =>
+        `${e.title} (${e.start.toLocaleTimeString()} - ${e.end.toLocaleTimeString()})`
+    ).join(', ') || 'No events'}`
+).join('\n')}
+
+Return ONLY JSON with:
+- suggestedDateTime: string (ISO format)
+- reason: string (brief explanation)
+- alternatives: array of 2 alternative ISO datetime strings`;
+
+                const response = await callGroqAPI(prompt);
+                if (!response) return null;
+
+                const suggestion = extractJSON(response);
+                if (!suggestion) return null;
+
+                try {
+                    return {
+                        suggested: new Date(suggestion.suggestedDateTime),
+                        reason: suggestion.reason || 'Optimal time based on your schedule',
+                        alternatives: (suggestion.alternatives || []).map(alt => new Date(alt))
+                    };
+                } catch {
+                    return null;
+                }
+            }
+
+            // Date utilities
+            function startOfWeek(date) {
+                const d = new Date(date);
+                d.setHours(0, 0, 0, 0);
+                const day = d.getDay();
+                d.setDate(d.getDate() - day);
+                return d;
+            }
+
+            function addDays(date, days) {
+                const result = new Date(date);
+                result.setDate(result.getDate() + days);
+                return result;
+            }
+
+            function isSameDay(a, b) {
+                return a.getFullYear() === b.getFullYear() &&
+                       a.getMonth() === b.getMonth() &&
+                       a.getDate() === b.getDate();
+            }
+
+            function formatTime(hour) {
+                const ampm = hour < 12 ? 'AM' : 'PM';
+                let displayHour = hour % 12;
+                if (displayHour === 0) displayHour = 12;
+                return `${displayHour} ${ampm}`;
+            }
+
+            function getEventPosition(event) {
+                const startDay = Math.floor((event.start - weekStart) / (24 * 60 * 60 * 1000));
+                const startHour = event.start.getHours() + event.start.getMinutes() / 60;
+                const duration = (event.end - event.start) / (60 * 60 * 1000); // hours
+
+                return {
+                    dayIndex: startDay,
+                    startHour,
+                    duration,
+                    isVisible: startDay >= 0 && startDay < 7
+                };
+            }
 
             const categoryColors = {
-                work: 'rgba(239, 68, 68, 0.8)',
-                personal: 'rgba(34, 197, 94, 0.8)',
-                meeting: 'rgba(139, 92, 246, 0.8)',
-                reminder: 'rgba(249, 115, 22, 0.8)'
+                work: '#EF4444',
+                personal: '#22C55E',
+                meeting: '#8B5CF6',
+                reminder: '#F97316'
             };
 
-            function openEventModal(event = null) {
+            // Main render function
+            function renderCalendar() {
+                const grid = document.querySelector('.calendar-grid');
+                if (!grid) return;
+
+                // Clear existing content
+                grid.innerHTML = '';
+
+                renderHeaders(grid);
+                renderTimeSlots(grid);
+                renderEvents(grid);
+
+                // Update week display
+                updateWeekDisplay();
+            }
+
+            function renderHeaders(grid) {
+                // Empty corner cell
+                const corner = document.createElement('div');
+                corner.className = 'day-header';
+                grid.appendChild(corner);
+
+                // Day headers
+                const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const today = new Date();
+
+                for (let i = 0; i < 7; i++) {
+                    const date = addDays(weekStart, i);
+                    const header = document.createElement('div');
+                    header.className = 'day-header';
+                    header.id = `day-${i}`;
+
+                    if (isSameDay(date, today)) {
+                        header.classList.add('today-header');
+                    }
+
+                    header.innerHTML = `
+                        <div class="font-semibold">${dayNames[i]}</div>
+                        <div class="text-sm opacity-75">${date.getMonth() + 1}/${date.getDate()}</div>
+                    `;
+
+                    // Add click handler for creating events
+                    header.addEventListener('click', () => openEventModal(null, i));
+
+                    grid.appendChild(header);
+                }
+            }
+
+            function renderTimeSlots(grid) {
+                for (let hour = 0; hour < 24; hour++) {
+                    // Time label
+                    const timeLabel = document.createElement('div');
+                    timeLabel.className = 'time-label';
+                    timeLabel.textContent = formatTime(hour);
+                    grid.appendChild(timeLabel);
+
+                    // Time slots for each day
+                    for (let day = 0; day < 7; day++) {
+                        const slot = document.createElement('div');
+                        slot.className = 'time-slot';
+                        slot.dataset.dayIndex = day.toString();
+                        slot.dataset.hour = hour.toString();
+
+                        // Add click handler for creating events
+                        slot.addEventListener('click', (e) => {
+                            if (!dragState.isDragging) {
+                                openEventModal(null, day, hour);
+                            }
+                        });
+
+                        grid.appendChild(slot);
+                    }
+                }
+            }
+
+            function renderEvents(grid) {
+                const filteredEvents = events.filter(event => {
+                    const matchesSearch = !currentFilters.search ||
+                        event.title.toLowerCase().includes(currentFilters.search.toLowerCase());
+                    const matchesCategory = currentFilters.category === 'all' ||
+                        event.category === currentFilters.category;
+                    return matchesSearch && matchesCategory;
+                });
+
+                filteredEvents.forEach(event => {
+                    const position = getEventPosition(event);
+                    if (!position.isVisible) return;
+
+                    const eventEl = createEventElement(event, position);
+                    grid.appendChild(eventEl);
+                });
+            }
+
+            function createEventElement(event, position) {
+                const eventEl = document.createElement('div');
+                eventEl.className = 'event-container';
+                eventEl.dataset.eventId = event.id;
+
+                // Add AI-created class if applicable
+                if (event.aiCreated) {
+                    eventEl.classList.add('ai-created');
+                }
+
+                // Calculate position and size
+                const gridColumnStart = position.dayIndex + 2; // +2 for time column and 1-based indexing
+                const gridRowStart = Math.floor(position.startHour) + 2; // +2 for header and 1-based indexing
+                const gridRowSpan = Math.max(1, Math.ceil(position.duration));
+
+                eventEl.style.gridColumn = gridColumnStart;
+                eventEl.style.gridRow = `${gridRowStart} / span ${gridRowSpan}`;
+                eventEl.style.margin = '2px';
+                eventEl.style.zIndex = '10';
+
+                // Color bar
+                const colorBar = document.createElement('div');
+                colorBar.className = 'duration-bar';
+                colorBar.style.background = categoryColors[event.category] || categoryColors.work;
+
+                // Content
+                const content = document.createElement('div');
+                content.className = 'event-content';
+                content.innerHTML = `
+                    <div class="font-medium text-sm">${event.title}</div>
+                    <div class="text-xs opacity-75">
+                        ${formatTime(event.start.getHours())} - ${formatTime(event.end.getHours())}
+                    </div>
+                `;
+
+                // Resize handle
+                const resizeHandle = document.createElement('div');
+                resizeHandle.className = 'resize-handle';
+
+                eventEl.appendChild(colorBar);
+                eventEl.appendChild(content);
+                eventEl.appendChild(resizeHandle);
+
+                // Event handlers
+                eventEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEventModal(event);
+                });
+
+                setupEventDragAndDrop(eventEl, event);
+
+                return eventEl;
+            }
+
+            function setupEventDragAndDrop(eventEl, event) {
+                let isDragging = false;
+                let startX, startY, startGridColumn, startGridRow;
+                let dragPreview = null;
+                let currentDropTarget = null;
+
+                // Mouse events
+                eventEl.addEventListener('mousedown', startDrag);
+
+                // Touch events for mobile
+                eventEl.addEventListener('touchstart', startDrag, { passive: false });
+
+                function startDrag(e) {
+                    if (e.target.classList.contains('resize-handle')) return;
+
+                    isDragging = true;
+
+                    // Handle both mouse and touch events
+                    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+                    startX = clientX;
+                    startY = clientY;
+                    startGridColumn = parseInt(eventEl.style.gridColumn);
+                    startGridRow = parseInt(eventEl.style.gridRow.split(' ')[0]);
+
+                    // Create drag preview
+                    createDragPreview({ clientX, clientY });
+
+                    eventEl.classList.add('dragging');
+                    document.body.style.cursor = 'grabbing';
+
+                    // Add both mouse and touch listeners
+                    document.addEventListener('mousemove', handleDrag);
+                    document.addEventListener('mouseup', handleDragEnd);
+                    document.addEventListener('touchmove', handleDrag, { passive: false });
+                    document.addEventListener('touchend', handleDragEnd);
+
+                    e.preventDefault();
+                }
+
+                function createDragPreview(e) {
+                    dragPreview = document.createElement('div');
+                    dragPreview.className = 'drag-preview';
+                    dragPreview.textContent = event.title;
+                    dragPreview.style.left = e.clientX + 10 + 'px';
+                    dragPreview.style.top = e.clientY - 10 + 'px';
+                    document.body.appendChild(dragPreview);
+                }
+
+                function handleDrag(e) {
+                    if (!isDragging) return;
+
+                    // Handle both mouse and touch events
+                    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+                    // Update drag preview position
+                    if (dragPreview) {
+                        dragPreview.style.left = clientX + 10 + 'px';
+                        dragPreview.style.top = clientY - 10 + 'px';
+                    }
+
+                    const deltaX = clientX - startX;
+                    const deltaY = clientY - startY;
+
+                    // Calculate new grid position with snap-to-grid
+                    const grid = document.querySelector('.calendar-grid');
+                    const rect = grid.getBoundingClientRect();
+                    const columnWidth = rect.width / 8; // 7 days + 1 time column
+                    const rowHeight = 60; // Fixed row height
+
+                    const newColumn = Math.max(2, Math.min(8, startGridColumn + Math.round(deltaX / columnWidth)));
+                    const newRow = Math.max(2, Math.min(25, startGridRow + Math.round(deltaY / rowHeight)));
+
+                    // Update visual position with smooth snapping
+                    eventEl.style.gridColumn = newColumn;
+                    eventEl.style.gridRow = `${newRow} / span ${eventEl.style.gridRow.split('span ')[1] || '1'}`;
+
+                    // Highlight drop target
+                    updateDropTarget(newColumn, newRow);
+                }
+
+                function updateDropTarget(column, row) {
+                    // Remove previous highlight
+                    if (currentDropTarget) {
+                        currentDropTarget.classList.remove('drag-over');
+                    }
+
+                    // Find and highlight new drop target
+                    const dayIndex = column - 2;
+                    const hour = row - 2;
+
+                    if (dayIndex >= 0 && dayIndex < 7 && hour >= 0 && hour < 24) {
+                        const targetSlot = document.querySelector(
+                            `.time-slot[data-day-index="${dayIndex}"][data-hour="${hour}"]`
+                        );
+                        if (targetSlot) {
+                            targetSlot.classList.add('drag-over');
+                            currentDropTarget = targetSlot;
+                        }
+                    }
+                }
+
+                function handleDragEnd(e) {
+                    if (!isDragging) return;
+
+                    isDragging = false;
+                    eventEl.classList.remove('dragging');
+                    document.body.style.cursor = '';
+
+                    // Remove drag preview
+                    if (dragPreview) {
+                        dragPreview.remove();
+                        dragPreview = null;
+                    }
+
+                    // Remove drop target highlight
+                    if (currentDropTarget) {
+                        currentDropTarget.classList.remove('drag-over');
+                        currentDropTarget = null;
+                    }
+
+                    // Update event data based on new position
+                    const newColumn = parseInt(eventEl.style.gridColumn);
+                    const newRow = parseInt(eventEl.style.gridRow.split(' ')[0]);
+
+                    const newDayIndex = newColumn - 2;
+                    const newHour = newRow - 2;
+
+                    if (newDayIndex >= 0 && newDayIndex < 7 && newHour >= 0 && newHour < 24) {
+                        const newStart = new Date(weekStart);
+                        newStart.setDate(newStart.getDate() + newDayIndex);
+                        newStart.setHours(newHour, event.start.getMinutes(), 0, 0);
+
+                        const duration = event.end - event.start;
+                        const newEnd = new Date(newStart.getTime() + duration);
+
+                        event.start = newStart;
+                        event.end = newEnd;
+
+                        // Show success feedback
+                        showDragSuccessAnimation(eventEl);
+                    } else {
+                        // Revert to original position if dropped in invalid area
+                        eventEl.style.gridColumn = startGridColumn;
+                        eventEl.style.gridRow = `${startGridRow} / span ${eventEl.style.gridRow.split('span ')[1] || '1'}`;
+
+                        // Show error feedback
+                        showDragErrorAnimation(eventEl);
+                    }
+
+                    // Remove all event listeners
+                    document.removeEventListener('mousemove', handleDrag);
+                    document.removeEventListener('mouseup', handleDragEnd);
+                    document.removeEventListener('touchmove', handleDrag);
+                    document.removeEventListener('touchend', handleDragEnd);
+
+                    // Re-render after a short delay to show animation
+                    setTimeout(() => renderCalendar(), 300);
+                }
+
+                function showDragSuccessAnimation(element) {
+                    element.style.transform = 'scale(1.1)';
+                    element.style.borderColor = '#10B981';
+                    element.style.background = 'rgba(16, 185, 129, 0.2)';
+
+                    setTimeout(() => {
+                        element.style.transform = '';
+                        element.style.borderColor = '';
+                        element.style.background = '';
+                    }, 300);
+                }
+
+                function showDragErrorAnimation(element) {
+                    element.style.transform = 'translateX(-5px)';
+                    element.style.borderColor = '#EF4444';
+                    element.style.background = 'rgba(239, 68, 68, 0.2)';
+
+                    setTimeout(() => {
+                        element.style.transform = 'translateX(5px)';
+                    }, 100);
+
+                    setTimeout(() => {
+                        element.style.transform = '';
+                        element.style.borderColor = '';
+                        element.style.background = '';
+                    }, 200);
+                }
+            }
+
+            function updateWeekDisplay() {
+                const weekDisplay = document.getElementById('current-week');
+                if (weekDisplay) {
+                    const endOfWeek = addDays(weekStart, 6);
+                    const startStr = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    const endStr = endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    weekDisplay.textContent = `${startStr} - ${endStr}`;
+                }
+            }
+
+            function openEventModal(event = null, dayIndex = null, hour = null) {
                 editingEvent = event;
+                const eventModal = document.getElementById('event-modal');
                 const modalTitle = document.getElementById('modal-title');
                 const eventTitle = document.getElementById('event-title');
                 const eventStart = document.getElementById('event-start');
                 const eventEnd = document.getElementById('event-end');
                 const eventCategory = document.getElementById('event-category');
                 const eventDescription = document.getElementById('event-description');
+                const deleteEventBtn = document.getElementById('delete-event');
 
                 if (event) {
                     modalTitle.textContent = 'Edit Event';
@@ -505,12 +1675,23 @@
                     deleteEventBtn.style.display = 'block';
                 } else {
                     modalTitle.textContent = 'Create Event';
+                    const eventForm = document.getElementById('event-form');
                     eventForm.reset();
-                    const now = new Date();
-                    now.setHours(now.getHours() + 1, 0, 0, 0);
-                    eventStart.value = formatDateTime(now);
-                    now.setHours(now.getHours() + 1);
-                    eventEnd.value = formatDateTime(now);
+
+                    // Set default time based on click position or current time
+                    let startTime = new Date();
+                    if (dayIndex !== null && hour !== null) {
+                        startTime = addDays(weekStart, dayIndex);
+                        startTime.setHours(hour, 0, 0, 0);
+                    } else {
+                        startTime.setHours(startTime.getHours() + 1, 0, 0, 0);
+                    }
+
+                    const endTime = new Date(startTime);
+                    endTime.setHours(endTime.getHours() + 1);
+
+                    eventStart.value = formatDateTime(startTime);
+                    eventEnd.value = formatDateTime(endTime);
                     deleteEventBtn.style.display = 'none';
                 }
 
@@ -519,13 +1700,19 @@
                 eventTitle.focus();
             }
 
+            // Modal and UI functions
             function closeEventModal() {
+                const eventModal = document.getElementById('event-modal');
                 eventModal.classList.add('hidden');
                 eventModal.classList.remove('flex');
                 editingEvent = null;
             }
 
             function openSearchModal() {
+                const searchModal = document.getElementById('search-modal');
+                const searchInput = document.getElementById('search-input');
+                const filterCategory = document.getElementById('filter-category');
+
                 searchInput.value = currentFilters.search;
                 filterCategory.value = currentFilters.category;
                 searchModal.classList.remove('hidden');
@@ -533,6 +1720,7 @@
             }
 
             function closeSearchModal() {
+                const searchModal = document.getElementById('search-modal');
                 searchModal.classList.add('hidden');
                 searchModal.classList.remove('flex');
             }
@@ -548,44 +1736,54 @@
 
             function saveEvent(e) {
                 e.preventDefault();
-                const title = document.getElementById('event-title').value;
+                const title = document.getElementById('event-title').value || 'Untitled Event';
                 const start = new Date(document.getElementById('event-start').value);
                 const end = new Date(document.getElementById('event-end').value);
                 const category = document.getElementById('event-category').value;
                 const description = document.getElementById('event-description').value;
 
+                // Validation
+                if (end <= start) {
+                    alert('End time must be after start time');
+                    return;
+                }
+
                 if (editingEvent) {
+                    // Update existing event
                     editingEvent.title = title;
                     editingEvent.start = start;
                     editingEvent.end = end;
                     editingEvent.category = category;
                     editingEvent.description = description;
-                    editingEvent.color = categoryColors[category];
                 } else {
+                    // Create new event
                     const newEvent = {
-                        id: Date.now(),
+                        id: Date.now() + Math.random(), // Ensure uniqueness
                         title,
                         start,
                         end,
                         category,
-                        description,
-                        color: categoryColors[category]
+                        description
                     };
                     events.push(newEvent);
                 }
+
                 renderCalendar();
                 closeEventModal();
             }
 
             function deleteCurrentEvent() {
-                if (editingEvent) {
+                if (editingEvent && confirm('Are you sure you want to delete this event?')) {
                     events = events.filter(event => event.id !== editingEvent.id);
                     renderCalendar();
                     closeEventModal();
                 }
             }
-            
+
             function applyFilters() {
+                const searchInput = document.getElementById('search-input');
+                const filterCategory = document.getElementById('filter-category');
+
                 currentFilters.search = searchInput.value.toLowerCase();
                 currentFilters.category = filterCategory.value;
                 renderCalendar();
@@ -593,46 +1791,477 @@
             }
 
             function clearFilters() {
+                const searchInput = document.getElementById('search-input');
+                const filterCategory = document.getElementById('filter-category');
+
                 currentFilters = { search: '', category: 'all' };
                 searchInput.value = '';
                 filterCategory.value = 'all';
                 renderCalendar();
             }
 
-            addEventBtn.addEventListener('click', () => openEventModal());
-            searchBtn.addEventListener('click', openSearchModal);
-            filterBtn.addEventListener('click', openSearchModal);
-            closeModalBtn.addEventListener('click', closeEventModal);
-            closeSearchModalBtn.addEventListener('click', closeSearchModal);
-            cancelEventBtn.addEventListener('click', closeEventModal);
-            deleteEventBtn.addEventListener('click', deleteCurrentEvent);
-            eventForm.addEventListener('submit', saveEvent);
+            function navigateWeek(direction) {
+                weekStart.setDate(weekStart.getDate() + (direction * 7));
+                renderCalendar();
+            }
 
-            eventModal.addEventListener('click', (e) => {
-                if (e.target === eventModal) closeEventModal();
-            });
+            function goToToday() {
+                weekStart = startOfWeek(new Date());
+                renderCalendar();
+            }
 
-            searchModal.addEventListener('click', (e) => {
-                if (e.target === searchModal) closeSearchModal();
-            });
+            // Enhanced AI Event Scheduling
+            async function handleAIScheduling() {
+                const aiInput = document.getElementById('ai-input');
+                const aiBtn = document.getElementById('ai-schedule-btn');
+                const inputText = aiInput.value.trim();
 
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'n' && (e.ctrlKey || e.metaKey)) {
-                    e.preventDefault();
-                    openEventModal();
+                if (!inputText) {
+                    showToast('🤖 Please describe the event you want to schedule', 'error');
+                    return;
                 }
-                if (e.key === 'f' && (e.ctrlKey || e.metaKey)) {
-                    e.preventDefault();
-                    openSearchModal();
-                }
-                if (e.key === 'Escape') {
-                    closeEventModal();
-                    closeSearchModal();
-                }
-            });
 
-            // ... existing code ...
-        });
+                // Show enhanced loading state
+                const originalText = aiBtn.innerHTML;
+                aiBtn.innerHTML = '<i class="fas fa-brain mr-2 animate-pulse"></i>AI Thinking...';
+                aiBtn.disabled = true;
+                aiBtn.classList.add('ai-thinking');
+
+                // Add visual feedback to input
+                aiInput.style.borderColor = '#10b981';
+                aiInput.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+
+                // Show AI suggestions popup
+                showAISuggestions(inputText);
+
+                try {
+                    const parsedEvent = await parseEventWithAI(inputText);
+
+                    if (parsedEvent) {
+                        // Check if event is in current week view
+                        const eventWeekStart = startOfWeek(parsedEvent.start);
+                        const currentWeekStart = startOfWeek(weekStart);
+
+                        if (eventWeekStart.getTime() !== currentWeekStart.getTime()) {
+                            // Navigate to the week containing the event
+                            weekStart = eventWeekStart;
+                        }
+
+                        // Add the event
+                        const newEvent = {
+                            id: Date.now() + Math.random(),
+                            ...parsedEvent,
+                            aiCreated: true // Mark as AI-created
+                        };
+
+                        events.push(newEvent);
+
+                        // Handle recurring events
+                        if (parsedEvent.isRecurring && parsedEvent.recurrencePattern) {
+                            createRecurringEvents(newEvent, parsedEvent.recurrencePattern);
+                        }
+
+                        renderCalendar();
+                        aiInput.value = '';
+
+                        showToast(`✨ Event "${parsedEvent.title}" scheduled successfully!`, 'success');
+
+                        // Optionally suggest optimal time if the AI-suggested time conflicts
+                        const hasConflict = checkForConflicts(newEvent);
+                        if (hasConflict) {
+                            const suggestion = await suggestOptimalTime(parsedEvent.title);
+                            if (suggestion) {
+                                showTimeConflictDialog(newEvent, suggestion);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('AI scheduling error:', error);
+                    showToast('Failed to schedule event. Please try again.', 'error');
+                } finally {
+                    // Reset enhanced button state
+                    aiBtn.innerHTML = originalText;
+                    aiBtn.disabled = false;
+                    aiBtn.classList.remove('ai-thinking');
+                    aiInput.value = '';
+
+                    // Reset input styling
+                    aiInput.style.borderColor = '';
+                    aiInput.style.boxShadow = '';
+
+                    // Hide AI suggestions
+                    hideAISuggestions();
+                }
+            }
+
+            // AI Suggestions System
+            function showAISuggestions(inputText) {
+                const suggestions = generateAISuggestions(inputText);
+                const aiInput = document.getElementById('ai-input');
+                const container = aiInput.parentElement;
+
+                let suggestionsEl = container.querySelector('.ai-suggestions');
+                if (!suggestionsEl) {
+                    suggestionsEl = document.createElement('div');
+                    suggestionsEl.className = 'ai-suggestions';
+                    container.appendChild(suggestionsEl);
+                }
+
+                suggestionsEl.innerHTML = suggestions.map(suggestion => `
+                    <div class="ai-suggestion-item" data-suggestion="${suggestion.text}">
+                        <span class="text-lg">${suggestion.icon}</span>
+                        <div>
+                            <div class="font-medium text-gray-800">${suggestion.title}</div>
+                            <div class="text-xs text-gray-500">${suggestion.description}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Add click handlers
+                suggestionsEl.querySelectorAll('.ai-suggestion-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        aiInput.value = item.dataset.suggestion;
+                        hideAISuggestions();
+                        handleAIScheduling();
+                    });
+                });
+
+                setTimeout(() => suggestionsEl.classList.add('show'), 100);
+            }
+
+            function hideAISuggestions() {
+                const suggestionsEl = document.querySelector('.ai-suggestions');
+                if (suggestionsEl) {
+                    suggestionsEl.classList.remove('show');
+                    setTimeout(() => suggestionsEl.remove(), 300);
+                }
+            }
+
+            function generateAISuggestions(inputText) {
+                const suggestions = [
+                    {
+                        icon: '📅',
+                        title: 'Team Meeting',
+                        description: 'Schedule with team members',
+                        text: 'Team meeting tomorrow at 2pm for 1 hour'
+                    },
+                    {
+                        icon: '🍽️',
+                        title: 'Lunch Break',
+                        description: 'Block time for lunch',
+                        text: 'Lunch break today at 12:30pm for 30 minutes'
+                    },
+                    {
+                        icon: '💼',
+                        title: 'Client Call',
+                        description: 'Schedule client meeting',
+                        text: 'Client call Friday at 3pm for 45 minutes'
+                    },
+                    {
+                        icon: '🎯',
+                        title: 'Focus Time',
+                        description: 'Block time for deep work',
+                        text: 'Focus time tomorrow morning 9am to 11am'
+                    }
+                ];
+
+                return suggestions.slice(0, 3); // Show top 3 suggestions
+            }
+
+            // Floating AI Assistant
+            function initFloatingAIAssistant() {
+                const floatingAssistant = document.getElementById('ai-floating-assistant');
+                const quickModal = document.getElementById('ai-quick-modal');
+                const closeQuickModal = document.getElementById('close-ai-quick-modal');
+
+                if (floatingAssistant) {
+                    floatingAssistant.addEventListener('click', () => {
+                        quickModal.classList.remove('hidden');
+                        quickModal.classList.add('flex');
+                    });
+                }
+
+                if (closeQuickModal) {
+                    closeQuickModal.addEventListener('click', () => {
+                        quickModal.classList.add('hidden');
+                        quickModal.classList.remove('flex');
+                    });
+                }
+
+                // Quick action handlers
+                document.querySelectorAll('.ai-quick-action').forEach(action => {
+                    action.addEventListener('click', (e) => {
+                        const actionText = e.currentTarget.querySelector('.font-semibold').textContent;
+                        handleQuickAIAction(actionText);
+                        quickModal.classList.add('hidden');
+                        quickModal.classList.remove('flex');
+                    });
+                });
+            }
+
+            function handleQuickAIAction(actionType) {
+                const aiInput = document.getElementById('ai-input');
+
+                switch(actionType) {
+                    case 'Schedule Meeting':
+                        aiInput.value = 'Team meeting tomorrow at 2pm for 1 hour';
+                        break;
+                    case 'Optimize Schedule':
+                        showToast('🤖 AI is analyzing your schedule for optimization opportunities...', 'info');
+                        break;
+                    case 'Quick Add':
+                        aiInput.focus();
+                        showToast('🤖 Tell me what you want to schedule!', 'info');
+                        break;
+                    case 'Analyze Time':
+                        showToast('🤖 Analyzing your time patterns and productivity insights...', 'info');
+                        break;
+                }
+
+                if (aiInput.value) {
+                    handleAIScheduling();
+                }
+            }
+
+            function createRecurringEvents(baseEvent, pattern) {
+                const maxRecurrences = 10; // Limit to prevent too many events
+                let currentDate = new Date(baseEvent.start);
+
+                for (let i = 1; i < maxRecurrences; i++) {
+                    switch (pattern) {
+                        case 'daily':
+                            currentDate = addDays(currentDate, 1);
+                            break;
+                        case 'weekly':
+                            currentDate = addDays(currentDate, 7);
+                            break;
+                        case 'monthly':
+                            currentDate = new Date(currentDate);
+                            currentDate.setMonth(currentDate.getMonth() + 1);
+                            break;
+                        default:
+                            return; // Unknown pattern
+                    }
+
+                    const duration = baseEvent.end - baseEvent.start;
+                    const recurringEvent = {
+                        id: Date.now() + Math.random() + i,
+                        title: baseEvent.title,
+                        start: new Date(currentDate),
+                        end: new Date(currentDate.getTime() + duration),
+                        category: baseEvent.category,
+                        description: baseEvent.description + ' (Recurring)',
+                        isRecurring: true,
+                        recurrencePattern: pattern
+                    };
+
+                    events.push(recurringEvent);
+                }
+            }
+
+            function checkForConflicts(newEvent) {
+                return events.some(existingEvent =>
+                    existingEvent.id !== newEvent.id &&
+                    existingEvent.start < newEvent.end &&
+                    existingEvent.end > newEvent.start
+                );
+            }
+
+            function showTimeConflictDialog(event, suggestion) {
+                const dialog = document.createElement('div');
+                dialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                dialog.innerHTML = `
+                    <div class="bg-gray-800 rounded-xl p-6 max-w-md mx-4">
+                        <h3 class="text-xl font-bold text-white mb-4">⚠️ Time Conflict Detected</h3>
+                        <p class="text-gray-300 mb-4">Your event "${event.title}" conflicts with existing events.</p>
+                        <p class="text-gray-300 mb-4">Suggested better time: ${suggestion.suggested.toLocaleString()}</p>
+                        <p class="text-sm text-gray-400 mb-6">${suggestion.reason}</p>
+                        <div class="flex gap-3">
+                            <button class="btn-secondary flex-1" onclick="this.closest('.fixed').remove()">Keep Original</button>
+                            <button class="btn-primary flex-1" onclick="acceptSuggestion(${event.id}, '${suggestion.suggested.toISOString()}')">Use Suggestion</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(dialog);
+            }
+
+            window.acceptSuggestion = function(eventId, newStartTime) {
+                const event = events.find(e => e.id === eventId);
+                if (event) {
+                    const newStart = new Date(newStartTime);
+                    const duration = event.end - event.start;
+                    event.start = newStart;
+                    event.end = new Date(newStart.getTime() + duration);
+                    renderCalendar();
+                    showToast('Event time updated successfully!', 'success');
+                }
+                document.querySelector('.fixed.inset-0').remove();
+            };
+
+            // Mobile Menu Functions
+            window.toggleMobileSidebar = function toggleMobileSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('mobile-sidebar-overlay');
+
+                if (sidebar && overlay) {
+                    const isOpen = sidebar.classList.contains('mobile-open');
+
+                    if (isOpen) {
+                        sidebar.classList.remove('mobile-open');
+                        overlay.classList.remove('active');
+                    } else {
+                        sidebar.classList.add('mobile-open');
+                        overlay.classList.add('active');
+                    }
+                }
+            }
+
+            window.closeMobileSidebar = function closeMobileSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('mobile-sidebar-overlay');
+
+                if (sidebar && overlay) {
+                    sidebar.classList.remove('mobile-open');
+                    overlay.classList.remove('active');
+                }
+            }
+
+            // Touch gesture support for mobile
+            function setupTouchGestures() {
+                let touchStartX = 0;
+                let touchStartY = 0;
+                let isSwiping = false;
+
+                document.addEventListener('touchstart', (e) => {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    isSwiping = false;
+                }, { passive: true });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (!isSwiping) {
+                        const touchX = e.touches[0].clientX;
+                        const touchY = e.touches[0].clientY;
+                        const deltaX = touchX - touchStartX;
+                        const deltaY = touchY - touchStartY;
+
+                        // Check if it's a horizontal swipe
+                        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+                            isSwiping = true;
+
+                            // Swipe from right edge to open sidebar
+                            if (touchStartX > window.innerWidth - 50 && deltaX < -100) {
+                                toggleMobileSidebar();
+                            }
+
+                            // Swipe right to close sidebar
+                            const sidebar = document.getElementById('sidebar');
+                            if (sidebar && sidebar.classList.contains('mobile-open') && deltaX > 100) {
+                                closeMobileSidebar();
+                            }
+                        }
+                    }
+                }, { passive: true });
+            }
+
+            // Event listeners setup
+            function setupEventListeners() {
+                // Modal controls
+                const addEventBtn = document.getElementById('add-event-btn');
+                const searchBtn = document.getElementById('search-btn');
+                const filterBtn = document.getElementById('filter-btn');
+                const closeModalBtn = document.getElementById('close-modal');
+                const closeSearchModalBtn = document.getElementById('close-search-modal');
+                const cancelEventBtn = document.getElementById('cancel-event');
+                const deleteEventBtn = document.getElementById('delete-event');
+                const eventForm = document.getElementById('event-form');
+                const clearFiltersBtn = document.getElementById('clear-filters');
+                const applyFiltersBtn = document.getElementById('apply-filters');
+                const eventModal = document.getElementById('event-modal');
+                const searchModal = document.getElementById('search-modal');
+                const aiScheduleBtn = document.getElementById('ai-schedule-btn');
+                const aiInput = document.getElementById('ai-input');
+                const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+                const mobileOverlay = document.getElementById('mobile-sidebar-overlay');
+
+                // Navigation controls
+                const prevWeekBtn = document.getElementById('prev-week');
+                const nextWeekBtn = document.getElementById('next-week');
+                const todayBtn = document.getElementById('today-btn');
+
+                // Event handlers
+                if (addEventBtn) addEventBtn.addEventListener('click', () => openEventModal());
+                if (searchBtn) searchBtn.addEventListener('click', openSearchModal);
+                if (filterBtn) filterBtn.addEventListener('click', openSearchModal);
+                if (closeModalBtn) closeModalBtn.addEventListener('click', closeEventModal);
+                if (closeSearchModalBtn) closeSearchModalBtn.addEventListener('click', closeSearchModal);
+                if (cancelEventBtn) cancelEventBtn.addEventListener('click', closeEventModal);
+                if (deleteEventBtn) deleteEventBtn.addEventListener('click', deleteCurrentEvent);
+                if (eventForm) eventForm.addEventListener('submit', saveEvent);
+                if (clearFiltersBtn) clearFiltersBtn.addEventListener('click', clearFilters);
+                if (applyFiltersBtn) applyFiltersBtn.addEventListener('click', applyFilters);
+
+                // AI Integration
+                if (aiScheduleBtn) aiScheduleBtn.addEventListener('click', handleAIScheduling);
+                if (aiInput) {
+                    aiInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            handleAIScheduling();
+                        }
+                    });
+                }
+
+                // Mobile Menu
+                if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobileSidebar);
+                if (mobileOverlay) mobileOverlay.addEventListener('click', closeMobileSidebar);
+
+                // Setup touch gestures for mobile
+                setupTouchGestures();
+
+                // Initialize AI features
+                initFloatingAIAssistant();
+
+                // Navigation
+                if (prevWeekBtn) prevWeekBtn.addEventListener('click', () => navigateWeek(-1));
+                if (nextWeekBtn) nextWeekBtn.addEventListener('click', () => navigateWeek(1));
+                if (todayBtn) todayBtn.addEventListener('click', goToToday);
+
+                // Modal backdrop clicks
+                if (eventModal) eventModal.addEventListener('click', (e) => {
+                    if (e.target === eventModal) closeEventModal();
+                });
+                if (searchModal) searchModal.addEventListener('click', (e) => {
+                    if (e.target === searchModal) closeSearchModal();
+                });
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'n' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        openEventModal();
+                    }
+                    if (e.key === 'f' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        openSearchModal();
+                    }
+                    if (e.key === 'Escape') {
+                        closeEventModal();
+                        closeSearchModal();
+                    }
+                });
+            }
+
+            // Initialize calendar
+            setupEventListeners();
+            renderCalendar();
+        };
+        // Expose for tests and run on load
+        window.__initCalendar = __initCalendar;
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', __initCalendar);
+        } else {
+            __initCalendar();
+        }
     </script>
 </body>
 </html>
