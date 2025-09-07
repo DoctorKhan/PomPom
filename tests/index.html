@@ -1035,7 +1035,21 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
             () => log('Start/pause button shows "Start"'),
             () => log('Quick Schedule parses and fills fields'),
             () => log('Health endpoint failure falls back to local parse'),
-            () => log('Gong sound plays correctly', Math.random() > 0.1), // 10% chance to fail
+            () => {
+                // Check if gong sound function is available
+                const checkGongSound = () => {
+                    try {
+                        if (typeof window.playGong === 'function') {
+                            log('Gong sound function is available');
+                        } else {
+                            log('Gong sound function is NOT available', false);
+                        }
+                    } catch (e) {
+                        log(`Gong sound check error: ${e.message}`, false);
+                    }
+                };
+                checkGongSound();
+            },
             () => log('Ding sound plays correctly'),
             () => log('Meet link generation is valid'),
             () => log('App handles window resizing gracefully'),
@@ -1115,6 +1129,9 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
                 const checkMeetJs = async () => {
                     try {
                         await waitForAppLoad();
+                        // Wait a bit more for ES modules to load
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        
                         if (typeof window.__createHandleStartMeet === 'undefined') {
                             log('meet.js module not loaded in app - check import statement', false);
                         } else {
@@ -1131,6 +1148,9 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
                 const checkPlayMeetingRing = async () => {
                     try {
                         await waitForAppLoad();
+                        // Wait a bit for scripts to execute
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                        
                         if (typeof window.playMeetingRing === 'undefined') {
                             log('playMeetingRing function not defined in app - meeting audio will fail', false);
                         } else {
