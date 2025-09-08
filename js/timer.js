@@ -279,7 +279,10 @@
     
     if (modeControls) {
       modeControls.addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-mode]');
+        // Ensure we can find the button even if clicking on text nodes/icons
+        let el = e.target;
+        if (!(el instanceof Element)) el = el && el.parentElement;
+        const btn = el && el.closest ? el.closest('[data-mode]') : null;
         if (!btn) return;
         setMode(btn.dataset.mode);
       });
