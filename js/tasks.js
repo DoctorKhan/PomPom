@@ -135,39 +135,49 @@ function moveToNextTask() {
 
 function renderTasks() {
     const tasks = window.PomPomMain?.tasks || [];
-    
-    if (!todoList) return;
-    
-    todoList.innerHTML = '';
+
+    // Update stats if present
+    const totalEl = document.getElementById('total-tasks-count');
+    const completedEl = document.getElementById('completed-tasks-count');
+    const remainingEl = document.getElementById('remaining-tasks-count');
+    if (totalEl) totalEl.textContent = String(tasks.length);
+    if (completedEl) completedEl.textContent = String(tasks.filter(t => t.completed).length);
+    if (remainingEl) remainingEl.textContent = String(tasks.filter(t => !t.completed).length);
+
+    // Handle empty state
+    const emptyState = document.getElementById('empty-state');
+    if (emptyState) emptyState.classList.toggle('hidden', tasks.length > 0);
+
+    // Build list HTML once
+    let html = '';
     if (tasks.length === 0) {
-        todoList.innerHTML = `<p class="text-gray-400 text-sm">No tasks yet. Add one!</p>`;
-        updateCurrentTaskDisplay(); // Update timer display when no tasks
-        return;
+        html = `<p class="text-gray-400 text-sm">No tasks yet. Add one!</p>`;
+    } else {
+        html = tasks.map((task, index) => `
+            <div class="task-item p-3 rounded-lg flex justify-between items-center ${task.completed ? 'bg-white/5 text-gray-500 completed' : 'bg-white/10'} group transition-all hover:bg-white/15">
+                <div class="flex-1 flex items-center gap-3">
+                    <button data-index="${index}" class="toggle-task-btn w-5 h-5 rounded border-2 border-gray-400 flex items-center justify-center ${task.completed ? 'bg-teal-500 border-teal-500' : ''} hover:border-teal-400 transition">
+                        ${task.completed ? '<svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>' : ''}
+                    </button>
+                    <span class="task-text flex-1 cursor-pointer ${task.completed ? 'line-through' : ''} hover:text-teal-300 transition" data-index="${index}" title="Click to edit">${task.text}</span>
+                </div>
+                <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button data-index="${index}" class="delete-task-btn text-red-400 px-2 py-1 rounded hover:bg-red-500/20 transition">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        `).join('');
     }
-    
-    tasks.forEach((task, index) => {
-        const taskEl = document.createElement('div');
-        taskEl.className = `task-item p-3 rounded-lg flex justify-between items-center ${task.completed ? 'bg-white/5 text-gray-500 completed' : 'bg-white/10'} group transition-all hover:bg-white/15`;
-        taskEl.innerHTML = `
-            <div class="flex-1 flex items-center gap-3">
-                <button data-index="${index}" class="toggle-task-btn w-5 h-5 rounded border-2 border-gray-400 flex items-center justify-center ${task.completed ? 'bg-teal-500 border-teal-500' : ''} hover:border-teal-400 transition">
-                    ${task.completed ? '<svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>' : ''}
-                </button>
-                <span class="task-text flex-1 cursor-pointer ${task.completed ? 'line-through' : ''} hover:text-teal-300 transition" data-index="${index}" title="Click to edit">${task.text}</span>
-            </div>
-            <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button data-index="${index}" class="delete-task-btn text-red-400 px-2 py-1 rounded hover:bg-red-500/20 transition">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                    </svg>
-                </button>
-            </div>
-        `;
-        todoList.appendChild(taskEl);
-    });
-    
-    updateCurrentTaskDisplay(); // Update timer display after rendering tasks
-    updateTimerCurrentTask(); // Update timer screen current task display
+
+    // Render to all lists (there are duplicate ids in different views)
+    const lists = document.querySelectorAll('#todo-list');
+    lists.forEach(list => list.innerHTML = html);
+
+    updateCurrentTaskDisplay();
+    updateTimerCurrentTask();
 }
 
 // --- Inline Task Editing ---
@@ -233,6 +243,37 @@ function initializeTaskEventListeners() {
         nextTaskBtn.addEventListener('click', moveToNextTask);
     }
 
+    // Add task helpers
+    function addTaskFromInput(inputEl, atTop = false) {
+        if (!inputEl) return;
+        const text = (inputEl.value || '').trim();
+        if (!text) return;
+        const tasks = window.PomPomMain?.tasks || [];
+        if (atTop) tasks.unshift({ text, completed: false }); else tasks.push({ text, completed: false });
+        inputEl.value = '';
+        renderTasks();
+        updateTimerCurrentTask();
+        if (window.PomPomMain?.showToast) {
+            window.PomPomMain.showToast('✅ Task added');
+        }
+    }
+
+    // Timer view: add task
+    if (timerAddTaskBtn && timerTaskInput) {
+        timerAddTaskBtn.addEventListener('click', () => addTaskFromInput(timerTaskInput, true));
+        timerTaskInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); addTaskFromInput(timerTaskInput, true); }
+        });
+    }
+
+    // Tasks view: add task
+    if (todoAddBtn && todoIdeaInput) {
+        todoAddBtn.addEventListener('click', () => addTaskFromInput(todoIdeaInput));
+        todoIdeaInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); addTaskFromInput(todoIdeaInput); }
+        });
+    }
+
     // Timer screen task completion
     if (timerCompleteTaskBtn) {
         timerCompleteTaskBtn.addEventListener('click', () => {
@@ -250,28 +291,29 @@ function initializeTaskEventListeners() {
         });
     }
 
-    // Task list interactions
-    if (todoList) {
-        todoList.addEventListener('click', (e) => {
-            const tasks = window.PomPomMain?.tasks || [];
-            const index = parseInt(e.target.dataset.index);
-            
-            if (e.target.classList.contains('toggle-task-btn')) {
-                tasks[index].completed = !tasks[index].completed;
-                renderTasks();
-                updateCurrentTaskDisplay();
-            } else if (e.target.classList.contains('delete-task-btn')) {
-                tasks.splice(index, 1);
-                renderTasks();
-                updateCurrentTaskDisplay();
-                if (window.PomPomMain?.showToast) {
-                    window.PomPomMain.showToast('🗑️ Task deleted');
-                }
-            } else if (e.target.classList.contains('task-text')) {
-                startTaskEdit(index);
+    // Task list interactions (delegate for all lists)
+    document.addEventListener('click', (e) => {
+        const target = e.target.closest && e.target.closest('.toggle-task-btn, .delete-task-btn, .task-text');
+        if (!target) return;
+        const tasks = window.PomPomMain?.tasks || [];
+        const index = parseInt(target.dataset.index);
+        if (!Number.isInteger(index)) return;
+
+        if (target.classList.contains('toggle-task-btn')) {
+            tasks[index].completed = !tasks[index].completed;
+            renderTasks();
+            updateCurrentTaskDisplay();
+        } else if (target.classList.contains('delete-task-btn')) {
+            tasks.splice(index, 1);
+            renderTasks();
+            updateCurrentTaskDisplay();
+            if (window.PomPomMain?.showToast) {
+                window.PomPomMain.showToast('🗑️ Task deleted');
             }
-        });
-    }
+        } else if (target.classList.contains('task-text')) {
+            startTaskEdit(index);
+        }
+    });
 }
 
 // --- Initialization ---

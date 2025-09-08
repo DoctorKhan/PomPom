@@ -159,7 +159,8 @@ function initializeMainEventListeners() {
         // Reset session state
         sessionId = '';
         userName = '';
-        tasks = [];
+        // Clear tasks in-place to keep shared reference stable
+        Array.isArray(tasks) ? (tasks.length = 0) : (tasks = []);
 
         // Stop any running timer
         if (typeof resetTimer === 'function') {

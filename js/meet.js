@@ -47,39 +47,8 @@ function showGenericMeetingMessage() {
 
 // --- Meet Module Loading ---
 async function loadMeetModule() {
-    try {
-        let modulePath = './src/meet.js';
-        try {
-            // If running inside tests (served from /tests), adjust path
-            const isTests = location.pathname.includes('/tests');
-            if (isTests) modulePath = '../src/meet.js';
-        } catch {}
-        
-        // Dynamic import with fallback for environments that rewrite paths
-        let createHandleStartMeet;
-        try {
-            ({ createHandleStartMeet } = await import(modulePath));
-        } catch (err) {
-            try {
-                ({ createHandleStartMeet } = await import('../src/meet.js'));
-            } catch (e2) {
-                console.error('Failed to load meet.js via both paths', err, e2);
-            }
-        }
-        
-        if (createHandleStartMeet) {
-            window.__createHandleStartMeet = createHandleStartMeet;
-        } else {
-            // Fallback for test environments where ES modules might not work
-            console.warn('meet.js import failed, using fallback');
-        }
-    } catch (e) {
-        console.error('Could not load meet.js:', e);
-        // Provide a basic fallback for testing
-        window.__createHandleStartMeet = function() { 
-            console.log('meet.js fallback called'); 
-        };
-    }
+    // This function is no longer needed as the module is loaded via a script tag.
+    // The logic has been simplified.
 }
 
 // --- Start Meeting Handler ---
