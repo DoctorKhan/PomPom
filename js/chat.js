@@ -50,9 +50,7 @@ function showStatusInline(message, kind = 'success') {
         status.appendChild(container);
     }
     const div = document.createElement('div');
-    div.className = kind === 'success'
-        ? 'px-3 py-2 rounded-lg text-sm bg-emerald-600/20 text-emerald-300 border border-emerald-500/30'
-        : 'px-3 py-2 rounded-lg text-sm bg-red-600/20 text-red-300 border border-red-500/30';
+    div.className = `badge ${kind === 'success' ? 'badge-success' : 'badge-error'}`;
     div.textContent = message;
     container.appendChild(div);
     // Auto-fade and remove

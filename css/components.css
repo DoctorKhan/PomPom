@@ -17,6 +17,40 @@
     box-shadow: 0 10px 36px 0 rgba(0, 0, 0, 0.45);
 }
 
+/* Design tokens (lightweight) */
+:root {
+    --pp-success-bg: rgba(16, 185, 129, 0.20);
+    --pp-success-text: #34d399;
+    --pp-success-border: rgba(16, 185, 129, 0.35);
+
+    --pp-error-bg: rgba(239, 68, 68, 0.20);
+    --pp-error-text: #fca5a5;
+    --pp-error-border: rgba(239, 68, 68, 0.35);
+}
+
+/* Small semantic badges for inline status messages */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    border-width: 1px;
+    border-style: solid;
+}
+.badge-success {
+    background: var(--pp-success-bg);
+    color: var(--pp-success-text);
+    border-color: var(--pp-success-border);
+}
+.badge-error {
+    background: var(--pp-error-bg);
+    color: var(--pp-error-text);
+    border-color: var(--pp-error-border);
+}
+
+
 
 /* Button Styles */
 .btn-primary {
