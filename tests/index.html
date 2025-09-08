@@ -1049,7 +1049,7 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
                         await waitForAppLoad();
                         // Wait for scripts to load
                         await new Promise(resolve => setTimeout(resolve, 300));
-                        
+
                         if (typeof window.playGong === 'function') {
                             log('Gong sound function is available');
                         } else {
@@ -1072,6 +1072,8 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
             () => log('Meta tags for SEO are present'),
             () => log('Accessibility: All images have alt tags'),
             () => log('Accessibility: Contrast ratios meet WCAG AA'),
+            () => testTimerShortBreakCountdown(),
+            () => testTimerLongBreakCountdown(),
         ];
 
         // Basic Tests (28)
@@ -1097,7 +1099,7 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
                         await waitForAppLoad();
                         // Wait for scripts to load
                         await new Promise(resolve => setTimeout(resolve, 300));
-                        
+
                         if (typeof window.__firebase_config !== 'undefined') {
                             log('Firebase config is loaded');
                         } else {
@@ -1146,7 +1148,7 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
                         await waitForAppLoad();
                         // Wait a bit more for ES modules to load
                         await new Promise(resolve => setTimeout(resolve, 500));
-                        
+
                         if (typeof window.__createHandleStartMeet === 'undefined') {
                             log('meet.js module not loaded in app - check import statement', false);
                         } else {
@@ -1165,7 +1167,7 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
                         await waitForAppLoad();
                         // Wait a bit for scripts to execute
                         await new Promise(resolve => setTimeout(resolve, 200));
-                        
+
                         if (typeof window.playMeetingRing === 'undefined') {
                             log('playMeetingRing function not defined in app - meeting audio will fail', false);
                         } else {
@@ -1270,6 +1272,7 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
             () => log('User uses keyboard navigation'),
             () => log('User accesses help/documentation'),
             () => log('User customizes notification preferences'),
+
             () => log('User exports session data'),
             () => log('User imports previous session'),
             () => log('User collaborates with team members'),
@@ -1360,6 +1363,91 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
 
                     const w = iframe.contentWindow;
                     const d = iframe.contentDocument;
+
+
+        // E2E: Timer countdown validation inside embedded app (short/long breaks)
+        async function testTimerShortBreakCountdown() {
+            const testName = 'E2E: Short Break counts down from 05:00 to 04:59';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) throw new Error('App iframe not available');
+                const appWin = iframe.contentWindow;
+                const appDoc = iframe.contentDocument || appWin.document;
+
+                // If onboarding is visible, fill and start session
+                const startBtn = appDoc.getElementById('start-session-btn');
+                if (startBtn) {
+                    const team = appDoc.getElementById('session-name-input');
+                    const user = appDoc.getElementById('user-name-setup-input');
+                    if (team) team.value = 'Test Session';
+                    if (user) user.value = 'Tester';
+                    startBtn.click();
+                    await new Promise(r => setTimeout(r, 600));
+                }
+
+                const shortBtn = appDoc.querySelector('.mode-btn[data-mode="shortBreak"], [data-mode="shortBreak"]');
+                const startPause = appDoc.getElementById('start-pause-btn');
+                const display = appDoc.getElementById('timer-display');
+                if (!shortBtn || !startPause || !display) throw new Error('Timer controls not found');
+
+                shortBtn.click();
+                await new Promise(r => setTimeout(r, 150));
+                startPause.click();
+                await new Promise(r => setTimeout(r, 150));
+
+                // Expect initial to be 05:00
+                const initial = (display.textContent || '').trim();
+                if (initial !== '05:00') {
+                    log(`\u26a0\ufe0f Short Break initial not 05:00 (got ${initial})`, 'warning');
+                }
+
+                // After ~1.2s it should show 04:59 (tick interval = 250ms, ceil logic)
+                await new Promise(r => setTimeout(r, 1200));
+                const after = (display.textContent || '').trim();
+                if (after === '04:59') {
+                    log(`\u2705 ${testName}`, true);
+                } else {
+                    log(`\u274c ${testName} (got ${after})`, false);
+                }
+            } catch (e) {
+                log(`\u274c ${testName}: ${e.message}`, false);
+            }
+        }
+
+        async function testTimerLongBreakCountdown() {
+            const testName = 'E2E: Long Break counts down from 15:00 to 14:58';
+            try {
+                const iframe = document.getElementById('app-iframe');
+                if (!iframe || !iframe.contentWindow) throw new Error('App iframe not available');
+                const appWin = iframe.contentWindow;
+                const appDoc = iframe.contentDocument || appWin.document;
+
+                // Ensure any prior timer is reset
+                const reset = appDoc.getElementById('reset-btn');
+                if (reset) { reset.click(); await new Promise(r => setTimeout(r, 150)); }
+
+                const longBtn = appDoc.querySelector('.mode-btn[data-mode="longBreak"], [data-mode="longBreak"]');
+                const startPause = appDoc.getElementById('start-pause-btn');
+                const display = appDoc.getElementById('timer-display');
+                if (!longBtn || !startPause || !display) throw new Error('Timer controls not found');
+
+                longBtn.click();
+                await new Promise(r => setTimeout(r, 150));
+                startPause.click();
+                await new Promise(r => setTimeout(r, 150));
+
+                // After ~2.2s it should show 14:58
+                await new Promise(r => setTimeout(r, 2200));
+                const after = (display.textContent || '').trim();
+                if (after === '14:58') {
+                    log(`\u2705 ${testName}`, true);
+                } else {
+                    log(`\u274c ${testName} (got ${after})`, false);
+                }
+            } catch (e) {
+                log(`\u274c ${testName}: ${e.message}`, false);
+            }
+        }
 
                     // Hook into legacy log to mirror in dashboard
                     const mirror = (msg, isPass = true) => {
@@ -1761,6 +1849,7 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
                 if (typeof appWindow.app !== 'undefined' || typeof appWindow.PomPomApp !== 'undefined') {
                     log(`✅ ${testName}: Modular app structure detected`, true);
                 } else {
+
                     log(`⚠️ ${testName}: Legacy structure still in use`, 'warning');
                 }
             } catch (error) {
@@ -1851,6 +1940,7 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
         }
 
         async function testCrossTabFunctionality() {
+
             const testName = 'Cross-Tab Functionality';
             try {
                 const iframe = document.getElementById('app-iframe');
