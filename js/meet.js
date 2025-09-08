@@ -29,7 +29,7 @@ function updateChatWithMeetingUrl(meetingUrl) {
 
 function showGenericMeetingMessage() {
     if (!chatMessages) return;
-    
+
     const messageEl = document.createElement('div');
     messageEl.className = 'p-2 bg-teal-900/50 rounded-lg text-sm';
     messageEl.innerHTML = `
@@ -42,6 +42,19 @@ function showGenericMeetingMessage() {
         </div>
     `;
     chatMessages.appendChild(messageEl);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function showManualMeetingLink() {
+    if (!chatMessages) return;
+    const div = document.createElement('div');
+    div.className = 'p-2 bg-white/5 rounded-lg text-sm border border-white/10';
+    div.innerHTML = `
+      <div class="mb-1 text-gray-200 font-medium">Pop-up blocked</div>
+      <div class="text-gray-300">
+        Click to open: <a href="https://meet.google.com/new" target="_blank" class="text-teal-300 underline hover:text-teal-200">https://meet.google.com/new</a>
+      </div>`;
+    chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
@@ -67,7 +80,8 @@ async function handleStartMeeting() {
 
         const sessionId = window.PomPomMain?.sessionId || 'default-session';
         const userName = window.PomPomMain?.userName || 'Anonymous';
-        const extensionAvailable = window.PomPomExtension?.extensionAvailable || false;
+        const extensionAvailable = (window.PomPomExtension?.isExtensionAvailable && window.PomPomExtension.isExtensionAvailable())
+          || (typeof window.PomPomExtension?.extensionAvailable === 'boolean' ? window.PomPomExtension.extensionAvailable : false);
 
         // Check if extension is available for automatic URL capture
         if (extensionAvailable && typeof window.pomPomExtensionCaptureMeeting === 'function') {
@@ -80,6 +94,14 @@ async function handleStartMeeting() {
 
             // Open Google Meet
             const meetWindow = window.open('https://meet.google.com/new', '_blank');
+
+            // If pop-up blocked, provide manual link immediately
+            if (!meetWindow) {
+                showManualMeetingLink();
+                if (window.PomPomMain?.showToast) {
+                    window.PomPomMain.showToast('Popup blocked — click the link in chat to open Meet');
+                }
+            }
 
             // Wait for URL capture (with timeout)
             try {
@@ -158,9 +180,9 @@ async function handleStartMeeting() {
                     }
                 }, 500);
             } else {
-                showGenericMeetingMessage();
+                showManualMeetingLink();
                 if (window.PomPomMain?.showToast) {
-                    window.PomPomMain.showToast('❌ Could not open meeting window');
+                    window.PomPomMain.showToast('Popup blocked — click the link in chat to open Meet');
                 }
             }
         }

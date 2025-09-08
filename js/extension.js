@@ -7,6 +7,7 @@ let extensionAvailable = false;
 let extensionVersion = null;
 
 // --- Extension Functions ---
+function isExtensionAvailable() { return !!extensionAvailable; }
 // Check for extension availability (robust, works on hosted domains)
 async function checkExtensionAvailability() {
     try {
@@ -166,8 +167,10 @@ window.handleCapturedMeetingUrl = handleCapturedMeetingUrl;
 
 // Export functions for use by other modules
 window.PomPomExtension = {
-    extensionAvailable,
-    extensionVersion,
+    // dynamic getter to avoid stale snapshot
+    isExtensionAvailable,
+    get extensionAvailable() { return !!extensionAvailable; },
+    get extensionVersion() { return extensionVersion; },
     checkExtensionAvailability,
     updateExtensionUI,
     handleCapturedMeetingUrl

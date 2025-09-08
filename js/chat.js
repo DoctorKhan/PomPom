@@ -5,11 +5,14 @@
 (function() {
 
 // --- DOM Elements ---
-const chatPopupBtn = document.getElementById('chat-popup-btn');
-const chatPopup = document.getElementById('chat-popup');
-const chatMessages = document.getElementById('chat-messages');
-const chatInput = document.getElementById('chat-input');
-const copyLinkBtn = document.getElementById('copy-link-btn');
+let chatPopupBtn, chatPopup, chatMessages, chatInput, copyLinkBtn;
+function cacheChatElements() {
+    chatPopupBtn = document.getElementById('chat-popup-btn');
+    chatPopup = document.getElementById('chat-popup');
+    chatMessages = document.getElementById('chat-messages');
+    chatInput = document.getElementById('chat-input');
+    copyLinkBtn = document.getElementById('copy-link-btn');
+}
 
 // --- Chat Functions ---
 function addChatMessage(message, type = 'user') {
@@ -40,9 +43,23 @@ function sendChatMessage() {
     // For now, it's just a local chat interface
 }
 
+function isElementVisible(el) {
+    if (!el) return false;
+    try {
+        if (el.getClientRects().length === 0) return false;
+        const cs = window.getComputedStyle(el);
+        if (cs.visibility === 'hidden' || cs.display === 'none') return false;
+        return true;
+    } catch { return false; }
+}
+
 function showStatusInline(message, kind = 'success') {
     const status = document.getElementById('extension-status');
     if (!status) return false;
+
+    // Only show inline if the section is currently visible on screen
+    if (!isElementVisible(status)) return false;
+
     let container = status.querySelector('.status-inline-messages');
     if (!container) {
         container = document.createElement('div');
@@ -53,6 +70,7 @@ function showStatusInline(message, kind = 'success') {
     div.className = `badge ${kind === 'success' ? 'badge-success' : 'badge-error'}`;
     div.textContent = message;
     container.appendChild(div);
+
     // Auto-fade and remove
     setTimeout(() => {
         div.style.transition = 'opacity 300ms ease';
@@ -67,7 +85,6 @@ function copyShareLink() {
     const shareUrl = `${window.location.origin}${window.location.pathname}?session=${sessionId}`;
 
     const onSuccess = () => {
-        // Inline popup in the status section (like index-old UX)
         const shown = showStatusInline('✅ Share link copied to clipboard!');
         if (!shown && window.PomPomMain?.showToast) {
             window.PomPomMain.showToast('Share link copied to clipboard!');
@@ -80,10 +97,28 @@ function copyShareLink() {
         }
     };
 
+    // Fallback copy using a temporary textarea (works on non-secure origins)
+    const fallbackCopy = (text) => {
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'absolute';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            if (ok) onSuccess(); else onError(new Error('execCommand copy failed'));
+        } catch (e) {
+            onError(e);
+        }
+    };
+
     if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(shareUrl).then(onSuccess).catch(onError);
+        navigator.clipboard.writeText(shareUrl).then(onSuccess).catch(() => fallbackCopy(shareUrl));
     } else {
-        onError(new Error('Clipboard API not available'));
+        fallbackCopy(shareUrl);
     }
 }
 
@@ -116,6 +151,7 @@ function initializeChatEventListeners() {
 
 // --- Initialization ---
 function initializeChat() {
+    cacheChatElements();
     initializeChatEventListeners();
 }
 

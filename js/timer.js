@@ -126,8 +126,8 @@
         console.warn('Could not play completion sound:', e);
       }
 
-      // Reset timer for next session
-      remainingSeconds = getModeSeconds();
+      // Reset timer for next session to the true mode duration (ignore test overrides)
+      remainingSeconds = MODE_DURATIONS[currentMode].seconds;
       renderTimer();
 
       // Show completion notification
@@ -165,10 +165,12 @@
   function startTimer() {
     if (running) return;
 
-    // Apply test override if present
+    // Apply test override if present, but only for default focus mode to avoid hijacking breaks
     try {
       const override = typeof window !== 'undefined' && Number(window.__TIMER_SECONDS_OVERRIDE);
-      if (Number.isFinite(override) && override > 0) remainingSeconds = override;
+      if (currentMode === 'pomodoro25' && Number.isFinite(override) && override > 0) {
+        remainingSeconds = override;
+      }
     } catch {}
 
     // Mark current task as in progress
@@ -213,7 +215,7 @@
     running = false;
     clearInterval(timerInterval);
     timerInterval = null;
-    remainingSeconds = getModeSeconds();
+    remainingSeconds = MODE_DURATIONS[currentMode].seconds;
     renderTimer();
 
     // Trigger timer reset event
@@ -240,7 +242,8 @@
     if (wasRunning) pauseTimer();
     
     currentMode = mode;
-    remainingSeconds = getModeSeconds();
+    // When switching modes, always use the actual mode duration (ignore any test overrides)
+    remainingSeconds = MODE_DURATIONS[currentMode].seconds;
     renderTimer();
     updateModeButtons();
 
@@ -287,6 +290,17 @@
         setMode(btn.dataset.mode);
       });
     }
+
+    // Also bind directly to each mode button for robustness
+    const directModeButtons = document.querySelectorAll('.mode-btn[data-mode]');
+    directModeButtons.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Do not rely on event bubbling; call directly
+        const mode = btn.dataset.mode;
+        if (mode) setMode(mode);
+      });
+    });
 
     // Initialize display
     renderTimer();
