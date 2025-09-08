@@ -52,6 +52,19 @@ function autoPopulateTeamName() {
     }
 }
 
+// --- Utility Functions ---
+function generateRandomUserName() {
+    const adjectives = ["Cozy", "Brave", "Clever", "Dandy", "Eager", "Fancy", "Gentle", "Happy", "Jolly", "Kind", "Lucky", "Merry", "Nice", "Proud", "Silly", "Witty"];
+    const nouns = ["Panda", "Penguin", "Dragon", "Unicorn", "Fox", "Bear", "Lion", "Tiger", "Bunny", "Puppy", "Kitten", "Chipmunk"];
+    return `${adjectives[Math.floor(Math.random() * adjectives.length)]} ${nouns[Math.floor(Math.random() * nouns.length)]}`;
+}
+
+function generateRandomTeamName() {
+    const nouns = ["Galaxy", "Comet", "Nova", "Orion", "Pegasus", "Phoenix", "Andromeda", "Draco", "Lyra", "Cygnus"];
+    const verbs = ["Quest", "Voyage", "Mission", "Journey", "Expedition", "Odyssey", "Venture", "Trek"];
+    return `${verbs[Math.floor(Math.random() * verbs.length)]}${nouns[Math.floor(Math.random() * nouns.length)]}${Math.floor(Math.random() * 900) + 100}`;
+}
+
 // --- UI Logic ---
 function showToast(message) {
     if (toastEl) {
@@ -204,3 +217,7 @@ window.PomPomMain = {
     sessionId,
     userName
 };
+
+// Export utility functions globally for compatibility
+window.generateRandomUserName = generateRandomUserName;
+window.generateRandomTeamName = generateRandomTeamName;
