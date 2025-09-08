@@ -2,6 +2,8 @@
  * AI integration and smart actions functionality
  */
 
+(function() {
+
 // --- DOM Elements ---
 const smartActionsBtn = document.getElementById('smart-actions-btn');
 const smartActionsMenu = document.getElementById('smart-actions-menu');
@@ -465,3 +467,5 @@ window.PomPomAI = {
     generateIcebreakerFromActions,
     aiAgentHandle
 };
+
+})();

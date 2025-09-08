@@ -2,6 +2,8 @@
  * Chat functionality and messaging
  */
 
+(function() {
+
 // --- DOM Elements ---
 const chatPopupBtn = document.getElementById('chat-popup-btn');
 const chatPopup = document.getElementById('chat-popup');
@@ -38,25 +40,52 @@ function sendChatMessage() {
     // For now, it's just a local chat interface
 }
 
+function showStatusInline(message, kind = 'success') {
+    const status = document.getElementById('extension-status');
+    if (!status) return false;
+    let container = status.querySelector('.status-inline-messages');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'status-inline-messages mt-2 space-y-2';
+        status.appendChild(container);
+    }
+    const div = document.createElement('div');
+    div.className = kind === 'success'
+        ? 'px-3 py-2 rounded-lg text-sm bg-emerald-600/20 text-emerald-300 border border-emerald-500/30'
+        : 'px-3 py-2 rounded-lg text-sm bg-red-600/20 text-red-300 border border-red-500/30';
+    div.textContent = message;
+    container.appendChild(div);
+    // Auto-fade and remove
+    setTimeout(() => {
+        div.style.transition = 'opacity 300ms ease';
+        div.style.opacity = '0';
+        setTimeout(() => div.remove(), 320);
+    }, 2000);
+    return true;
+}
+
 function copyShareLink() {
     const sessionId = window.PomPomMain?.sessionId || 'default-session';
     const shareUrl = `${window.location.origin}${window.location.pathname}?session=${sessionId}`;
-    
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(shareUrl).then(() => {
-            if (window.PomPomMain?.showToast) {
-                window.PomPomMain.showToast('Share link copied to clipboard!');
-            }
-        }).catch(err => {
-            console.error('Failed to copy link: ', err);
-            if (window.PomPomMain?.showToast) {
-                window.PomPomMain.showToast('Could not copy link.');
-            }
-        });
-    } else {
-        if (window.PomPomMain?.showToast) {
-            window.PomPomMain.showToast('Clipboard access is not available.');
+
+    const onSuccess = () => {
+        // Inline popup in the status section (like index-old UX)
+        const shown = showStatusInline('✅ Share link copied to clipboard!');
+        if (!shown && window.PomPomMain?.showToast) {
+            window.PomPomMain.showToast('Share link copied to clipboard!');
         }
+    };
+    const onError = (err) => {
+        console.error('Failed to copy link: ', err);
+        if (!showStatusInline('❌ Could not copy link.', 'error') && window.PomPomMain?.showToast) {
+            window.PomPomMain.showToast('Could not copy link.');
+        }
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl).then(onSuccess).catch(onError);
+    } else {
+        onError(new Error('Clipboard API not available'));
     }
 }
 
@@ -106,3 +135,5 @@ window.PomPomChat = {
     sendChatMessage,
     copyShareLink
 };
+
+})();

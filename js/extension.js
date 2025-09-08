@@ -7,15 +7,24 @@ let extensionAvailable = false;
 let extensionVersion = null;
 
 // --- Extension Functions ---
-// Check for extension availability
+// Check for extension availability (robust, works on hosted domains)
 async function checkExtensionAvailability() {
     try {
+        // 1) Direct API from content script
         if (typeof window.pomPomExtensionCheck === 'function') {
             const status = await window.pomPomExtensionCheck();
-            extensionAvailable = status.installed;
-            extensionVersion = status.version;
-        } else if (window.POMPOM_EXTENSION_AVAILABLE) {
+            extensionAvailable = !!status?.installed;
+            extensionVersion = status?.version || null;
+        }
+
+        // 2) Global flag injected by content script
+        if (!extensionAvailable && window.POMPOM_EXTENSION_AVAILABLE) {
             extensionAvailable = true;
+        }
+
+        // 3) PostMessage handshake (extension should reply with a PONG)
+        if (!extensionAvailable && typeof window !== 'undefined') {
+            window.postMessage({ source: 'PomPomWebApp', type: 'POMPOM_EXTENSION_PING' }, '*');
         }
     } catch (error) {
         console.log('Extension not available:', error);
@@ -111,6 +120,18 @@ function initializeExtensionEventListeners() {
     // Also check when extension might be installed
     window.addEventListener('pomPomExtensionReady', checkExtensionAvailability);
 
+    // Handshake via postMessage from the extension
+    window.addEventListener('message', (e) => {
+        try {
+            const data = e.data || {};
+            if (data && data.source === 'PomPomExtension' && data.type === 'POMPOM_EXTENSION_PONG') {
+                extensionAvailable = true;
+                extensionVersion = data.version || null;
+                updateExtensionUI();
+            }
+        } catch (_) { /* ignore */ }
+    });
+
     // Setup extension buttons
     setupExtensionButtons();
 }
@@ -118,9 +139,19 @@ function initializeExtensionEventListeners() {
 // --- Initialization ---
 function initializeExtension() {
     initializeExtensionEventListeners();
-    
-    // Check extension availability on page load
-    setTimeout(checkExtensionAvailability, 1000);
+
+    // Check extension availability on page load and keep retrying briefly
+    setTimeout(checkExtensionAvailability, 500);
+    let attempts = 0;
+    const maxAttempts = 30; // ~15s at 500ms interval
+    const interval = setInterval(() => {
+        if (extensionAvailable || attempts >= maxAttempts) {
+            clearInterval(interval);
+            return;
+        }
+        attempts++;
+        checkExtensionAvailability();
+    }, 500);
 }
 
 // Initialize when DOM is ready
