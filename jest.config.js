@@ -13,6 +13,9 @@ module.exports = {
     '/node_modules/',
     '/test.js' // Ignore our custom test runner
   ],
+  transformIgnorePatterns: [
+    'node_modules/(?!(sucrase)/)'
+  ],
   collectCoverageFrom: [
     '**/*.{js,jsx}',
     '!**/node_modules/**',

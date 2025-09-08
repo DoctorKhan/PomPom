@@ -9,7 +9,7 @@
     "build": "npm run css:build",
     "css:build": "tailwindcss -i ./input.css -o ./styles.css --minify",
     "css:watch": "tailwindcss -i ./input.css -o ./styles.css --watch",
-    "test": "jest --testPathPattern='(browser-tests-integration|refactoring|utils|eventParser)\\.spec\\.js$' --verbose",
+    "test": "jest --verbose",
     "test:all": "jest --verbose",
     "test:core": "jest --testPathPattern='(utils|eventParser)\\.spec\\.js$' --verbose",
     "test:integration": "jest --testPathPattern='browser-tests-integration\\.spec\\.js$' --verbose",

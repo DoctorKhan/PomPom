@@ -44,10 +44,23 @@ describe('Settings Functionality', () => {
     });
 
     describe('Settings Modal', () => {
-        test('settings button should exist', () => {
+        test('settings button should exist and have icon', () => {
             const settingsBtn = document.getElementById('settings-btn');
             expect(settingsBtn).toBeTruthy();
             expect(settingsBtn.getAttribute('title')).toBe('Settings');
+
+            // Check that the button has an SVG icon
+            const icon = settingsBtn.querySelector('svg');
+            expect(icon).toBeTruthy();
+            expect(icon.classList.contains('w-5')).toBe(true);
+            expect(icon.classList.contains('h-5')).toBe(true);
+
+            // Check that the SVG has the correct viewBox for settings icon
+            expect(icon.getAttribute('viewBox')).toBe('0 0 24 24');
+
+            // Check that the SVG has path elements (the actual icon)
+            const paths = icon.querySelectorAll('path');
+            expect(paths.length).toBeGreaterThan(0);
         });
 
         test('settings modal should exist and be hidden by default', () => {
@@ -175,15 +188,32 @@ describe('Settings Functionality', () => {
         test('should show modal when settings button is clicked', () => {
             const settingsBtn = document.getElementById('settings-btn');
             const settingsModal = document.getElementById('settings-modal');
-            
-            // Mock the show modal function
-            const showModal = () => {
+
+            expect(settingsBtn).toBeTruthy();
+            expect(settingsModal).toBeTruthy();
+            expect(settingsModal.classList.contains('hidden')).toBe(true);
+
+            // Simulate the actual click event handler
+            settingsBtn.addEventListener('click', () => {
                 settingsModal.classList.remove('hidden');
-            };
-            
-            showModal();
-            
+            });
+
+            // Trigger the click
+            settingsBtn.click();
+
             expect(settingsModal.classList.contains('hidden')).toBe(false);
+        });
+
+        test('settings button should be clickable and not disabled', () => {
+            const settingsBtn = document.getElementById('settings-btn');
+
+            expect(settingsBtn).toBeTruthy();
+            expect(settingsBtn.disabled).toBe(false);
+            expect(settingsBtn.style.pointerEvents).not.toBe('none');
+
+            // Should be able to focus the button
+            settingsBtn.focus();
+            expect(document.activeElement).toBe(settingsBtn);
         });
 
         test('should hide modal when close button is clicked', () => {

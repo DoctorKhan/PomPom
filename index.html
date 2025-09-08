@@ -4,282 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PomPom - A productivity timer for remote teams</title>
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/mobile.css">
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Icons and Theme -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%F0%9F%90%A9%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="/images/icon-192x192.png">
+    <meta name="theme-color" content="#14b8a6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PomPom">
 
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0B1120;
-            background-image: url('https://www.transparenttextures.com/patterns/cubes.png'), linear-gradient(135deg, #0B1120 0%, #1A2942 100%);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+    <!-- Enhanced Mobile Support -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="PomPom">
+    <meta name="msapplication-TileColor" content="#14b8a6">
+    <meta name="msapplication-config" content="/browserconfig.xml">
 
-        .glass-card {
-            background: rgba(20, 20, 30, 0.9);
-            -webkit-backdrop-filter: blur(20px);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-        }
+    <!-- Core JavaScript Modules -->
+    <script src="js/welcome.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/timer.js"></script>
+    <script src="js/pwa.js"></script>
 
-        .btn-primary {
-            background: linear-gradient(135deg, #14b8a6, #0891b2);
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 15px 0 rgba(20, 184, 166, 0.3);
-            font-weight: 600;
-            color: white !important;
-        }
-        .btn-primary:hover:not(:disabled) {
-            background: linear-gradient(135deg, #0891b2, #0e7490);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px 0 rgba(20, 184, 166, 0.4);
-        }
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-
-        .btn-secondary {
-            background-color: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.2s ease;
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 500;
-        }
-        .btn-secondary:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-1px);
-        }
-
-        .form-input {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            transition: all 0.2s ease;
-        }
-        .form-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        .form-input:focus {
-            outline: none;
-            border-color: #14b8a6;
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
-        }
-
-        .nav-btn {
-            transition: all 0.2s ease-in-out;
-        }
-
-        .nav-btn.active {
-            background-color: rgba(0, 166, 166, 0.2);
-            color: #00A6A6;
-            border-bottom-color: #00A6A6;
-        }
-        .nav-btn:not(.active):hover {
-             background-color: rgba(255, 255, 255, 0.1);
-             color: #fff;
-        }
-
-        .main-tab {
-            transition: all 0.2s ease-in-out;
-            cursor: pointer;
-        }
-        .main-tab:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        .participant-avatar {
-             background: linear-gradient(135deg, #007A7A, #1A2942);
-        }
-
-        .kawaii-float {
-            animation: kawaii-float 4s ease-in-out infinite;
-        }
-
-        @keyframes kawaii-float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-6px); }
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* Enhanced Visual Hierarchy */
-        
-        /* Enhanced timer display */
-        #timer-display {
-            text-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
-            background: linear-gradient(135deg, #ffffff, #e2e8f0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* Enhanced task items */
-        .task-item {
-            transition: all 0.2s ease;
-            border-left: 3px solid transparent;
-        }
-
-        .task-item:hover {
-            border-left-color: #14b8a6;
-            background: rgba(20, 184, 166, 0.05) !important;
-        }
-
-        .task-item.completed {
-            border-left-color: #6b7280;
-        }
-
-        /* Enhanced current task display */
-        .current-task-highlight {
-            background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(8, 145, 178, 0.1));
-            border: 1px solid rgba(20, 184, 166, 0.3);
-            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.1);
-        }
-
-        /* Enhanced typography */
-        h1, h2, h3 {
-            color: white;
-            font-weight: 700;
-            letter-spacing: -0.025em;
-        }
-
-        h2 {
-            color: #f8fafc;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Status indicators */
-        .status-active {
-            color: #10b981;
-            background: rgba(16, 185, 129, 0.1);
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.375rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .status-break {
-            color: #f59e0b;
-            background: rgba(245, 158, 11, 0.1);
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.375rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .status-paused {
-            color: #6b7280;
-            background: rgba(107, 114, 128, 0.1);
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.375rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        /* Enhanced main tabs */
-        .main-tab.active {
-            position: relative;
-        }
-
-        .main-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #14b8a6, #0891b2);
-            border-radius: 2px 2px 0 0;
-        }
-
-        /* Enhanced toast */
-        .toast {
-            background: linear-gradient(135deg, rgba(20, 184, 166, 0.9), rgba(8, 145, 178, 0.9));
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(20, 184, 166, 0.3);
-            box-shadow: 0 8px 25px rgba(20, 184, 166, 0.3);
-            color: white;
-            font-weight: 500;
-        }
-
-        /* Spinner for loading states */
-        .spinner {
-            border: 2px solid rgba(20, 184, 166, 0.2);
-            border-top: 2px solid #14b8a6;
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        #chat-popup-container {
-          display: flex;
-          flex-direction: column; /* or row depending on desired layout */
-          gap: 10px;
-        }
-
-    </style>
-    <!-- Non-module script: Pressing Enter on welcome inputs starts session (and works in jsdom tests) -->
-    <script>
-      (function() {
-        try {
-          var userInput = document.getElementById('user-name-setup-input');
-          var teamInput = document.getElementById('session-name-input');
-          var startBtn = document.getElementById('start-session-btn');
-          var welcomePage = document.getElementById('welcome-page');
-          var sessionPage = document.getElementById('session-page');
-          var sessionHeaderName = document.getElementById('session-header-name');
-          var toastEl = document.getElementById('toast');
-
-          function showSimpleToast(msg) {
-            if (!toastEl) return;
-            toastEl.textContent = msg;
-            toastEl.classList.remove('hidden');
-            setTimeout(function(){ toastEl.classList.add('hidden'); }, 1500);
-          }
-
-          var onEnter = function(e) {
-            if (e && e.key === 'Enter') {
-              e.preventDefault();
-              if (startBtn && typeof startBtn.click === 'function') {
-                startBtn.click();
-              }
-              // Fallback if module click handler isn't running (e.g., jsdom tests)
-              try {
-                var nameVal = (userInput && userInput.value || '').trim();
-                var teamVal = (teamInput && teamInput.value || '').trim();
-                if (!nameVal) { showSimpleToast('Please enter your name'); return; }
-                if (welcomePage && sessionPage) {
-                  welcomePage.classList.add('hidden');
-                  sessionPage.classList.remove('hidden');
-                }
-                if (sessionHeaderName) {
-                  sessionHeaderName.textContent = 'Team: ' + (teamVal || '');
-                }
-              } catch (_) {}
-            }
-          };
-
-          if (userInput) userInput.addEventListener('keydown', onEnter);
-          if (teamInput) teamInput.addEventListener('keydown', onEnter);
-        } catch (_) { /* ignore */ }
-      })();
-    </script>
+    <!-- New Modular JavaScript -->
+    <script src="js/sound.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/extension.js"></script>
+    <script src="js/tasks.js"></script>
+    <script src="js/ai.js"></script>
+    <script src="js/meet.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/views.js"></script>
 
     <!-- Load modular JavaScript -->
     <script src="src/app.js"></script>
@@ -319,8 +88,10 @@
                         <label for="user-name-setup-input" class="block text-sm font-medium text-gray-300 mb-2">Your Name</label>
                         <div class="flex items-center gap-2">
                             <input id="user-name-setup-input" type="text" placeholder="Enter your name" class="form-input w-full rounded-lg py-3 px-4 transition">
-                            <button id="shuffle-user-name-btn" class="btn-secondary h-12 w-12 flex-shrink-0 rounded-lg flex items-center justify-center" title="Generate random name">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 16v-2m0-8v4m-4-2h8m-8 6h8m-4-2V8m0 12v-2m0-8V4m0 4v4m0 4v4" /></svg>
+                            <button id="shuffle-user-name-btn" class="btn-secondary h-12 w-12 flex-shrink-0 rounded-lg flex items-center justify-center hover:scale-105 transition-all duration-200" title="Generate random name">
+                                <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
                             </button>
                         </div>
                     </div>
@@ -414,102 +185,225 @@
                 </aside>
 
                 <!-- Timer View -->
-                <div id="timer-main-view" class="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto">
-                    <div id="timer-display" class="text-8xl md:text-9xl font-bold text-white tracking-tighter kawaii-float">25:00</div>
-                    <div id="timer-mode-display" class="text-xl text-teal-300 mt-2 mb-6">Focus Time</div>
+                <div id="timer-main-view" class="flex-1 flex flex-col items-center justify-center p-6 overflow-y-auto">
+
+                    <!-- Mode Selection (Top) -->
+                    <div class="w-full max-w-lg mb-8">
+                        <div id="mode-controls" class="flex rounded-xl bg-white/5 p-1 backdrop-blur-sm border border-white/10">
+                            <button data-mode="pomodoro25" class="mode-btn flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white hover:bg-white/10">
+                                Focus (25m)
+                            </button>
+                            <button data-mode="shortBreak" class="mode-btn flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white hover:bg-white/10">
+                                Break (5m)
+                            </button>
+                            <button data-mode="longBreak" class="mode-btn flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white hover:bg-white/10">
+                                Long (15m)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Timer Circle -->
+                    <div class="relative mb-8">
+                        <!-- Progress Ring -->
+                        <svg class="w-80 h-80 md:w-96 md:h-96 transform -rotate-90" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="none"/>
+                            <circle id="timer-progress-ring" cx="50" cy="50" r="45" stroke="#14b8a6" stroke-width="3" fill="none"
+                                    stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="283"
+                                    class="transition-all duration-1000 ease-in-out"/>
+                        </svg>
+
+                        <!-- Timer Display -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <div id="timer-display" class="text-5xl md:text-6xl font-bold text-white mb-2">25:00</div>
+                            <div id="timer-mode-display" class="text-lg text-teal-300 font-medium">Focus Time</div>
+                        </div>
+                    </div>
 
                     <!-- Current Task Display -->
-                    <div class="w-full max-w-lg mb-8">
-                        <div class="text-center mb-4">
-                            <div class="text-sm text-gray-400 mb-2">Current Focus Task</div>
-                            <div id="current-task-display" class="text-xl text-white font-medium p-4 bg-white/10 rounded-lg border border-white/20 min-h-[3rem] flex items-center justify-center">
-                                No task selected - add a task to get started
+                    <div class="w-full max-w-lg mb-6">
+                        <div id="current-task-section" class="hidden">
+                            <div class="text-center mb-3">
+                                <div class="text-sm text-gray-400 font-medium">Current Task</div>
                             </div>
-                            <div id="timer-current-task" class="text-xl text-white font-medium p-4 bg-white/10 rounded-lg border border-white/20 min-h-[3rem] flex items-center justify-center hidden">
-                                <!-- Current task will be displayed here -->
+                            <div id="current-task-display" class="bg-white/5 border border-white/10 rounded-lg p-4 text-center text-white font-medium min-h-[3rem] flex items-center justify-center backdrop-blur-sm">
+                                <span class="text-gray-300">No task selected</span>
                             </div>
                         </div>
-                        <div class="flex gap-2 justify-center">
-                            <button id="complete-current-task-btn" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" disabled>
-                                ✓ Complete Task
-                            </button>
-                            <button id="timer-complete-task-btn" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" disabled>
-                                ✓ Complete Task
-                            </button>
-                            <button id="next-task-btn" class="btn-secondary px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50" disabled>
-                                → Next Task
-                            </button>
+
+                        <div id="add-task-section">
+                            <div class="flex gap-2">
+                                <input id="timer-task-input" type="text" placeholder="What would you like to focus on?"
+                                       class="form-input flex-1 px-4 py-3 text-sm rounded-lg">
+                                <button id="timer-add-task-btn" class="btn-primary-teal px-4 py-3 rounded-lg font-medium text-sm">
+                                    Add
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Quick Task Creation -->
-                    <div class="w-full max-w-lg mb-8">
-                        <div class="text-center mb-4">
-                            <div class="text-sm text-gray-400 mb-2">Quick Add Task</div>
-                        </div>
-                        <div class="flex gap-2">
-                            <input id="timer-task-input" type="text" placeholder="Add a task without switching tabs..."
-                                   class="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent">
-                            <button id="timer-add-task-btn" class="btn-primary-teal px-6 py-3 rounded-lg font-semibold text-white">
-                                + Add
-                            </button>
-                        </div>
-                    </div>
-
+                    <!-- Timer Controls -->
                     <div class="flex items-center gap-4 mb-8">
-                        <button id="start-pause-btn" class="btn-primary-teal text-xl px-10 py-4 rounded-xl font-bold">Start</button>
-                        <button id="reset-btn" class="btn-secondary text-gray-300 px-6 py-4 rounded-xl font-semibold">Reset</button>
+                        <button id="start-pause-btn" class="btn-primary-teal text-lg px-8 py-4 rounded-xl font-bold transition-all duration-200 hover:scale-105 shadow-lg">
+                            <span class="flex items-center gap-2">
+                                <svg id="play-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+                                </svg>
+                                <svg id="pause-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                <span id="start-pause-text">Start</span>
+                            </span>
+                        </button>
+                        <button id="reset-btn" class="btn-secondary text-gray-300 px-6 py-4 rounded-xl font-medium transition-all duration-200 hover:bg-white/10">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+                                </svg>
+                                Reset
+                            </span>
+                        </button>
                     </div>
 
-                    <div id="mode-controls" class="flex items-center justify-center gap-2 flex-wrap">
-                        <button data-mode="pomodoro25" class="mode-btn btn-secondary px-3 py-1 rounded-full text-xs font-medium">Focus (25m)</button>
-                        <button data-mode="shortBreak" class="mode-btn btn-secondary px-3 py-1 rounded-full text-xs font-medium">Short Break (5m)</button>
-                        <button data-mode="longBreak" class="mode-btn btn-secondary px-3 py-1 rounded-full text-xs font-medium">Long Break (15m)</button>
+                    <!-- Task Actions (shown when task is active) -->
+                    <div id="task-actions" class="hidden flex items-center gap-3 mb-6">
+                        <button id="timer-complete-task-btn" class="btn-success px-4 py-2 rounded-lg text-sm font-medium" disabled>
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                                Complete
+                            </span>
+                        </button>
+                        <button id="next-task-btn" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium text-gray-300" disabled>
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                                Next
+                            </span>
+                        </button>
+                    </div>
+
+                    <!-- Settings -->
+                    <div class="flex items-center gap-4">
+                        <button id="sound-toggle-btn" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                            <span id="sound-toggle-icon">🔊</span>
+                            <span id="sound-toggle-text">Sound</span>
+                        </button>
                     </div>
                 </div>
 
                 <!-- Tasks View -->
-                <div id="tasks-main-view" class="hidden flex-1 p-6 overflow-y-auto">
-                    <div class="max-w-4xl mx-auto">
-                        <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-2xl font-bold text-white">Session Tasks</h2>
-                            <div class="flex gap-3 items-center">
-                                <!-- Smart Actions Menu -->
-                                <div class="relative">
-                                    <button id="smart-actions-btn" class="btn-primary-teal px-4 py-2 rounded-lg text-sm flex items-center gap-2">
-                                        ✨ Smart Actions
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                        </svg>
-                                    </button>
-                                    <div id="smart-actions-menu" class="hidden absolute right-0 top-full mt-2 w-48 glass-card rounded-lg shadow-lg z-10">
-                                        <div class="p-2 space-y-1">
-                                            <button id="refine-task-action" class="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 rounded flex items-center gap-2">
-                                                ✨ Refine Current Task
+                <div id="tasks-main-view" class="hidden flex-1 p-4 md:p-6 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-slate-800/30">
+                    <div class="max-w-5xl mx-auto">
+                        <!-- Header Section -->
+                        <div class="mb-8">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                                <div>
+                                    <h2 class="text-3xl font-bold text-white mb-2">Session Tasks</h2>
+                                    <p class="text-gray-400 text-sm">Organize and track your focus session goals</p>
+                                </div>
+                                
+                                <!-- Task Stats -->
+                                <div class="flex items-center gap-4 text-sm">
+                                    <div class="glass-card px-4 py-2 rounded-lg">
+                                        <span class="text-gray-400">Total:</span>
+                                        <span id="total-tasks-count" class="text-white font-semibold ml-1">0</span>
+                                    </div>
+                                    <div class="glass-card px-4 py-2 rounded-lg">
+                                        <span class="text-gray-400">Completed:</span>
+                                        <span id="completed-tasks-count" class="text-green-400 font-semibold ml-1">0</span>
+                                    </div>
+                                    <div class="glass-card px-4 py-2 rounded-lg">
+                                        <span class="text-gray-400">Remaining:</span>
+                                        <span id="remaining-tasks-count" class="text-teal-400 font-semibold ml-1">0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Enhanced Add Task Section -->
+                            <div class="glass-card-enhanced p-6 rounded-2xl mb-6">
+                                <div class="flex flex-col sm:flex-row gap-4">
+                                    <div class="flex-1">
+                                        <label for="todo-idea-input" class="block text-sm font-medium text-gray-300 mb-2">Add New Task</label>
+                                        <input id="todo-idea-input" type="text" 
+                                               placeholder="What do you want to accomplish in this session?"
+                                               class="form-input w-full rounded-xl text-base px-5 py-4 min-h-[52px] backdrop-blur-sm border-white/20 focus:border-teal-400 transition-all duration-200">
+                                    </div>
+                                    <div class="flex flex-col justify-end gap-2">
+                                        <button id="todo-add-btn" class="btn-primary-teal px-6 py-4 rounded-xl font-semibold text-white text-base flex items-center justify-center gap-2 min-h-[52px] transition-all duration-200 hover:scale-105">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                                            </svg>
+                                            Add Task
+                                        </button>
+                                        <!-- Smart Actions Menu -->
+                                        <div class="relative">
+                                            <button id="smart-actions-btn" class="btn-secondary w-full px-4 py-3 rounded-xl text-sm flex items-center justify-center gap-2 min-h-[44px]">
+                                                ✨ AI Actions
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                </svg>
                                             </button>
-                                            <button id="breakdown-task-action" class="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 rounded flex items-center gap-2">
-                                                📋 Break Down Task
-                                            </button>
-                                            <hr class="border-white/10 my-1">
-                                            <button id="summarize-chat-action" class="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 rounded flex items-center gap-2">
-                                                📝 Summarize Chat
-                                            </button>
-                                            <button id="icebreaker-action" class="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 rounded flex items-center gap-2">
-                                                🧊 Generate Icebreaker
-                                            </button>
+                                            <div id="smart-actions-menu" class="hidden absolute right-0 top-full mt-2 w-56 glass-card-enhanced rounded-xl shadow-xl z-20 border border-white/20">
+                                                <div class="p-3 space-y-2">
+                                                    <button id="refine-task-action" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 rounded-lg flex items-center gap-3 transition-all duration-200">
+                                                        <span class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center text-xs">✨</span>
+                                                        <span>Refine Current Task</span>
+                                                    </button>
+                                                    <button id="breakdown-task-action" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 rounded-lg flex items-center gap-3 transition-all duration-200">
+                                                        <span class="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center text-xs">📋</span>
+                                                        <span>Break Down Task</span>
+                                                    </button>
+                                                    <div class="border-t border-white/10 my-2"></div>
+                                                    <button id="summarize-chat-action" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 rounded-lg flex items-center gap-3 transition-all duration-200">
+                                                        <span class="w-8 h-8 bg-gradient-to-br from-green-400 to-teal-500 rounded-lg flex items-center justify-center text-xs">📝</span>
+                                                        <span>Summarize Chat</span>
+                                                    </button>
+                                                    <button id="icebreaker-action" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 rounded-lg flex items-center gap-3 transition-all duration-200">
+                                                        <span class="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center text-xs">🧊</span>
+                                                        <span>Generate Icebreaker</span>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Add Task -->
-                                <div class="flex gap-2">
-                                    <input id="todo-idea-input" type="text" placeholder="Add a new task idea..." class="form-input rounded-lg text-sm px-4 py-2 w-64">
-                                    <button id="todo-add-btn" class="btn-primary px-4 py-2 rounded-lg font-semibold !text-white text-sm flex items-center gap-2">
-                                        ✨ Add Task
-                                    </button>
-                                </div>
+                            </div>
+
+                            <!-- Task Filters -->
+                            <div class="flex flex-wrap gap-3 mb-6">
+                                <button id="filter-all" class="task-filter-btn active px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200">
+                                    All Tasks
+                                </button>
+                                <button id="filter-active" class="task-filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200">
+                                    Active
+                                </button>
+                                <button id="filter-completed" class="task-filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200">
+                                    Completed
+                                </button>
                             </div>
                         </div>
-                        <div id="todo-list" class="space-y-3"></div>
+
+                        <!-- Tasks List -->
+                        <div id="tasks-container" class="space-y-4">
+                            <!-- Empty State -->
+                            <div id="empty-state" class="text-center py-12 hidden">
+                                <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-teal-400 to-blue-500 rounded-full flex items-center justify-center">
+                                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-semibold text-white mb-2">No tasks yet</h3>
+                                <p class="text-gray-400 mb-6">Add your first task to get started with your focus session</p>
+                                <button onclick="document.getElementById('todo-idea-input').focus()" class="btn-primary-teal px-6 py-3 rounded-xl font-semibold">
+                                    Create Your First Task
+                                </button>
+                            </div>
+
+                            <!-- Tasks List Container -->
+                            <div id="todo-list" class="space-y-4"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -572,9 +466,6 @@
                     </div>
                 </div>
             </div>
-            <button id="chat-popup-btn" class="bg-teal-500 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-            </button>
             <div id="ai-agent-popup" class="hidden absolute bottom-20 right-20 w-80 h-96 glass-card rounded-2xl flex flex-col overflow-hidden z-10">
                 <header class="p-4 border-b border-white/10 flex-shrink-0 flex justify-between items-center">
                     <h3 class="font-semibold text-white">AI Agent</h3>
@@ -696,1721 +587,56 @@
     <!-- Load sound functions -->
     <script src="src/sound.js"></script>
 
-    <script type="module">
-        // Load meet functionality with robust path handling for tests and app
-        try {
-            let modulePath = './src/meet.js';
-            try {
-                // If running inside tests (served from /tests), adjust path
-                const isTests = location.pathname.includes('/tests');
-                if (isTests) modulePath = '../src/meet.js';
-            } catch {}
-            // Dynamic import with fallback for environments that rewrite paths
-            let createHandleStartMeet;
-            try {
-                ({ createHandleStartMeet } = await import(modulePath));
-            } catch (err) {
-                try {
-                    ({ createHandleStartMeet } = await import('../src/meet.js'));
-                } catch (e2) {
-                    console.error('Failed to load meet.js via both paths', err, e2);
-                }
+    <script>
+        // Initialize UI components when DOM is ready
+        function initializeUI() {
+            // Initialize timer mode buttons
+            if (typeof updateModeButtons === 'function') {
+                updateModeButtons();
             }
-            if (createHandleStartMeet) {
-                window.__createHandleStartMeet = createHandleStartMeet;
-            } else {
-                // Fallback for test environments where ES modules might not work
-                console.warn('meet.js import failed, using fallback');
-            }
-        } catch (e) {
-            console.error('Could not load meet.js:', e);
-            // Provide a basic fallback for testing
-            window.__createHandleStartMeet = function() { console.log('meet.js fallback called'); };
-        }
 
-        // --- Sound Settings ---
-        let isSoundEnabled = localStorage.getItem('pompom_sound_enabled') === 'true';
-        // Default sound ON for first-time users
-        if (localStorage.getItem('pompom_sound_enabled') === null) {
-            isSoundEnabled = true;
-            localStorage.setItem('pompom_sound_enabled', 'true');
-        }
-        // Make sound settings available globally for sound.js
-        window.isSoundEnabled = isSoundEnabled;
-
-        // Initialize audio context for WebAudio sounds
-        let audioCtx = null;
-        function initAudioContext() {
-            try {
-                if (!audioCtx) {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    window.audioCtx = audioCtx;
-                }
-                // Resume context if suspended (required by some browsers)
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-                return audioCtx;
-            } catch (e) {
-                console.warn('Could not initialize audio context:', e);
-                return null;
+            // Initialize task displays
+            if (window.PomPomTasks?.renderTasks) {
+                window.PomPomTasks.renderTasks();
             }
         }
 
-        // Initialize audio context on first user interaction
-        function initAudioOnInteraction() {
-            initAudioContext();
-            // Remove listeners after first initialization
-            document.removeEventListener('click', initAudioOnInteraction);
-            document.removeEventListener('keydown', initAudioOnInteraction);
-        }
-        document.addEventListener('click', initAudioOnInteraction);
-        document.addEventListener('keydown', initAudioOnInteraction);
-
-        // --- PomPom Extension Integration ---
-        let extensionAvailable = false;
-        let extensionVersion = null;
-
-        // Check for extension availability
-        async function checkExtensionAvailability() {
-            try {
-                if (typeof window.pomPomExtensionCheck === 'function') {
-                    const status = await window.pomPomExtensionCheck();
-                    extensionAvailable = status.installed;
-                    extensionVersion = status.version;
-                } else if (window.POMPOM_EXTENSION_AVAILABLE) {
-                    extensionAvailable = true;
-                }
-            } catch (error) {
-                console.log('Extension not available:', error);
-                extensionAvailable = false;
-            }
-
-            updateExtensionUI();
-        }
-
-        // Update extension UI based on availability
-        function updateExtensionUI() {
-            const status = document.getElementById('extension-status');
-            const statusText = document.getElementById('extension-status-text');
-            const settingsStatus = document.getElementById('extension-settings-status');
-            const installBtn = document.getElementById('extension-install-btn');
-
-            if (extensionAvailable) {
-                // Subtle status indicator
-                if (status && statusText) {
-                    status.classList.remove('hidden');
-                    statusText.textContent = 'Extension: Active';
-                    statusText.className = 'text-xs text-green-400';
-                }
-
-                // Settings modal status
-                if (settingsStatus) {
-                    settingsStatus.textContent = `Extension active${extensionVersion ? ` (v${extensionVersion})` : ''} - Meeting URLs will be captured automatically`;
-                    settingsStatus.className = 'text-green-400 text-sm';
-                }
-
-                // Hide install button
-                if (installBtn) {
-                    installBtn.classList.add('hidden');
-                }
-            } else {
-                // Subtle status indicator
-                if (status && statusText) {
-                    status.classList.remove('hidden');
-                    statusText.textContent = 'Extension: Not installed';
-                    statusText.className = 'text-xs text-gray-400';
-                }
-
-                // Settings modal status
-                if (settingsStatus) {
-                    settingsStatus.textContent = 'Install the Chrome extension for automatic meeting URL capture';
-                    settingsStatus.className = 'text-gray-400 text-sm';
-                }
-
-                // Show install button
-                if (installBtn) {
-                    installBtn.classList.remove('hidden');
-                }
-            }
-        }
-
-        // Handle captured meeting URL from extension
-        window.handleCapturedMeetingUrl = function(meetingUrl, meetingId) {
-            console.log('PomPom: Received meeting URL from extension:', meetingUrl);
-            updateChatWithMeetingUrl(meetingUrl);
-            showToast('✅ Meeting URL captured by extension!');
-        };
-
-        // Listen for extension events
-        window.addEventListener('pomPomMeetingUrlCaptured', (event) => {
-            const { meetingUrl, meetingId } = event.detail;
-            handleCapturedMeetingUrl(meetingUrl, meetingId);
-        });
-
-        // Extension install handlers
-        function setupExtensionButtons() {
-            const installBtn = document.getElementById('extension-install-btn');
-            const helpBtn = document.getElementById('extension-help-btn');
-
-            if (installBtn) {
-                installBtn.addEventListener('click', () => {
-                    window.open('extension-install.html', '_blank');
-                });
-            }
-
-            if (helpBtn) {
-                helpBtn.addEventListener('click', () => {
-                    window.open('extension-install.html', '_blank');
-                });
-            }
-        }
-
-        // Setup extension buttons
-        setupExtensionButtons();
-
-
-
-        // Check extension availability on page load
-        setTimeout(checkExtensionAvailability, 1000);
-
-        // Also check when extension might be installed
-        window.addEventListener('pomPomExtensionReady', checkExtensionAvailability);
-
-        // --- DOM Elements ---
-        const welcomePage = document.getElementById('welcome-page');
-        const sessionPage = document.getElementById('session-page');
-        const settingsBtn = document.getElementById('settings-btn');
-        const settingsModal = document.getElementById('settings-modal');
-        const closeSettingsBtn = document.getElementById('close-settings-btn');
-        const soundToggleBtn = document.getElementById('sound-toggle-btn');
-        const soundToggleSlider = document.getElementById('sound-toggle-slider');
-        const testSoundBtn = document.getElementById('test-sound-btn');
-        const audioDiagnosticsBtn = document.getElementById('audio-diagnostics-btn');
-        const sessionNameInput = document.getElementById('session-name-input');
-        const userNameSetupInput = document.getElementById('user-name-setup-input');
-        const shuffleUserNameBtn = document.getElementById('shuffle-user-name-btn');
-        const startSessionBtn = document.getElementById('start-session-btn');
-        const sessionHeaderName = document.getElementById('session-header-name');
-        const copyLinkBtn = document.getElementById('copy-link-btn');
-        const breakdownTaskBtn = document.getElementById('breakdown-task-btn');
-        const currentTaskDisplay = document.getElementById('current-task-display');
-        const completeCurrentTaskBtn = document.getElementById('complete-current-task-btn');
-        const nextTaskBtn = document.getElementById('next-task-btn');
-        const todoIdeaInput = document.getElementById('todo-idea-input');
-        const todoAddBtn = document.getElementById('todo-add-btn');
-        const todoList = document.getElementById('todo-list');
-
-        // Timer screen task elements
-        const timerTaskInput = document.getElementById('timer-task-input');
-        const timerAddTaskBtn = document.getElementById('timer-add-task-btn');
-        const timerCurrentTask = document.getElementById('timer-current-task');
-        const timerCompleteTaskBtn = document.getElementById('timer-complete-task-btn');
-        const chatPopupBtn = document.getElementById('chat-popup-btn');
-        const chatPopup = document.getElementById('chat-popup');
-        const chatMessages = document.getElementById('chat-messages');
-        const chatInput = document.getElementById('chat-input');
-        const aiAgentBtn = document.getElementById('ai-agent-btn');
-        const aiAgentPopup = document.getElementById('ai-agent-popup');
-        const aiAgentInput = document.getElementById('ai-agent-input');
-        const aiAgentSend = document.getElementById('ai-agent-send');
-        const aiAgentMessages = document.getElementById('ai-agent-messages');
-        const startMeetBtn = document.getElementById('start-meet-btn');
-
-        // Main tab elements
-        const timerTab = document.getElementById('timer-tab');
-        const tasksTab = document.getElementById('tasks-tab');
-        const teamTab = document.getElementById('team-tab');
-        const calendarTab = document.getElementById('calendar-tab');
-        const timerMainView = document.getElementById('timer-main-view');
-        const tasksMainView = document.getElementById('tasks-main-view');
-        const teamMainView = document.getElementById('team-main-view');
-        const calendarMainView = document.getElementById('calendar-main-view');
-
-        // Sidebar elements
-        const participantsView = document.getElementById('participants-view');
-        const tasksView = document.getElementById('tasks-view');
-        const plannerView = document.getElementById('planner-view');
-        const viewButtons = document.querySelectorAll('.view-btn');
-
-        // Smart Actions elements
-        const smartActionsBtn = document.getElementById('smart-actions-btn');
-        const smartActionsMenu = document.getElementById('smart-actions-menu');
-        const refineTaskAction = document.getElementById('refine-task-action');
-        const breakdownTaskAction = document.getElementById('breakdown-task-action');
-        const summarizeChatAction = document.getElementById('summarize-chat-action');
-        const icebreakerAction = document.getElementById('icebreaker-action');
-        const leaveBtn = document.getElementById('leave-btn');
-        const toastEl = document.getElementById('toast');
-
-
-        // --- App State ---
-        let sessionId = '';
-        let userName = '';
-        let tasks = []; // In-memory task list for this example
-
-        // --- Auto-populate user name from localStorage ---
-        function autoPopulateUserName() {
-            try {
-                const storedUserName = localStorage.getItem('pompom_username');
-                if (storedUserName && userNameSetupInput && !userNameSetupInput.value) {
-                    userNameSetupInput.value = storedUserName;
-                }
-            } catch (e) {
-                // Ignore localStorage errors in some environments
-            }
-        }
-
-        // --- Auto-populate team name from localStorage ---
-        function autoPopulateTeamName() {
-            try {
-                const storedTeamName = localStorage.getItem('pompom_team_name');
-                if (storedTeamName && sessionNameInput && !sessionNameInput.value) {
-                    sessionNameInput.value = storedTeamName;
-                }
-            } catch (e) {
-                // Ignore localStorage errors in some environments
-            }
-        }
-
-        // Call auto-population when page loads
-        if (typeof window !== 'undefined' && window.addEventListener) {
-            window.addEventListener('DOMContentLoaded', () => {
-                autoPopulateUserName();
-                autoPopulateTeamName();
-            });
+        // Call initialization
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeUI);
         } else {
-            // Fallback for environments without addEventListener
-            setTimeout(() => {
-                autoPopulateUserName();
-                autoPopulateTeamName();
-            }, 100);
+            initializeUI();
         }
+    </script>
 
-        // --- Task-Timer Integration ---
-        function getCurrentTask() {
-            return tasks.find(task => !task.completed) || null;
-        }
 
-        function updateCurrentTaskDisplay() {
-            const currentTask = getCurrentTask();
-            if (currentTask) {
-                currentTaskDisplay.innerHTML = `
-                    <div class="current-task-highlight p-4 rounded-lg text-center">
-                        <div class="text-sm text-teal-300 mb-1">Currently Working On</div>
-                        <div class="text-white font-medium">${currentTask.text}</div>
-                    </div>
-                `;
-                currentTaskDisplay.className = "min-h-[3rem] flex items-center justify-center";
-                completeCurrentTaskBtn.disabled = false;
-                nextTaskBtn.disabled = false;
-            } else {
-                currentTaskDisplay.innerHTML = `
-                    <div class="p-4 rounded-lg text-center bg-white/5 border border-white/10">
-                        <div class="text-gray-400 text-sm">No active tasks</div>
-                        <div class="text-gray-500 text-xs mt-1">Add a task to get started</div>
-                    </div>
-                `;
-                currentTaskDisplay.className = "min-h-[3rem] flex items-center justify-center";
-                completeCurrentTaskBtn.disabled = true;
-                nextTaskBtn.disabled = true;
-            }
-        }
 
-        function updateTimerCurrentTask() {
-            const currentTask = tasks.find(task => !task.completed);
-            if (timerCurrentTask) {
-                if (currentTask) {
-                    timerCurrentTask.textContent = currentTask.text;
-                    timerCurrentTask.classList.remove('hidden');
-                    if (timerCompleteTaskBtn) {
-                        timerCompleteTaskBtn.disabled = false;
-                    }
-                } else {
-                    timerCurrentTask.textContent = 'No tasks available';
-                    timerCurrentTask.classList.add('hidden');
-                    if (timerCompleteTaskBtn) {
-                        timerCompleteTaskBtn.disabled = true;
-                    }
-                }
-            }
-        }
 
-        function completeCurrentTask() {
-            const currentTask = getCurrentTask();
-            if (currentTask) {
-                currentTask.completed = true;
-                updateCurrentTaskDisplay();
-                renderTasks();
-                showToast('✅ Task completed! Great work!');
-            }
-        }
 
-        function moveToNextTask() {
-            const currentTask = getCurrentTask();
-            if (currentTask) {
-                // Move current task to end of list
-                const index = tasks.indexOf(currentTask);
-                const movedTask = tasks.splice(index, 1)[0];
-                tasks.push(movedTask);
-                updateCurrentTaskDisplay();
-                renderTasks();
-                showToast('→ Moved to next task');
-            }
-        }
 
-        // --- Smart Actions Functions ---
-        function toggleSmartActionsMenu() {
-            smartActionsMenu.classList.toggle('hidden');
-        }
 
-        function hideSmartActionsMenu() {
-            smartActionsMenu.classList.add('hidden');
-        }
 
-        // Close menu when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!smartActionsBtn.contains(e.target) && !smartActionsMenu.contains(e.target)) {
-                hideSmartActionsMenu();
-            }
-        });
 
-        async function refineCurrentTask() {
-            const currentTask = getCurrentTask();
-            if (!currentTask) {
-                showToast('No current task to refine');
-                return;
-            }
 
-            refineTaskAction.innerHTML = '<div class="spinner w-3 h-3"></div> Refining...';
-            refineTaskAction.disabled = true;
 
-            const prompt = `Please refine and improve this task description to be more specific, actionable, and clear. Keep it concise but make it better: "${currentTask.text}"`;
-            const refinedTask = await callGroqAPI(prompt);
-            
-            if (refinedTask) {
-                currentTask.text = refinedTask;
-                updateCurrentTaskDisplay();
-                renderTasks();
-                showToast('✨ Task refined!');
-            }
 
-            refineTaskAction.innerHTML = '✨ Refine Current Task';
-            refineTaskAction.disabled = false;
-            hideSmartActionsMenu();
-        }
 
-        async function breakdownCurrentTask() {
-            const currentTask = getCurrentTask();
-            if (!currentTask) {
-                showToast('No current task to break down');
-                return;
-            }
 
-            breakdownTaskAction.innerHTML = '<div class="spinner w-3 h-3"></div> Breaking down...';
-            breakdownTaskAction.disabled = true;
 
-            const prompt = `Break down this task into 3-5 smaller, actionable sub-tasks. Present them as a simple list: "${currentTask.text}"`;
-            const breakdown = await callGroqAPI(prompt);
-            
-            if (breakdown) {
-                // Remove the original task
-                const index = tasks.indexOf(currentTask);
-                tasks.splice(index, 1);
 
-                // Add the breakdown as separate tasks
-                const subTasks = breakdown.split('\n').filter(task => task.trim() && task.includes('-') || task.match(/^\d+\./));
-                subTasks.forEach(subTask => {
-                    const cleanTask = subTask.replace(/^[-*•\d.)\s]+/, '').trim();
-                    if (cleanTask) {
-                        tasks.push({ text: cleanTask, completed: false });
-                    }
-                });
 
-                updateCurrentTaskDisplay();
-                renderTasks();
-                showToast('📋 Task broken down!');
-            }
 
-            breakdownTaskAction.innerHTML = '📋 Break Down Task';
-            breakdownTaskAction.disabled = false;
-            hideSmartActionsMenu();
-        }
 
-        async function summarizeChatFromActions() {
-            const messages = Array.from(chatMessages.children).map(el => el.textContent).join('\n');
-            if (messages.length < 50) {
-                showToast('Not enough chat history to summarize');
-                return;
-            }
 
-            summarizeChatAction.innerHTML = '<div class="spinner w-3 h-3"></div> Summarizing...';
-            summarizeChatAction.disabled = true;
 
-            const prompt = `Summarize the key decisions, action items, and overall sentiment of the following chat conversation. Present it in a few bullet points.\n\nChat History:\n${messages}`;
-            const summary = await callGroqAPI(prompt);
-            
-            if (summary) {
-                const summaryEl = document.createElement('div');
-                summaryEl.className = 'p-2 bg-teal-900/50 rounded-lg text-xs italic mt-2';
-                summaryEl.textContent = `✨ Summary: ${summary}`;
-                chatMessages.appendChild(summaryEl);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                showToast('📝 Chat summarized!');
-            }
 
-            summarizeChatAction.innerHTML = '📝 Summarize Chat';
-            summarizeChatAction.disabled = false;
-            hideSmartActionsMenu();
-        }
 
-        async function generateIcebreakerFromActions() {
-            icebreakerAction.innerHTML = '<div class="spinner w-3 h-3"></div> Generating...';
-            icebreakerAction.disabled = true;
 
-            const prompt = 'Generate a fun, safe-for-work icebreaker question for a remote team to discuss.';
-            const question = await callGroqAPI(prompt);
-            
-            if (question) {
-                chatInput.value = question.replace(/"/g, '');
-                showToast('🧊 Icebreaker generated!');
-            }
 
-            icebreakerAction.innerHTML = '🧊 Generate Icebreaker';
-            icebreakerAction.disabled = false;
-            hideSmartActionsMenu();
-        }
 
-        // --- Inline Task Editing ---
-        function startTaskEdit(index) {
-            const task = tasks[index];
-            const taskElements = todoList.querySelectorAll('.task-text');
-            const taskElement = taskElements[index];
-            
-            if (!taskElement) return;
 
-            // Create input element
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.value = task.text;
-            input.className = 'form-input flex-1 rounded px-2 py-1 text-sm bg-white/10 border border-teal-400 text-white';
-            
-            // Replace text with input
-            const parent = taskElement.parentElement;
-            parent.replaceChild(input, taskElement);
-            
-            // Focus and select text
-            input.focus();
-            input.select();
 
-            // Handle save/cancel
-            const saveEdit = () => {
-                const newText = input.value.trim();
-                if (newText && newText !== task.text) {
-                    task.text = newText;
-                    showToast('✏️ Task updated!');
-                }
-                renderTasks();
-                updateCurrentTaskDisplay();
-            };
 
-            const cancelEdit = () => {
-                renderTasks();
-            };
-
-            input.addEventListener('blur', saveEdit);
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    saveEdit();
-                } else if (e.key === 'Escape') {
-                    e.preventDefault();
-                    cancelEdit();
-                }
-            });
-        }
-
-        // --- Groq API Helper (via backend proxy) ---
-        async function callGroqAPI(prompt) {
-            try {
-                const body = {
-                    model: 'llama-3.1-8b-instant',
-                    messages: [
-                        { role: 'system', content: 'Respond ONLY with compact JSON. No prose.' },
-                        { role: 'user', content: prompt }
-                    ],
-                    temperature: 0.3,
-                    max_tokens: 200
-                };
-                const response = await fetch('/api/groq', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-                if (!response.ok) throw new Error(`Groq API error ${response.status}`);
-                const data = await response.json();
-                return data?.choices?.[0]?.message?.content || '';
-            } catch (error) {
-                console.error('Groq call failed:', error);
-                showToast('AI is unavailable right now. Please try again later.');
-                return null;
-            }
-        }
-
-        /**
-         * Robustly extracts a JSON object from a string that may contain Markdown fences.
-         */
-        function extractJSON(text) {
-            if (!text) return null;
-            // Match the JSON content inside the Markdown code block
-            const match = text.match(/```json\s*([\s\S]*?)\s*```/);
-            if (match && match[1]) {
-                try {
-                    return JSON.parse(match[1]);
-                } catch (e) {
-                    console.error("Failed to parse extracted JSON:", e);
-                    return null;
-                }
-            }
-            // If no Markdown block, try parsing the whole string
-            try {
-                return JSON.parse(text);
-            } catch (e) {
-                // Not a raw JSON string
-            }
-            return null;
-        }
-
-        // --- UI Logic ---
-        function showToast(message) {
-            toastEl.textContent = message;
-            toastEl.classList.remove('hidden');
-            setTimeout(() => {
-                toastEl.classList.add('hidden');
-            }, 3000);
-        }
-
-        function renderTasks() {
-            todoList.innerHTML = '';
-            if (tasks.length === 0) {
-                todoList.innerHTML = `<p class="text-gray-400 text-sm">No tasks yet. Add one!</p>`;
-                updateCurrentTaskDisplay(); // Update timer display when no tasks
-                return;
-            }
-            tasks.forEach((task, index) => {
-                const taskEl = document.createElement('div');
-                taskEl.className = `task-item p-3 rounded-lg flex justify-between items-center ${task.completed ? 'bg-white/5 text-gray-500 completed' : 'bg-white/10'} group transition-all hover:bg-white/15`;
-                taskEl.innerHTML = `
-                    <div class="flex-1 flex items-center gap-3">
-                        <button data-index="${index}" class="toggle-task-btn w-5 h-5 rounded border-2 border-gray-400 flex items-center justify-center ${task.completed ? 'bg-teal-500 border-teal-500' : ''} hover:border-teal-400 transition">
-                            ${task.completed ? '<svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>' : ''}
-                        </button>
-                        <span class="task-text flex-1 cursor-pointer ${task.completed ? 'line-through' : ''} hover:text-teal-300 transition" data-index="${index}" title="Click to edit">${task.text}</span>
-                    </div>
-                    <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button data-index="${index}" class="delete-task-btn text-red-400 px-2 py-1 rounded hover:bg-red-500/20 transition">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-                    </div>
-                `;
-                todoList.appendChild(taskEl);
-            });
-            updateCurrentTaskDisplay(); // Update timer display after rendering tasks
-            updateTimerCurrentTask(); // Update timer screen current task display
-        }
-
-        function switchView(view) {
-            [participantsView, tasksView, plannerView].forEach(v => v.classList.add('hidden'));
-            viewButtons.forEach(b => b.classList.remove('active'));
-
-            document.querySelector(`[data-view="${view}"]`).classList.add('active');
-            document.getElementById(`${view}-view`).classList.remove('hidden');
-
-            if (view === 'planner' && !plannerView.dataset.loaded) {
-                fetch('src/daily-planner.html')
-                    .then(response => response.text())
-                    .then(html => {
-                        const container = document.getElementById('calendar-container');
-                        if (container) {
-                            // Parse the fetched HTML so we can execute any <script> tags it contains
-                            const tmp = document.createElement('div');
-                            tmp.innerHTML = html;
-                            const scripts = Array.from(tmp.querySelectorAll('script'));
-                            // Remove scripts from the fragment before inserting HTML
-                            scripts.forEach(s => s.parentNode && s.parentNode.removeChild(s));
-                            // Insert the HTML content
-                            container.innerHTML = '';
-                            while (tmp.firstChild) container.appendChild(tmp.firstChild);
-                            // Execute scripts by re-inserting them so the browser runs them
-                            scripts.forEach(oldScript => {
-                                const newScript = document.createElement('script');
-                                if (oldScript.src) {
-                                    newScript.src = oldScript.src;
-                                } else {
-                                    newScript.textContent = oldScript.textContent || '';
-                                }
-                                container.appendChild(newScript);
-                            });
-                            // Trigger DOMContentLoaded for any listeners defined inside the injected HTML
-                            try {
-                                const evt = new Event('DOMContentLoaded');
-                                document.dispatchEvent(evt);
-                            } catch (e) {
-                                console.warn('Could not dispatch DOMContentLoaded for calendar', e);
-                            }
-                        }
-                        plannerView.dataset.loaded = true;
-                    })
-                    .catch(error => {
-                        console.error('Failed to load calendar:', error);
-                        document.getElementById('calendar-container').innerHTML = '<p class="text-red-400">Could not load planner. Please try again later.</p>';
-                    });
-            }
-        }
-
-        function switchMainView(view) {
-            // Hide all main views
-            timerMainView.classList.add('hidden');
-            tasksMainView.classList.add('hidden');
-            teamMainView.classList.add('hidden');
-            calendarMainView.classList.add('hidden');
-
-            // Remove active class from all tabs
-            [timerTab, tasksTab, teamTab, calendarTab].forEach(tab => {
-                tab.classList.remove('border-teal-400', 'text-white');
-                tab.classList.add('border-transparent', 'text-gray-400');
-            });
-
-            // Show selected view and activate tab
-            let activeTab, activeView;
-            switch(view) {
-                case 'timer':
-                    activeTab = timerTab;
-                    activeView = timerMainView;
-                    break;
-                case 'tasks':
-                    activeTab = tasksTab;
-                    activeView = tasksMainView;
-                    break;
-                case 'team':
-                    activeTab = teamTab;
-                    activeView = teamMainView;
-                    break;
-                case 'calendar':
-                    activeTab = calendarTab;
-                    activeView = calendarMainView;
-                    break;
-            }
-
-            if (activeTab && activeView) {
-                activeView.classList.remove('hidden');
-                activeTab.classList.remove('border-transparent', 'text-gray-400');
-                activeTab.classList.add('border-teal-400', 'text-white');
-            }
-        }
-
-        // --- Event Listeners ---
-        copyLinkBtn.addEventListener('click', () => {
-            const shareUrl = `${window.location.origin}${window.location.pathname}?session=${sessionId}`;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(shareUrl).then(() => {
-                    showToast('Share link copied to clipboard!');
-                }).catch(err => {
-                    console.error('Failed to copy link: ', err);
-                    showToast('Could not copy link.');
-                });
-            } else {
-                showToast('Clipboard access is not available.');
-            }
-        });
-
-        // AI Agent toggle
-        aiAgentBtn.addEventListener('click', () => {
-            aiAgentPopup.classList.toggle('hidden');
-        });
-
-        // Simple message helper for agent panel
-        function aiAgentAppend(role, text) {
-            const row = document.createElement('div');
-            row.className = role === 'user' ? 'text-right' : 'text-left';
-            const bubble = document.createElement('div');
-            bubble.className = 'inline-block px-3 py-2 rounded-lg ' + (role === 'user' ? 'bg-purple-600 text-white' : 'bg-white/10 text-white');
-            bubble.textContent = text;
-            row.appendChild(bubble);
-            aiAgentMessages.appendChild(row);
-            aiAgentMessages.scrollTop = aiAgentMessages.scrollHeight;
-        }
-
-        // Agent command executor: parse intent then act on UI
-        async function aiAgentHandle(inputText) {
-            aiAgentAppend('user', inputText);
-            // Ask Groq to classify intent to minimal JSON
-            const prompt = `You are a UI assistant. Given a natural language instruction, output ONLY compact JSON with fields: action, text, index, mode. Actions: add_task, start_timer, pause_timer, reset_timer, reorder_tasks, delete_task, suggest_task. index is zero-based for reorder/delete; mode is one of pomodoro25, shortBreak, longBreak for switching modes. Example: {"action":"add_task","text":"Implement login"}. Instruction: ${inputText}`;
-            let content = await callGroqAPI(prompt);
-            const cmd = extractJSON(content) || {};
-            let resultMsg = '';
-            try {
-        // Add task on Enter in ideas input
-        if (todoIdeaInput) {
-            // Event listener handled by app.js - removed duplicate
-        }
-                switch ((cmd.action || '').toLowerCase()) {
-                    case 'add_task': {
-                        const t = (cmd.text || '').trim();
-                        if (t) { tasks.unshift({ text: t, completed: false }); renderTasks(); }
-                        resultMsg = t ? `Added task: ${t}` : 'No task text provided';
-                        break;
-                    }
-                    case 'suggest_task': {
-                        const idea = (cmd.text || '').trim() || (aiAgentInput.value || '').trim();
-                        if (idea) {
-                            const result = await callGroqAPI(`Break this into 2-4 subtasks as a JSON array of short strings: ${idea}`);
-                            const arr = extractJSON(result);
-                            if (Array.isArray(arr) && arr.length) {
-                                arr.reverse().forEach(txt => tasks.unshift({ text: String(txt), completed: false }));
-                                renderTasks();
-                                resultMsg = `Added ${arr.length} subtasks.`;
-                            } else {
-                                tasks.unshift({ text: idea, completed: false });
-                                renderTasks();
-                                resultMsg = 'Added as a single task.';
-                            }
-                        } else resultMsg = 'No idea provided';
-                        break;
-                    }
-                    case 'start_timer': startTimer(); resultMsg = 'Timer started'; break;
-                    case 'pause_timer': pauseTimer(); resultMsg = 'Timer paused'; break;
-                    case 'reset_timer': resetTimer(); resultMsg = 'Timer reset'; break;
-                    case 'reorder_tasks': {
-                        const i = Number(cmd.index), j = Number(cmd.to);
-                        if (Number.isInteger(i) && Number.isInteger(j) && i>=0 && j>=0 && i<tasks.length && j<tasks.length) {
-                            const [moved] = tasks.splice(i, 1);
-                            tasks.splice(j, 0, moved);
-                            renderTasks();
-                            resultMsg = `Moved task from ${i} to ${j}`;
-                        } else resultMsg = 'Invalid indexes';
-                        break;
-                    }
-                    case 'delete_task': {
-                        const i = Number(cmd.index);
-                        if (Number.isInteger(i) && i>=0 && i<tasks.length) {
-                            const [del] = tasks.splice(i,1);
-                            renderTasks();
-                            resultMsg = `Deleted task: ${del.text}`;
-                        } else resultMsg = 'Invalid index';
-                        break;
-                    }
-                    case 'set_mode': {
-                        const m = String(cmd.mode||'');
-                        if (['pomodoro25','shortBreak','longBreak'].includes(m)) { setMode(m); resultMsg = `Mode set to ${m}`; }
-                        else resultMsg = 'Invalid mode';
-                        break;
-                    }
-                    default:
-                        // Unknown action: treat as a normal chat dialog.
-                        // Ask the model to respond conversationally and show the reply.
-                        const reply = await callGroqAPI(`You are a helpful teammate. Respond conversationally to: ${JSON.stringify(inputText)}`);
-                        resultMsg = reply || '…';
-                }
-            } catch (e) {
-                console.error('Agent error', e);
-                resultMsg = 'Action failed.';
-            }
-            aiAgentAppend('assistant', resultMsg);
-        }
-
-        aiAgentSend.addEventListener('click', async () => {
-            const txt = (aiAgentInput.value || '').trim();
-            if (!txt) return;
-            aiAgentInput.value = '';
-            await aiAgentHandle(txt);
-        });
-        aiAgentInput.addEventListener('keypress', async (e) => { if (e.key==='Enter') { e.preventDefault(); aiAgentSend.click(); }});
-
-        shuffleUserNameBtn.addEventListener('click', () => {
-            userNameSetupInput.value = generateRandomUserName();
-        });
-
-        // Start session button
-        startSessionBtn.addEventListener('click', () => {
-            const name = userNameSetupInput.value.trim();
-            const team = sessionNameInput.value.trim();
-            if (!name) {
-                showToast('Please enter your name');
-                return;
-            }
-            userName = name;
-            sessionId = team || generateRandomTeamName();
-            
-            // Save to localStorage for auto-population
-            try {
-                localStorage.setItem('pompom_username', userName);
-                localStorage.setItem('pompom_team_name', sessionId);
-            } catch (e) {
-                // Ignore localStorage errors in some environments
-            }
-            
-            welcomePage.classList.add('hidden');
-            sessionPage.classList.remove('hidden');
-            sessionHeaderName.textContent = `Team: ${sessionId}`;
-        });
-
-        // Leave session button
-        leaveBtn.addEventListener('click', () => {
-            // Reset session state
-            sessionId = '';
-            userName = '';
-            tasks = [];
-
-            // Stop any running timer
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-            running = false;
-            remainingSeconds = getModeSeconds();
-
-            // Hide session page and show welcome page
-            sessionPage.classList.add('hidden');
-            welcomePage.classList.remove('hidden');
-
-            // Reset form
-            userNameSetupInput.value = generateRandomUserName();
-            sessionNameInput.value = '';
-
-            showToast('Left the session');
-        });
-
-        // Main tab event listeners
-        timerTab.addEventListener('click', () => {
-            switchMainView('timer');
-        });
-
-        tasksTab.addEventListener('click', () => {
-            switchMainView('tasks');
-        });
-
-        teamTab.addEventListener('click', () => {
-            switchMainView('team');
-        });
-
-        calendarTab.addEventListener('click', () => {
-            switchMainView('calendar');
-        });
-
-        // Sidebar view event listeners
-        viewButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const view = button.dataset.view;
-                switchView(view);
-            });
-        });
-
-        chatPopupBtn.addEventListener('click', () => {
-            chatPopup.classList.toggle('hidden');
-        });
-
-        breakdownTaskBtn.addEventListener('click', async () => {
-            const topTask = tasks.find(t => !t.completed);
-            if (!topTask) {
-                showToast("No task to break down.");
-                return;
-            }
-
-            breakdownTaskBtn.innerHTML = `<div class="spinner"></div>`;
-            breakdownTaskBtn.disabled = true;
-
-            const prompt = `Based on the user's task "${topTask.text}", break it down into a JSON array of 2-4 specific, actionable sub-tasks. The user is in a team setting. The JSON should be an array of strings. Example: for "build login page", return ["Design UI in Figma", "Develop HTML/CSS structure", "Implement form validation", "Connect to authentication API"]. Return ONLY the JSON array.`;
-            const result = await callGroqAPI(prompt);
-            const subtasks = extractJSON(result);
-
-            if (subtasks && Array.isArray(subtasks)) {
-                const topTaskIndex = tasks.findIndex(t => t === topTask);
-                if (topTaskIndex > -1) {
-                    const newTasks = subtasks.map(t => ({ text: t, completed: false }));
-                    tasks.splice(topTaskIndex, 1, ...newTasks);
-                    showToast("Task broken down by AI.");
-                }
-            } else {
-                showToast("AI couldn't break down the task.");
-            }
-
-            renderTasks();
-            breakdownTaskBtn.innerHTML = `✨ Break down`;
-            breakdownTaskBtn.disabled = false;
-        });
-
-        // todoAddBtn click listener handled by app.js - removed duplicate
-        // todoIdeaInput keydown listener handled by app.js - removed duplicate
-
-        // Timer screen task creation event listeners
-        // timerAddTaskBtn click listener handled by app.js - removed duplicate
-
-        if (timerTaskInput) {
-            // Event listener handled by app.js - removed duplicate
-        }
-
-        if (timerCompleteTaskBtn) {
-            timerCompleteTaskBtn.addEventListener('click', () => {
-                const currentTask = tasks.find(task => !task.completed);
-                if (currentTask) {
-                    currentTask.completed = true;
-                    currentTask.inProgress = false;
-                    renderTasks();
-                    updateTimerCurrentTask();
-                    showToast('Task completed!');
-                }
-            });
-        }
-
-        todoList.addEventListener('click', (e) => {
-            const index = parseInt(e.target.dataset.index);
-            
-            if (e.target.classList.contains('toggle-task-btn')) {
-                tasks[index].completed = !tasks[index].completed;
-                renderTasks();
-                updateCurrentTaskDisplay();
-            } else if (e.target.classList.contains('delete-task-btn')) {
-                tasks.splice(index, 1);
-                renderTasks();
-                updateCurrentTaskDisplay();
-                showToast('🗑️ Task deleted');
-            } else if (e.target.classList.contains('task-text')) {
-                startTaskEdit(index);
-            }
-        });
-
-        // Timer-task integration event listeners
-        completeCurrentTaskBtn.addEventListener('click', () => {
-            completeCurrentTask();
-        });
-
-        nextTaskBtn.addEventListener('click', () => {
-            moveToNextTask();
-        });
-
-        // Smart Actions event listeners
-        smartActionsBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toggleSmartActionsMenu();
-        });
-
-        refineTaskAction.addEventListener('click', () => {
-            refineCurrentTask();
-        });
-
-        breakdownTaskAction.addEventListener('click', () => {
-            breakdownCurrentTask();
-        });
-
-        summarizeChatAction.addEventListener('click', () => {
-            summarizeChatFromActions();
-        });
-
-        icebreakerAction.addEventListener('click', () => {
-            generateIcebreakerFromActions();
-        });
-
-        // Start Meeting functionality
-        startMeetBtn.addEventListener('click', async () => {
-            try {
-                // Disable button to prevent multiple clicks
-                startMeetBtn.disabled = true;
-                startMeetBtn.textContent = '📹 Starting...';
-
-                // Play ringing sound for all users (if available)
-                if (typeof playMeetingRing === 'function') {
-                    playMeetingRing();
-                }
-
-                // Check if extension is available for automatic URL capture
-                if (extensionAvailable && typeof window.pomPomExtensionCaptureMeeting === 'function') {
-                    showToast('🚀 Starting meeting with extension...');
-
-                    // Use extension to capture meeting URL
-                    const capturePromise = window.pomPomExtensionCaptureMeeting(sessionId, userName);
-
-                    // Open Google Meet
-                    const meetWindow = window.open('https://meet.google.com/new', '_blank');
-
-                    // Wait for URL capture (with timeout)
-                    try {
-                        const result = await Promise.race([
-                            capturePromise,
-                            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 15000))
-                        ]);
-
-                        if (result.success) {
-                            updateChatWithMeetingUrl(result.meetingUrl);
-                            showToast('✅ Meeting URL captured automatically!');
-                        } else {
-                            showGenericMeetingMessage();
-                            showToast('⚠️ Could not capture URL automatically');
-                        }
-                    } catch (error) {
-                        console.log('Extension capture failed:', error);
-                        showGenericMeetingMessage();
-                        showToast('⚠️ Extension capture timed out');
-                    }
-                } else {
-                    // Fallback to manual capture method
-                    showToast('Opening Google Meet...');
-
-                    // Open Google Meet and let it generate a real meeting room
-                    const meetWindow = window.open('https://meet.google.com/new', '_blank');
-
-                    // Try to capture the actual meeting URL after Google creates it
-                    let actualMeetUrl = null;
-                    let meetingId = null;
-
-                    if (meetWindow) {
-                        // Try to get the real meeting URL (limited by browser security)
-                        const checkForUrl = () => {
-                            try {
-                                if (meetWindow.location && meetWindow.location.href &&
-                                    meetWindow.location.href !== 'https://meet.google.com/new' &&
-                                    meetWindow.location.href !== 'about:blank' &&
-                                    !meetWindow.location.href.includes('accounts.google.com')) {
-
-                                    actualMeetUrl = meetWindow.location.href;
-                                    const match = actualMeetUrl.match(/meet\.google\.com\/([a-z]{3}-[a-z]{4}-[a-z]{3})/);
-                                    if (match) {
-                                        meetingId = match[1];
-                                        updateChatWithMeetingUrl(actualMeetUrl);
-                                        return true;
-                                    }
-                                }
-                            } catch (e) {
-                                // Cross-origin restriction - expected
-                            }
-                            return false;
-                        };
-
-                        // Check periodically for the URL
-                        let attempts = 0;
-                        const urlCheckInterval = setInterval(() => {
-                            attempts++;
-                            if (checkForUrl() || attempts > 20) { // Stop after 10 seconds
-                                clearInterval(urlCheckInterval);
-                                if (!actualMeetUrl) {
-                                    // Couldn't capture URL, show generic message
-                                    showGenericMeetingMessage();
-                                }
-                            }
-                        }, 500);
-                    } else {
-                        // Popup was blocked
-                        showToast('❌ Popup blocked - please allow popups and try again');
-                        showGenericMeetingMessage();
-                    }
-                }
-
-                // Helper function to update chat with captured meeting URL
-                function updateChatWithMeetingUrl(meetUrl) {
-                    showToast('✅ Meeting URL captured!');
-
-                    const chatMessagesDiv = document.getElementById('chat-messages');
-                    if (chatMessagesDiv) {
-                        const messageDiv = document.createElement('div');
-                        messageDiv.className = 'flex items-start gap-3';
-                        messageDiv.innerHTML = `
-                            <div class="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white text-xs font-bold">
-                                📹
-                            </div>
-                            <div class="flex-1">
-                                <div class="text-xs text-gray-400 mb-1">Meeting • ${new Date().toLocaleTimeString()}</div>
-                                <div class="text-white mb-2">
-                                    ${userName || 'Someone'} started a Google Meet
-                                </div>
-                                <div class="bg-gray-800 p-3 rounded-lg">
-                                    <div class="text-sm text-gray-300 mb-2">📋 Meeting URL (click to join):</div>
-                                    <div class="flex items-center gap-2">
-                                        <a href="${meetUrl}" target="_blank" class="text-blue-400 hover:text-blue-300 underline text-sm break-all">
-                                            ${meetUrl}
-                                        </a>
-                                        <button onclick="copyToClipboard('${meetUrl}')" class="text-xs bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded flex-shrink-0">
-                                            📋 Copy
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        chatMessagesDiv.appendChild(messageDiv);
-                        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-                    }
-                    switchView('chat');
-                }
-
-                // Helper function for generic meeting message when URL can't be captured
-                function showGenericMeetingMessage() {
-                    const chatMessagesDiv = document.getElementById('chat-messages');
-                    if (chatMessagesDiv) {
-                        const messageDiv = document.createElement('div');
-                        messageDiv.className = 'flex items-start gap-3';
-                        messageDiv.innerHTML = `
-                            <div class="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white text-xs font-bold">
-                                📹
-                            </div>
-                            <div class="flex-1">
-                                <div class="text-xs text-gray-400 mb-1">Meeting • ${new Date().toLocaleTimeString()}</div>
-                                <div class="text-white mb-2">
-                                    ${userName || 'Someone'} started a Google Meet
-                                </div>
-                                <div class="bg-gray-700 p-3 rounded-lg">
-                                    <div class="text-sm text-gray-300 mb-2">ℹ️ Meeting Instructions:</div>
-                                    <div class="text-sm text-gray-200 mb-3">
-                                        1. Check the opened Google Meet tab<br>
-                                        2. Copy the meeting URL from your browser<br>
-                                        3. Paste it below to share with the team
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <input type="text" id="manual-meet-url" placeholder="Paste meeting URL here..."
-                                               class="flex-1 px-3 py-2 bg-gray-800 text-white text-sm rounded border border-gray-600 focus:border-blue-500 focus:outline-none">
-                                        <button onclick="shareMeetingUrl()" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded">
-                                            Share
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        chatMessagesDiv.appendChild(messageDiv);
-                        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-                    }
-                    switchView('chat');
-                }
-
-            } catch (error) {
-                console.error('Error starting meeting:', error);
-                showToast('Could not start meeting: ' + error.message);
-            } finally {
-                // Re-enable button after delay
-                setTimeout(() => {
-                    startMeetBtn.disabled = false;
-                    startMeetBtn.textContent = '📹 Start Meeting';
-                }, 2000);
-            }
-        });
-
-        // Simple meeting ID generator
-        function generateSimpleMeetingId() {
-            const chars = 'abcdefghijklmnopqrstuvwxyz';
-            const randomChar = () => chars[Math.floor(Math.random() * chars.length)];
-            return `${randomChar()}${randomChar()}${randomChar()}-${randomChar()}${randomChar()}${randomChar()}${randomChar()}-${randomChar()}${randomChar()}${randomChar()}`;
-        }
-
-        // Copy to clipboard helper
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('📋 Meeting URL copied to clipboard!');
-            }).catch(() => {
-                showToast('❌ Could not copy to clipboard');
-            });
-        }
-
-        // Manual meeting URL sharing
-        function shareMeetingUrl() {
-            const input = document.getElementById('manual-meet-url');
-            const url = input.value.trim();
-
-            if (!url) {
-                showToast('❌ Please enter a meeting URL');
-                return;
-            }
-
-            // Validate that it looks like a Google Meet URL
-            if (!url.includes('meet.google.com/')) {
-                showToast('❌ Please enter a valid Google Meet URL');
-                return;
-            }
-
-            // Clear the input
-            input.value = '';
-
-            // Add the URL to chat
-            updateChatWithMeetingUrl(url);
-            showToast('✅ Meeting URL shared with team!');
-        }
-
-        // Allow Enter key to share URL
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && e.target.id === 'manual-meet-url') {
-                shareMeetingUrl();
-            }
-        });
-
-        // --- Settings Modal Logic ---
-        function updateSoundToggleUI() {
-            if (isSoundEnabled) {
-                soundToggleBtn.classList.add('bg-teal-500');
-                soundToggleBtn.classList.remove('bg-gray-600');
-                soundToggleSlider.style.transform = 'translateX(24px)';
-            } else {
-                soundToggleBtn.classList.remove('bg-teal-500');
-                soundToggleBtn.classList.add('bg-gray-600');
-                soundToggleSlider.style.transform = 'translateX(0px)';
-            }
-        }
-
-        function toggleSound() {
-            isSoundEnabled = !isSoundEnabled;
-            localStorage.setItem('pompom_sound_enabled', isSoundEnabled);
-            window.isSoundEnabled = isSoundEnabled;
-            updateSoundToggleUI();
-
-            // Play confirmation sound if enabled
-            if (isSoundEnabled && typeof playGong === 'function') {
-                setTimeout(() => playGong(), 100);
-            }
-        }
-
-        // Settings button event listeners
-        settingsBtn.addEventListener('click', () => {
-            settingsModal.classList.remove('hidden');
-            updateSoundToggleUI();
-            updateExtensionUI(); // Update extension status when opening settings
-        });
-
-        closeSettingsBtn.addEventListener('click', () => {
-            settingsModal.classList.add('hidden');
-        });
-
-        // Close modal when clicking outside
-        settingsModal.addEventListener('click', (e) => {
-            if (e.target === settingsModal) {
-                settingsModal.classList.add('hidden');
-            }
-        });
-
-        soundToggleBtn.addEventListener('click', toggleSound);
-
-        testSoundBtn.addEventListener('click', async () => {
-            // Disable button temporarily to prevent spam clicking
-            testSoundBtn.disabled = true;
-            testSoundBtn.textContent = '🔊 Playing...';
-
-            try {
-                // Initialize audio context if needed
-                initAudioContext();
-
-                let soundPlayed = false;
-
-                // Try WebAudio-based sounds first (better quality)
-                if (typeof playGong === 'function' && isSoundEnabled) {
-                    playGong();
-                    soundPlayed = true;
-                    showToast('🔊 Gong sound played!');
-                } else if (typeof playMeetingRing === 'function' && isSoundEnabled) {
-                    playMeetingRing();
-                    soundPlayed = true;
-                    showToast('🔊 Meeting ring played!');
-                } else {
-                    // Fallback to basic audio
-                    try {
-                        const audio = new Audio('https://cdn.jsdelivr.net/gh/DoctorKhan/pompom-assets/gong.mp3');
-                        audio.volume = 0.5; // Set reasonable volume
-
-                        await audio.play();
-                        soundPlayed = true;
-                        showToast('🔊 Fallback audio played!');
-                    } catch (audioError) {
-                        console.warn('Audio play failed:', audioError);
-                        showToast('❌ Could not play sound - check audio permissions or volume');
-                    }
-                }
-
-                // If no sound was played, show appropriate message
-                if (!soundPlayed) {
-                    if (!isSoundEnabled) {
-                        showToast('🔇 Sound is disabled - enable it first');
-                    } else {
-                        showToast('❌ No sound functions available');
-                    }
-                }
-
-            } catch (error) {
-                console.error('Test sound error:', error);
-                showToast('❌ Sound test failed: ' + error.message);
-            }
-
-            // Re-enable button after delay
-            setTimeout(() => {
-                testSoundBtn.disabled = false;
-                testSoundBtn.textContent = '🔊 Test';
-            }, 2000);
-        });
-
-        // Audio diagnostics button
-        audioDiagnosticsBtn.addEventListener('click', () => {
-            const diagnostics = [];
-
-            // Check sound enabled status
-            diagnostics.push(`Sound Enabled: ${isSoundEnabled ? '✅ Yes' : '❌ No'}`);
-
-            // Check audio context
-            if (window.audioCtx) {
-                diagnostics.push(`Audio Context: ✅ Available (${window.audioCtx.state})`);
-            } else {
-                diagnostics.push(`Audio Context: ❌ Not initialized`);
-            }
-
-            // Check sound functions
-            const soundFunctions = ['playGong', 'playDing', 'playMeetingRing'];
-            soundFunctions.forEach(fn => {
-                if (typeof window[fn] === 'function') {
-                    diagnostics.push(`${fn}: ✅ Available`);
-                } else {
-                    diagnostics.push(`${fn}: ❌ Missing`);
-                }
-            });
-
-            // Check browser audio support
-            try {
-                const audio = new Audio();
-                diagnostics.push(`Browser Audio: ✅ Supported`);
-            } catch (e) {
-                diagnostics.push(`Browser Audio: ❌ Not supported`);
-            }
-
-            // Show diagnostics in toast (multiple toasts)
-            diagnostics.forEach((diagnostic, index) => {
-                setTimeout(() => {
-                    showToast(diagnostic);
-                }, index * 1000);
-            });
-        });
-
-        // Initialize sound toggle UI
-        updateSoundToggleUI();
-
-        // --- Timer Logic ---
-        const startPauseBtn = document.getElementById('start-pause-btn');
-        const resetBtn = document.getElementById('reset-btn');
-        const timerDisplay = document.getElementById('timer-display');
-        const timerModeDisplay = document.getElementById('timer-mode-display');
-        const modeControls = document.getElementById('mode-controls');
-
-        const MODE_DURATIONS = {
-            pomodoro25: { seconds: 25 * 60, label: 'Focus Time' },
-            shortBreak: { seconds: 5 * 60, label: 'Short Break' },
-            longBreak: { seconds: 15 * 60, label: 'Long Break' },
-        };
-
-        // Allow tests to override duration (window.__TIMER_SECONDS_OVERRIDE)
-        function getModeSeconds() {
-            try {
-                const o = typeof window !== 'undefined' && window.__TIMER_SECONDS_OVERRIDE;
-                const n = Number(o);
-                if (Number.isFinite(n) && n > 0) return n;
-            } catch {}
-            return MODE_DURATIONS[currentMode].seconds;
-        }
-
-        let currentMode = 'pomodoro25';
-        let remainingSeconds = getModeSeconds();
-        let timerInterval = null;
-        let running = false;
-        let targetEndTs = 0;
-
-        function fmtTime(totalSeconds) {
-            const m = Math.floor(totalSeconds / 60);
-            const s = Math.floor(totalSeconds % 60);
-            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-        }
-
-        function renderTimer() {
-            timerDisplay.textContent = fmtTime(remainingSeconds);
-            timerModeDisplay.textContent = MODE_DURATIONS[currentMode].label;
-            startPauseBtn.textContent = running ? 'Pause' : 'Start';
-        }
-
-        function tick() {
-            const now = Date.now();
-            const leftMs = Math.max(0, targetEndTs - now);
-            remainingSeconds = Math.ceil(leftMs / 1000);
-            renderTimer();
-            if (remainingSeconds <= 0) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                running = false;
-                try { if (typeof window !== 'undefined' && typeof window.playGong === 'function') window.playGong(); } catch {}
-                remainingSeconds = getModeSeconds();
-                renderTimer();
-            }
-        }
-
-        function startTimer() {
-            if (running) return;
-            // Snap to test override if present
-            try {
-                const o = typeof window !== 'undefined' && Number(window.__TIMER_SECONDS_OVERRIDE);
-                if (Number.isFinite(o) && o > 0) remainingSeconds = o;
-            } catch {}
-
-            // Mark current task as in progress
-            const currentTask = tasks.find(task => !task.completed);
-            if (currentTask) {
-                currentTask.inProgress = true;
-                updateTimerCurrentTask();
-            }
-
-            running = true;
-            targetEndTs = Date.now() + remainingSeconds * 1000;
-            renderTimer();
-            timerInterval = setInterval(tick, 250);
-        }
-
-        function pauseTimer() {
-            if (!running) return;
-            running = false;
-            clearInterval(timerInterval);
-            timerInterval = null;
-            // Recompute remaining based on now
-            const now = Date.now();
-            remainingSeconds = Math.max(0, Math.ceil((targetEndTs - now) / 1000));
-            renderTimer();
-        }
-
-        function resetTimer() {
-            running = false;
-            clearInterval(timerInterval);
-            timerInterval = null;
-            remainingSeconds = MODE_DURATIONS[currentMode].seconds;
-            renderTimer();
-        }
-
-        function setMode(mode) {
-            if (!MODE_DURATIONS[mode]) return;
-            currentMode = mode;
-            resetTimer();
-        }
-
-        if (startPauseBtn) {
-            startPauseBtn.addEventListener('click', () => {
-                if (running) pauseTimer(); else startTimer();
-            });
-        }
-        if (resetBtn) {
-            resetBtn.addEventListener('click', resetTimer);
-        }
-        if (modeControls) {
-            modeControls.addEventListener('click', (e) => {
-                const btn = e.target.closest('[data-mode]');
-                if (!btn) return;
-                setMode(btn.dataset.mode);
-            });
-        }
-
-        // --- Goal Set / Auto-top behavior and Drag & Drop ---
-        const saveGoalBtn = null; // removed button; we auto-show top task
-
-        function topTaskText() {
-            const firstOpen = tasks.find(t => !t.completed);
-            return firstOpen ? firstOpen.text : (tasks[0] ? tasks[0].text : '');
-        }
-
-        function renderTasksWithDnD() {
-            // Re-render tasks and attach drag handlers
-            todoList.innerHTML = '';
-            if (tasks.length === 0) {
-                todoList.innerHTML = `<p class="text-gray-400 text-sm">No tasks yet. Add one!</p>`;
-            } else {
-                tasks.forEach((task, index) => {
-                    const taskEl = document.createElement('div');
-                    taskEl.className = `p-2 rounded-lg flex justify-between items-center ${task.completed ? 'bg-white/5 text-gray-500' : 'bg-white/10'}`;
-                    taskEl.setAttribute('draggable', 'true');
-                    taskEl.dataset.index = String(index);
-                    taskEl.innerHTML = `
-                        <span class="task-text ${task.completed ? 'line-through' : ''}">${task.text}</span>
-                        <div class="flex gap-2">
-                            <button data-index="${index}" class="task-actions-btn text-xs px-2 py-1 rounded bg-teal-500/20 text-teal-300 hover:bg-teal-500/30" title="AI Actions">✨</button>
-                            <button data-index="${index}" class="toggle-task-btn text-xs px-2 py-1 rounded bg-white/10 hover:bg-white/20">${task.completed ? 'Undo' : 'Done'}</button>
-                            <button data-index="${index}" class="delete-task-btn text-xs text-red-400 px-2 py-1 rounded hover:bg-red-500/20">Del</button>
-                        </div>
-                    `;
-                    taskEl.addEventListener('dragstart', (ev) => {
-                        ev.dataTransfer.setData('text/plain', String(index));
-                        taskEl.classList.add('opacity-50');
-                    });
-                    taskEl.addEventListener('dragend', () => {
-                        taskEl.classList.remove('opacity-50');
-                    });
-                    taskEl.addEventListener('dragover', (ev) => ev.preventDefault());
-                    taskEl.addEventListener('drop', (ev) => {
-                        ev.preventDefault();
-                        const fromStr = ev.dataTransfer.getData('text/plain');
-                        const from = parseInt(fromStr, 10);
-                        const to = index;
-                        if (!Number.isInteger(from) || from === to) return;
-                        const moved = tasks.splice(from, 1)[0];
-                        tasks.splice(to, 0, moved);
-                        renderTasksWithDnD();
-                        // Auto-show top task as goal - removed since goalInput doesn't exist
-                    });
-                    todoList.appendChild(taskEl);
-                });
-            // Click-to-edit task text (basic inline editor like original)
-            todoList.addEventListener('click', (e) => {
-                const txtEl = e.target.closest('.task-text');
-                if (!txtEl) return;
-                const taskEl = txtEl.closest('[data-index]')?.parentElement || txtEl.closest('div');
-                const idxAttr = (txtEl.closest('[data-index]') || e.target).dataset.index;
-                const index = parseInt(idxAttr, 10);
-                if (!Number.isInteger(index)) return;
-
-                // Build simple inline editor
-                const wrap = document.createElement('div');
-                wrap.className = 'flex items-center gap-2 w-full';
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.value = tasks[index].text;
-                input.className = 'flex-1 bg-white text-black rounded px-2 py-1';
-                const save = document.createElement('button');
-                save.className = 'btn-primary px-3 py-1 rounded text-white';
-                save.textContent = 'Save';
-                const cancel = document.createElement('button');
-                cancel.className = 'btn-secondary px-3 py-1 rounded text-white';
-                cancel.textContent = 'Cancel';
-
-                const originalHTML = taskEl.innerHTML;
-                taskEl.innerHTML = '';
-                wrap.appendChild(input);
-                wrap.appendChild(save);
-                wrap.appendChild(cancel);
-                taskEl.appendChild(wrap);
-                input.focus(); input.select();
-
-                const commit = () => {
-                    const v = (input.value || '').trim();
-                    if (v) tasks[index].text = v;
-                    renderTasksWithDnD();
-                };
-                const revert = () => { taskEl.innerHTML = originalHTML; };
-                save.addEventListener('click', commit);
-                cancel.addEventListener('click', () => renderTasksWithDnD());
-                input.addEventListener('keydown', (ev) => {
-                    if (ev.key === 'Enter') { ev.preventDefault(); commit(); }
-                    if (ev.key === 'Escape') { ev.preventDefault(); renderTasksWithDnD(); }
-                });
-            });
-            }
-        }
-
-        // Replace plain renderTasks with DnD-enabled renderer
-        renderTasks = renderTasksWithDnD;
-        renderTasks();
-
-        // Keep existing click handling for toggle/delete
-        // (already attached below; works with re-render because of delegation)
-
-
-
-        // --- Utility Functions ---
-        function generateRandomUserName() {
-            const adjectives = ["Cozy", "Brave", "Clever", "Dandy", "Eager", "Fancy", "Gentle", "Happy", "Jolly", "Kind", "Lucky", "Merry", "Nice", "Proud", "Silly", "Witty"];
-            const nouns = ["Panda", "Penguin", "Dragon", "Unicorn", "Fox", "Bear", "Lion", "Tiger", "Bunny", "Puppy", "Kitten", "Chipmunk"];
-            return `${adjectives[Math.floor(Math.random() * adjectives.length)]} ${nouns[Math.floor(Math.random() * nouns.length)]}`;
-        }
-
-        function generateRandomTeamName() {
-            const nouns = ["Galaxy", "Comet", "Nova", "Orion", "Pegasus", "Phoenix", "Andromeda", "Draco", "Lyra", "Cygnus"];
-            const verbs = ["Quest", "Voyage", "Mission", "Journey", "Expedition", "Odyssey", "Venture", "Trek"];
-            return `${verbs[Math.floor(Math.random() * verbs.length)]}${nouns[Math.floor(Math.random() * nouns.length)]}${Math.floor(Math.random() * 900) + 100}`;
-        }
-
-        // --- Initial Load ---
-        userNameSetupInput.value = generateRandomUserName();
-        renderTasks();
-        // Start with timer view active
-        switchMainView('timer');
-
-        // Task Actions Modal functionality
-        let currentTaskIndex = null;
-
-        function showTaskActions(index) {
-            const task = tasks[index];
-            if (!task) return;
-
-            currentTaskIndex = index;
-            document.getElementById('current-task-title').textContent = task.text;
-            document.getElementById('task-actions-modal').classList.remove('hidden');
-        }
-
-        function closeTaskModal() {
-            document.getElementById('task-actions-modal').classList.add('hidden');
-            currentTaskIndex = null;
-        }
-
-        // AI Functions for task refinement and breakdown
-        async function refineTask() {
-            const task = tasks[currentTaskIndex];
-            if (!task) return;
-
-            const prompt = `Refine and improve this task description to be more clear, actionable, and specific: "${task.text}". Respond with a JSON object containing only a "refined" field with the improved task description.`;
-
-            try {
-                const response = await callGroqAPI(prompt);
-                const result = extractJSON(response);
-
-                if (result && result.refined) {
-                    task.text = result.refined;
-                    renderTasks();
-                    closeTaskModal();
-                    showToast('✅ Task refined with AI!');
-                } else {
-                    showToast('❌ Failed to refine task');
-                }
-            } catch (error) {
-                console.error('Refine task error:', error);
-                showToast('❌ Failed to refine task');
-            }
-        }
-
-        async function breakDownTask() {
-            const task = tasks[currentTaskIndex];
-            if (!task) return;
-
-            const prompt = `Break down this task into 3-5 specific, actionable subtasks: "${task.text}". Respond with a JSON object containing a "subtasks" array of strings.`;
-
-            try {
-                const response = await callGroqAPI(prompt);
-                const result = extractJSON(response);
-
-                if (result && result.subtasks && Array.isArray(result.subtasks)) {
-                    // Insert subtasks after the current task
-                    const subtasks = result.subtasks.map((subtask) => ({
-                        text: subtask,
-                        completed: false
-                    }));
-
-                    tasks.splice(currentTaskIndex + 1, 0, ...subtasks);
-                    renderTasks();
-                    closeTaskModal();
-                    showToast(`✅ Task broken into ${subtasks.length} subtasks!`);
-                } else {
-                    showToast('❌ Failed to break down task');
-                }
-            } catch (error) {
-                console.error('Break down task error:', error);
-                showToast('❌ Failed to break down task');
-            }
-        }
-
-        // Event listeners for task actions
-        document.getElementById('close-task-modal').addEventListener('click', closeTaskModal);
-        document.getElementById('refine-task-btn').addEventListener('click', refineTask);
-        document.getElementById('breakdown-task-btn').addEventListener('click', breakDownTask);
-
-        // Add click handler for task actions buttons
-        todoList.addEventListener('click', (e) => {
-            if (e.target.classList.contains('task-actions-btn')) {
-                const index = parseInt(e.target.dataset.index, 10);
-                if (!isNaN(index)) {
-                    showTaskActions(index);
-                }
-            }
-        });
 
     </script>
 </body>

@@ -80,10 +80,10 @@ describe('PomPom Basic Functionality', () => {
             expect(resetBtn).toBeTruthy();
         });
 
-        test('should have goal input on session page', () => {
-            const goalInput = document.querySelector('#goal-input');
-            expect(goalInput).toBeTruthy();
-            expect(goalInput.placeholder).toBeTruthy();
+        test('should have current task display on session page', () => {
+            const currentTaskDisplay = document.querySelector('#current-task-display');
+            expect(currentTaskDisplay).toBeTruthy();
+            expect(currentTaskDisplay.textContent).toContain('No task selected');
         });
 
         test('should have leave button in session page sidebar', () => {
@@ -139,9 +139,14 @@ describe('PomPom Basic Functionality', () => {
     });
 
     describe('Navigation Elements', () => {
-        test('should have navigation buttons in sidebar', () => {
-            const navButtons = document.querySelectorAll('.nav-btn');
-            expect(navButtons.length).toBeGreaterThanOrEqual(3);
+        test('should have navigation tabs in header', () => {
+            const navTabs = document.querySelectorAll('.main-tab');
+            expect(navTabs.length).toBeGreaterThanOrEqual(3);
+
+            // Check for specific tabs
+            expect(document.getElementById('timer-tab')).toBeTruthy();
+            expect(document.getElementById('tasks-tab')).toBeTruthy();
+            expect(document.getElementById('team-tab')).toBeTruthy();
         });
 
         test('should have copy link button and leave button', () => {

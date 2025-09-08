@@ -17,9 +17,9 @@ if [ "$1" = "test" ]; then
         sleep 3
 
         if command -v open &> /dev/null; then
-            open "http://localhost:8000/test.html"
+            open "http://localhost:8000/tests/"
         else
-            echo "Open http://localhost:8000/test.html in your browser"
+            echo "Open http://localhost:8000/tests/ in your browser"
         fi
 
         echo "📊 Monitoring test results..."
@@ -48,9 +48,9 @@ if [ "$1" = "test" ]; then
             sleep 2
 
             if command -v open &> /dev/null; then
-                open "http://localhost:8001/test.html"
+                open "http://localhost:8001/tests/"
             else
-                echo "Open http://localhost:8001/test.html in your browser"
+                echo "Open http://localhost:8001/tests/ in your browser"
             fi
 
             echo "⚠️  Note: Test logging requires Node.js server"
@@ -60,9 +60,9 @@ if [ "$1" = "test" ]; then
         else
             echo "Neither Node.js nor Python3 found. Opening test file directly..."
             if command -v open &> /dev/null; then
-                open "test.html"
+                open "tests/"
             else
-                echo "Please open test.html in your browser"
+                echo "Please open tests/ in your browser"
             fi
         fi
     fi

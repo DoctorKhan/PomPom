@@ -1044,8 +1044,12 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
             () => log('Health endpoint failure falls back to local parse'),
             () => {
                 // Check if gong sound function is available
-                const checkGongSound = () => {
+                const checkGongSound = async () => {
                     try {
+                        await waitForAppLoad();
+                        // Wait for scripts to load
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        
                         if (typeof window.playGong === 'function') {
                             log('Gong sound function is available');
                         } else {
@@ -1088,8 +1092,12 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
             () => log('UI update functions are defined'),
             () => {
                 // Check if Firebase config is actually loaded
-                const checkFirebaseConfig = () => {
+                const checkFirebaseConfig = async () => {
                     try {
+                        await waitForAppLoad();
+                        // Wait for scripts to load
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        
                         if (typeof window.__firebase_config !== 'undefined') {
                             log('Firebase config is loaded');
                         } else {
