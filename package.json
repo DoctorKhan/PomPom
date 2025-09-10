@@ -11,6 +11,7 @@
     "css:watch": "tailwindcss -i ./input.css -o ./styles.css --watch",
     "test": "jest --verbose",
     "test:all": "jest --verbose",
+    "test:browser:ci": "node scripts/run-browser-tests.js",
     "test:core": "jest --testPathPattern='(utils|eventParser)\\.spec\\.js$' --verbose",
     "test:integration": "jest --testPathPattern='browser-tests-integration\\.spec\\.js$' --verbose",
     "test:refactoring": "jest --testPathPattern='refactoring\\.spec\\.js$' --verbose",
@@ -28,7 +29,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^4.18.2",
-    "firebase-mock": "^2.3.2",
+    "firebase-mock": "^2.2.4",
     "node-fetch": "^2.7.0"
   },
   "keywords": [

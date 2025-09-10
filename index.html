@@ -608,6 +608,53 @@
             initializeUI();
         }
     </script>
+
+	    <!-- Expose ES module meet.js and app globals to parent window for tests runner -->
+	    <script type="module">
+	      import('./src/meet.js')
+	        .then(({ createHandleStartMeet }) => {
+	          // Expose to this window
+	          window.__createHandleStartMeet = createHandleStartMeet;
+	          // Also expose to parent test harness if running in iframe
+	          if (window.top && window.top !== window) {
+	            if (!window.top.__createHandleStartMeet) {
+	              window.top.__createHandleStartMeet = createHandleStartMeet;
+	            }
+	          }
+	        })
+	        .catch((e) => {
+	          console.warn('meet.js module bridge failed:', e);
+	        });
+	    </script>
+	    <script>
+	      // Bridge selected globals from app iframe -> parent tests page
+	      (function(){
+	        try {
+	          if (window.top && window.top !== window) {
+	            // Sound functions
+	            if (typeof window.playGong === 'function') {
+	              window.top.playGong = window.top.playGong || window.playGong;
+	            }
+	            if (typeof window.playDing === 'function') {
+	              window.top.playDing = window.top.playDing || window.playDing;
+	            }
+	            if (typeof window.playMeetingRing === 'function') {
+	              window.top.playMeetingRing = window.top.playMeetingRing || window.playMeetingRing;
+	            }
+	            // Firebase config
+	            if (typeof window.__firebase_config !== 'undefined' && typeof window.top.__firebase_config === 'undefined') {
+	              window.top.__firebase_config = window.__firebase_config;
+	            }
+	            if (typeof window.__app_id !== 'undefined' && typeof window.top.__app_id === 'undefined') {
+	              window.top.__app_id = window.__app_id;
+	            }
+	          }
+	        } catch (e) {
+	          console.warn('Top-window bridge failed:', e);
+	        }
+	      })();
+	    </script>
+
 </body>
 </html>
 

@@ -4,66 +4,81 @@
 echo "🐕 Starting PomPom App..."
 
 if [ "$1" = "test" ]; then
-    echo "🧪 Running tests with logging..."
+    # Headless by default; use second arg "ui" for interactive dashboard
+    if [ "$2" = "ui" ] || [ "$2" = "--ui" ]; then
+        echo "🧪 Running tests (interactive UI)..."
 
-    # Clear previous test log
-    > test-results.log
-    echo "📝 Test results will be logged to: test-results.log"
+        # Clear previous test log
+        > test-results.log
+        echo "📝 Test results will be logged to: test-results.log"
 
-    if command -v node &> /dev/null; then
-        echo "📡 Starting Node.js test server on http://localhost:8000"
-        node server.js &
-        SERVER_PID=$!
-        sleep 3
-
-        if command -v open &> /dev/null; then
-            open "http://localhost:8000/tests/"
-        else
-            echo "Open http://localhost:8000/tests/ in your browser"
-        fi
-
-        echo "📊 Monitoring test results..."
-        echo "   - View live logs: tail -f test-results.log"
-        echo "   - Test results are automatically saved to test-results.log"
-        echo "   - Press Ctrl+C to stop the server"
-
-        # Monitor log file in background
-        if command -v tail &> /dev/null; then
-            echo "📈 Live test output:"
-            tail -f test-results.log &
-            TAIL_PID=$!
-            trap "kill $SERVER_PID $TAIL_PID 2>/dev/null" EXIT
-        else
-            trap "kill $SERVER_PID 2>/dev/null" EXIT
-        fi
-
-        wait $SERVER_PID
-    else
-        echo "Node.js not found. Please install Node.js to run tests with logging."
-        echo "Falling back to simple HTTP server..."
-        if command -v python3 &> /dev/null; then
-            echo "📡 Starting simple test server on http://localhost:8001"
-            python3 -m http.server 8001 &
+        if command -v node &> /dev/null; then
+            echo "📡 Starting Node.js test server on http://localhost:8000"
+            node server.js &
             SERVER_PID=$!
-            sleep 2
+            sleep 3
 
             if command -v open &> /dev/null; then
-                open "http://localhost:8001/tests/"
+                open "http://localhost:8000/tests/"
             else
-                echo "Open http://localhost:8001/tests/ in your browser"
+                echo "Open http://localhost:8000/tests/ in your browser"
             fi
 
-            echo "⚠️  Note: Test logging requires Node.js server"
-            echo "Press Ctrl+C to stop the server"
-            trap "kill $SERVER_PID" EXIT
+            echo "📊 Monitoring test results..."
+            echo "   - View live logs: tail -f test-results.log"
+            echo "   - Test results are automatically saved to test-results.log"
+            echo "   - Press Ctrl+C to stop the server"
+
+            # Monitor log file in background
+            if command -v tail &> /dev/null; then
+                echo "📈 Live test output:"
+                tail -f test-results.log &
+                TAIL_PID=$!
+                trap "kill $SERVER_PID $TAIL_PID 2>/dev/null" EXIT
+            else
+                trap "kill $SERVER_PID 2>/dev/null" EXIT
+            fi
+
             wait $SERVER_PID
         else
-            echo "Neither Node.js nor Python3 found. Opening test file directly..."
-            if command -v open &> /dev/null; then
-                open "tests/"
+            echo "Node.js not found. Please install Node.js to run tests with logging."
+            echo "Falling back to simple HTTP server..."
+            if command -v python3 &> /dev/null; then
+                echo "📡 Starting simple test server on http://localhost:8001"
+                python3 -m http.server 8001 &
+                SERVER_PID=$!
+                sleep 2
+
+                if command -v open &> /dev/null; then
+                    open "http://localhost:8001/tests/"
+                else
+                    echo "Open http://localhost:8001/tests/ in your browser"
+                fi
+
+                echo "⚠️  Note: Test logging requires Node.js server"
+                echo "Press Ctrl+C to stop the server"
+                trap "kill $SERVER_PID" EXIT
+                wait $SERVER_PID
             else
-                echo "Please open tests/ in your browser"
+                echo "Neither Node.js nor Python3 found. Opening test file directly..."
+                if command -v open &> /dev/null; then
+                    open "tests/"
+                else
+                    echo "Please open tests/ in your browser"
+                fi
             fi
+        fi
+    else
+        echo "🧪 Running headless browser tests (Puppeteer)..."
+        # Clear previous test log
+        > test-results.log
+        if command -v node &> /dev/null; then
+            node scripts/run-browser-tests.js
+            EXIT_CODE=$?
+            exit $EXIT_CODE
+        else
+            echo "Node.js not found. Cannot run headless tests."
+            exit 1
         fi
     fi
 elif [ "$1" = "firebase" ]; then
