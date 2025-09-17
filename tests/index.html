@@ -1074,6 +1074,8 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
             () => log('Accessibility: Contrast ratios meet WCAG AA'),
             () => testTimerShortBreakCountdown(),
             () => testTimerLongBreakCountdown(),
+            () => testSetShortBreakModeDirect(),
+            () => testSetLongBreakModeDirect(),
         ];
 
         // Basic Tests (28)
@@ -1448,6 +1450,82 @@ ${failedTests.map((test, i) => `${i + 1}. ${test}`).join('\n')}
                 log(`\u274c ${testName}: ${e.message}`, false);
             }
         }
+
+            // E2E: Mode switch sets currentMode and updates UI (Short Break)
+            async function testSetShortBreakModeDirect() {
+                const testName = 'E2E: Clicking Short Break sets mode and updates UI';
+                try {
+                    const iframe = document.getElementById('app-iframe');
+                    if (!iframe || !iframe.contentWindow) throw new Error('App iframe not available');
+                    const appWin = iframe.contentWindow;
+                    const appDoc = iframe.contentDocument || appWin.document;
+
+                    // If onboarding is visible, fill and start session
+                    const startBtn = appDoc.getElementById('start-session-btn');
+                    if (startBtn) {
+                        const team = appDoc.getElementById('session-name-input');
+                        const user = appDoc.getElementById('user-name-setup-input');
+                        if (team) team.value = 'Test Session';
+                        if (user) user.value = 'Tester';
+                        startBtn.click();
+                        await new Promise(r => setTimeout(r, 600));
+                    }
+
+                    const shortBtn = appDoc.querySelector('.mode-btn[data-mode="shortBreak"], [data-mode="shortBreak"]');
+                    const display = appDoc.getElementById('timer-display');
+                    const label = appDoc.getElementById('timer-mode-display');
+                    if (!shortBtn || !display || !label) throw new Error('Timer elements not found');
+
+                    shortBtn.click();
+                    await new Promise(r => setTimeout(r, 200));
+
+                    const mode = appWin.TimerModule?.getCurrentMode?.();
+                    const timeText = (display.textContent || '').trim();
+                    const labelText = (label.textContent || '').trim();
+
+                    let ok = true;
+                    if (mode !== 'shortBreak') { log(`Expected mode 'shortBreak', got '${mode}'`, false); ok = false; }
+                    if (timeText !== '05:00') { log(`Expected time '05:00', got '${timeText}'`, false); ok = false; }
+                    if (!/short break/i.test(labelText)) { log(`Expected label to include 'Short Break', got '${labelText}'`, false); ok = false; }
+
+                    if (ok) log(`✅ ${testName}`, true);
+                } catch (e) {
+                    log(`❌ ${testName}: ${e.message}`, false);
+                }
+            }
+
+            // E2E: Mode switch sets currentMode and updates UI (Long Break)
+            async function testSetLongBreakModeDirect() {
+                const testName = 'E2E: Clicking Long Break sets mode and updates UI';
+                try {
+                    const iframe = document.getElementById('app-iframe');
+                    if (!iframe || !iframe.contentWindow) throw new Error('App iframe not available');
+                    const appWin = iframe.contentWindow;
+                    const appDoc = iframe.contentDocument || appWin.document;
+
+                    const longBtn = appDoc.querySelector('.mode-btn[data-mode="longBreak"], [data-mode="longBreak"]');
+                    const display = appDoc.getElementById('timer-display');
+                    const label = appDoc.getElementById('timer-mode-display');
+                    if (!longBtn || !display || !label) throw new Error('Timer elements not found');
+
+                    longBtn.click();
+                    await new Promise(r => setTimeout(r, 200));
+
+                    const mode = appWin.TimerModule?.getCurrentMode?.();
+                    const timeText = (display.textContent || '').trim();
+                    const labelText = (label.textContent || '').trim();
+
+                    let ok = true;
+                    if (mode !== 'longBreak') { log(`Expected mode 'longBreak', got '${mode}'`, false); ok = false; }
+                    if (timeText !== '15:00') { log(`Expected time '15:00', got '${timeText}'`, false); ok = false; }
+                    if (!/long break/i.test(labelText)) { log(`Expected label to include 'Long Break', got '${labelText}'`, false); ok = false; }
+
+                    if (ok) log(`✅ ${testName}`, true);
+                } catch (e) {
+                    log(`❌ ${testName}: ${e.message}`, false);
+                }
+            }
+
 
                     // Hook into legacy log to mirror in dashboard
                     const mirror = (msg, isPass = true) => {

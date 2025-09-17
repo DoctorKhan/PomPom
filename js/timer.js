@@ -19,7 +19,7 @@
   let targetEndTs = 0;
 
   // DOM elements
-  let startPauseBtn, resetBtn, timerDisplay, timerModeDisplay, modeControls;
+  let startPauseBtn, resetBtn, timerDisplay, timerModeDisplay;
 
   // Initialize timer elements
   function initTimerElements() {
@@ -27,7 +27,6 @@
     resetBtn = document.getElementById('reset-btn');
     timerDisplay = document.getElementById('timer-display');
     timerModeDisplay = document.getElementById('timer-mode-display');
-    modeControls = document.getElementById('mode-controls');
   }
 
   // Get mode duration with test override support
@@ -279,28 +278,18 @@
     if (resetBtn) {
       resetBtn.addEventListener('click', resetTimer);
     }
-    
-    if (modeControls) {
-      modeControls.addEventListener('click', (e) => {
-        // Ensure we can find the button even if clicking on text nodes/icons
-        let el = e.target;
-        if (!(el instanceof Element)) el = el && el.parentElement;
-        const btn = el && el.closest ? el.closest('[data-mode]') : null;
-        if (!btn) return;
-        setMode(btn.dataset.mode);
-      });
-    }
 
-    // Also bind directly to each mode button for robustness
-    const directModeButtons = document.querySelectorAll('.mode-btn[data-mode]');
-    directModeButtons.forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        // Do not rely on event bubbling; call directly
-        const mode = btn.dataset.mode;
-        if (mode) setMode(mode);
-      });
-    });
+    // General click handler: any element with [data-mode] switches mode directly.
+    // This is less ambiguous and works regardless of nesting or container structure.
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      const btn = target && target.closest ? target.closest('[data-mode]') : null;
+      if (!btn) return;
+      const mode = btn.dataset.mode;
+      if (!mode || !MODE_DURATIONS[mode]) return;
+      e.preventDefault();
+      setMode(mode);
+    }, true);
 
     // Initialize display
     renderTimer();
