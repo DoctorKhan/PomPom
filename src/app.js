@@ -235,14 +235,15 @@ class PomPomApp {
     }
 
     timerTick() {
-        const now = Date.now();
-        const leftMs = Math.max(0, this.state.timer.targetEndTs - now);
-        this.state.timer.remainingSeconds = Math.ceil(leftMs / 1000);
-        this.renderTimer();
-        
-        if (this.state.timer.remainingSeconds <= 0) {
-            this.timerComplete();
-        }
+        // DISABLED: Conflicting with js/timer.js - let the main timer module handle ticking
+        // const now = Date.now();
+        // const leftMs = Math.max(0, this.state.timer.targetEndTs - now);
+        // this.state.timer.remainingSeconds = Math.ceil(leftMs / 1000);
+        // this.renderTimer();
+
+        // if (this.state.timer.remainingSeconds <= 0) {
+        //     this.timerComplete();
+        // }
     }
 
     timerComplete() {
@@ -270,13 +271,14 @@ class PomPomApp {
     }
 
     renderTimer() {
-        if (this.elements['timer-display']) {
-            this.elements['timer-display'].textContent = this.formatTime(this.state.timer.remainingSeconds);
-        }
-        
-        if (this.elements['start-pause-btn']) {
-            this.elements['start-pause-btn'].textContent = this.state.timer.running ? 'Pause' : 'Start';
-        }
+        // DISABLED: Conflicting with js/timer.js - let the main timer module handle display
+        // if (this.elements['timer-display']) {
+        //     this.elements['timer-display'].textContent = this.formatTime(this.state.timer.remainingSeconds);
+        // }
+
+        // if (this.elements['start-pause-btn']) {
+        //     this.elements['start-pause-btn'].textContent = this.state.timer.running ? 'Pause' : 'Start';
+        // }
     }
 
     formatTime(seconds) {

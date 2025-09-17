@@ -11,9 +11,8 @@
     longBreak: { seconds: 15 * 60, label: 'Long Break', color: '#8b5cf6' },
   };
 
-  // Timer state
+  // Timer state - simple 3-state system
   let currentMode = 'pomodoro25';
-  let remainingSeconds = 0; // Will be initialized in initTimer()
   let timerInterval = null;
   let running = false;
   let targetEndTs = 0;
@@ -29,14 +28,17 @@
     timerModeDisplay = document.getElementById('timer-mode-display');
   }
 
-  // Get mode duration with test override support
-  function getModeSeconds() {
-    try {
-      const override = typeof window !== 'undefined' && window.__TIMER_SECONDS_OVERRIDE;
-      const num = Number(override);
-      if (Number.isFinite(num) && num > 0) return num;
-    } catch {}
-    return MODE_DURATIONS[currentMode].seconds;
+  // Get current remaining seconds - always derived from current mode and running state
+  function getRemainingSeconds() {
+    if (!running) {
+      // When stopped, show full duration for current mode
+      return MODE_DURATIONS[currentMode].seconds;
+    } else {
+      // When running, calculate from target end time
+      const now = Date.now();
+      const leftMs = Math.max(0, targetEndTs - now);
+      return Math.ceil(leftMs / 1000);
+    }
   }
 
   // Format time as MM:SS
@@ -50,7 +52,10 @@
   function renderTimer() {
     if (!timerDisplay || !timerModeDisplay) return;
 
-    timerDisplay.textContent = fmtTime(remainingSeconds);
+    const seconds = getRemainingSeconds();
+    const timeText = fmtTime(seconds);
+
+    timerDisplay.textContent = timeText;
     timerModeDisplay.textContent = MODE_DURATIONS[currentMode].label;
 
     // Update start/pause button with icons and text
@@ -85,7 +90,7 @@
     if (!progressRing) return;
 
     const totalSeconds = MODE_DURATIONS[currentMode].seconds;
-    const progress = (totalSeconds - remainingSeconds) / totalSeconds;
+    const progress = (totalSeconds - getRemainingSeconds()) / totalSeconds;
     const circumference = 2 * Math.PI * 45; // radius = 45
     const offset = circumference - (progress * circumference);
 
@@ -95,7 +100,7 @@
 
   // Update document title with timer status
   function updateDocumentTitle() {
-    const timeStr = fmtTime(remainingSeconds);
+    const timeStr = fmtTime(getRemainingSeconds());
     const modeStr = MODE_DURATIONS[currentMode].label;
     const statusStr = running ? '⏱️' : '⏸️';
     
@@ -104,12 +109,10 @@
 
   // Timer tick function
   function tick() {
-    const now = Date.now();
-    const leftMs = Math.max(0, targetEndTs - now);
-    remainingSeconds = Math.ceil(leftMs / 1000);
+    const remaining = getRemainingSeconds();
     renderTimer();
 
-    if (remainingSeconds <= 0) {
+    if (remaining <= 0) {
       clearInterval(timerInterval);
       timerInterval = null;
       running = false;
@@ -125,8 +128,7 @@
         console.warn('Could not play completion sound:', e);
       }
 
-      // Reset timer for next session to the true mode duration (ignore test overrides)
-      remainingSeconds = MODE_DURATIONS[currentMode].seconds;
+      // Timer is now stateless - just render the display
       renderTimer();
 
       // Show completion notification
@@ -164,21 +166,20 @@
   function startTimer() {
     if (running) return;
 
-    // Start respects the current mode and remainingSeconds; no test overrides applied
-
     // Mark current task as in progress
     if (typeof window.TaskModule !== 'undefined') {
       window.TaskModule.markCurrentTaskInProgress();
     }
 
     running = true;
-    targetEndTs = Date.now() + remainingSeconds * 1000;
+    const duration = MODE_DURATIONS[currentMode].seconds;
+    targetEndTs = Date.now() + duration * 1000;
     renderTimer();
     timerInterval = setInterval(tick, 250);
 
     // Trigger timer start event
     const event = new CustomEvent('timerStart', {
-      detail: { mode: currentMode, duration: remainingSeconds }
+      detail: { mode: currentMode, duration: duration }
     });
     document.dispatchEvent(event);
   }
@@ -186,19 +187,15 @@
   // Pause timer
   function pauseTimer() {
     if (!running) return;
-    
+
     running = false;
     clearInterval(timerInterval);
     timerInterval = null;
-    
-    // Recompute remaining based on current time
-    const now = Date.now();
-    remainingSeconds = Math.max(0, Math.ceil((targetEndTs - now) / 1000));
     renderTimer();
 
     // Trigger timer pause event
     const event = new CustomEvent('timerPause', {
-      detail: { mode: currentMode, remainingSeconds }
+      detail: { mode: currentMode, remainingSeconds: getRemainingSeconds() }
     });
     document.dispatchEvent(event);
   }
@@ -208,7 +205,6 @@
     running = false;
     clearInterval(timerInterval);
     timerInterval = null;
-    remainingSeconds = getModeSeconds();
     renderTimer();
 
     // Trigger timer reset event
@@ -230,13 +226,11 @@
   // Set timer mode
   function setMode(mode) {
     if (!MODE_DURATIONS[mode]) return;
-    
+
     const wasRunning = running;
     if (wasRunning) pauseTimer();
-    
+
     currentMode = mode;
-    // When switching modes, always use the actual mode duration (ignore any test overrides)
-    remainingSeconds = MODE_DURATIONS[currentMode].seconds;
     renderTimer();
     updateModeButtons();
 
@@ -264,8 +258,7 @@
   function initTimer() {
     initTimerElements();
 
-    // Initialize remaining seconds for the current mode
-    remainingSeconds = getModeSeconds();
+    // Timer is now stateless - no initialization needed
 
     // Add event listeners
     if (startPauseBtn) {
@@ -317,7 +310,7 @@
       toggle: toggleTimer,
       setMode: setMode,
       getCurrentMode: () => currentMode,
-      getRemainingSeconds: () => remainingSeconds,
+      getRemainingSeconds: getRemainingSeconds,
       isRunning: () => running,
       getModeConfig: (mode) => MODE_DURATIONS[mode] || null
     };
