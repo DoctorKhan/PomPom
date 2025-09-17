@@ -208,7 +208,7 @@
     running = false;
     clearInterval(timerInterval);
     timerInterval = null;
-    remainingSeconds = MODE_DURATIONS[currentMode].seconds;
+    remainingSeconds = getModeSeconds();
     renderTimer();
 
     // Trigger timer reset event
