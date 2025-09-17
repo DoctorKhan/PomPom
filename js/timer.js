@@ -13,7 +13,7 @@
 
   // Timer state
   let currentMode = 'pomodoro25';
-  let remainingSeconds = getModeSeconds();
+  let remainingSeconds = 0; // Will be initialized in initTimer()
   let timerInterval = null;
   let running = false;
   let targetEndTs = 0;
@@ -164,13 +164,7 @@
   function startTimer() {
     if (running) return;
 
-    // Apply test override if present, but only for default focus mode to avoid hijacking breaks
-    try {
-      const override = typeof window !== 'undefined' && Number(window.__TIMER_SECONDS_OVERRIDE);
-      if (currentMode === 'pomodoro25' && Number.isFinite(override) && override > 0) {
-        remainingSeconds = override;
-      }
-    } catch {}
+    // Start respects the current mode and remainingSeconds; no test overrides applied
 
     // Mark current task as in progress
     if (typeof window.TaskModule !== 'undefined') {
@@ -269,27 +263,39 @@
   // Initialize timer functionality
   function initTimer() {
     initTimerElements();
-    
+
+    // Initialize remaining seconds for the current mode
+    remainingSeconds = getModeSeconds();
+
     // Add event listeners
     if (startPauseBtn) {
       startPauseBtn.addEventListener('click', toggleTimer);
     }
-    
+
     if (resetBtn) {
       resetBtn.addEventListener('click', resetTimer);
     }
 
-    // General click handler: any element with [data-mode] switches mode directly.
-    // This is less ambiguous and works regardless of nesting or container structure.
-    document.addEventListener('click', (e) => {
-      const target = e.target;
-      const btn = target && target.closest ? target.closest('[data-mode]') : null;
-      if (!btn) return;
-      const mode = btn.dataset.mode;
-      if (!mode || !MODE_DURATIONS[mode]) return;
-      e.preventDefault();
-      setMode(mode);
-    }, true);
+    // Bind clicks only within the mode controls container and to explicit mode buttons
+    const modeControls = document.getElementById('mode-controls');
+    if (modeControls) {
+      modeControls.addEventListener('click', (e) => {
+        const btn = e.target && e.target.closest ? e.target.closest('.mode-btn[data-mode]') : null;
+        if (!btn) return;
+        e.preventDefault();
+        const mode = btn.dataset.mode;
+        if (mode && MODE_DURATIONS[mode]) setMode(mode);
+      });
+    } else {
+      // Fallback: direct bindings
+      document.querySelectorAll('.mode-btn[data-mode]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const mode = btn.dataset.mode;
+          if (mode && MODE_DURATIONS[mode]) setMode(mode);
+        });
+      });
+    }
 
     // Initialize display
     renderTimer();
